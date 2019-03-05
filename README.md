@@ -1,7 +1,7 @@
 Malenki-ESC
 =======
 
-[logo]:(pcb.png)
+![alt text](pcb.png "Our PCB")
 
 Malenki-ESC is a DC electronic speed controller for small robots. An ESC converts signals from
 e.g. a radio receiver into higher current pulses for motors. 
