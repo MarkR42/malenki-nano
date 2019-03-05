@@ -1,4 +1,5 @@
 EESchema Schematic File Version 4
+LIBS:malenki-cache
 EELAYER 26 0
 EELAYER END
 $Descr A4 11693 8268
@@ -574,19 +575,19 @@ Programming interface
 $Comp
 L power:GND #PWR0104
 U 1 1 5C5DA786
-P 2950 1150
-F 0 "#PWR0104" H 2950 900 50  0001 C CNN
-F 1 "GND" H 2955 977 50  0000 C CNN
-F 2 "" H 2950 1150 50  0001 C CNN
-F 3 "" H 2950 1150 50  0001 C CNN
-	1    2950 1150
+P 2750 1150
+F 0 "#PWR0104" H 2750 900 50  0001 C CNN
+F 1 "GND" H 2755 977 50  0000 C CNN
+F 2 "" H 2750 1150 50  0001 C CNN
+F 3 "" H 2750 1150 50  0001 C CNN
+	1    2750 1150
 	1    0    0    -1  
 $EndComp
-Text GLabel 2100 1050 2    50   Input ~ 0
+Text GLabel 1900 1250 2    50   Input ~ 0
 VLOGIC
 Wire Wire Line
-	2100 1150 2950 1150
-Text GLabel 2100 1250 2    50   Input ~ 0
+	1900 1150 2750 1150
+Text GLabel 1900 950  2    50   Input ~ 0
 PROG_RESET
 $Comp
 L power:PWR_FLAG #FLG0101
@@ -643,15 +644,15 @@ $EndComp
 Wire Wire Line
 	6150 4000 7000 4000
 $Comp
-L Connector:Conn_01x03_Male J6
+L Connector_Generic:Conn_01x04 J6
 U 1 1 5C5E3F13
-P 1900 1150
-F 0 "J6" H 2006 1428 50  0000 C CNN
-F 1 "Conn_01x03_Male" H 2006 1337 50  0000 C CNN
-F 2 "tinyesc:pogopins-3" H 1900 1150 50  0001 C CNN
-F 3 "~" H 1900 1150 50  0001 C CNN
-	1    1900 1150
-	1    0    0    -1  
+P 1700 1150
+F 0 "J6" H 1806 1428 50  0000 C CNN
+F 1 "Conn_01x04" H 1806 1337 50  0000 C CNN
+F 2 "tinyesc:pogopins-4" H 1700 1150 50  0001 C CNN
+F 3 "" H 1700 1150 50  0001 C CNN
+	1    1700 1150
+	-1   0    0    1   
 $EndComp
 $Comp
 L Mechanical:MountingHole MH2
@@ -744,9 +745,8 @@ Wire Wire Line
 	2050 2300 2050 2400
 Connection ~ 2050 2400
 NoConn ~ 4700 4100
-NoConn ~ 6150 3900
-Text Notes 6200 3950 0    50   ~ 0
-TxD pin - could be used for diagnostic
+Text Notes 6600 3950 0    50   ~ 0
+TxD pin - for diagnostic
 Connection ~ 5700 6800
 Wire Wire Line
 	2900 2900 1350 2900
@@ -773,4 +773,8 @@ Text Notes 4400 5500 0    50   ~ 0
 Note: Not all pins can do hardware PWM.\nUsing TCA1 in split mode we can get up to 6 channels\nhardware PWM but most of them are on a fixed pin
 Text Notes 4000 850  0    100  ~ 0
 Tiny DC electronic speed controller\nFor e.g. Antweight combat robots
+Text GLabel 6150 3900 2    50   Input ~ 0
+TXDEBUG
+Text GLabel 1900 1050 2    50   Input ~ 0
+TXDEBUG
 $EndSCHEMATC
