@@ -8,7 +8,7 @@ To compile these, you need a avr-gcc compiler configured for the
 attiny1614.
 
 Instructions are here:
-ihttps://github.com/vladbelous/tinyAVR_gcc_setup
+https://github.com/vladbelous/tinyAVR_gcc_setup
 
 To flash the firmware, you need a suitable flashing utility.
 

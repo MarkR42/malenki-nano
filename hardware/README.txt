@@ -1,1 +1,1 @@
-This will be for the PCB design, another design notes.
+This will be for the PCB design, and other design notes.
