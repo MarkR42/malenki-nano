@@ -1,3 +1,5 @@
 # firmware object files:
 obj/
+#kicad backups
+*.bak
 
