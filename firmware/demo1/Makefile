@@ -4,7 +4,8 @@
 #
 OBJDIR=obj
 
-OBJECTS=$(OBJDIR)/main.o
+OBJECTS=$(OBJDIR)/main.o $(OBJDIR)/diag.o
+HEADERS=diag.h
 
 MCU=attiny1614
 
@@ -13,7 +14,7 @@ HEX=$(OBJDIR)/main.hex
 
 LINKFLAGS=-Os
 
-link: $(OBJECTS)
+link: $(OBJECTS) $(HEADERS)
 	avr-gcc -mmcu=$(MCU) -o $(ELF) $(OBJECTS) $(LINKFLAGS)
 	# see how big it is
 	avr-size $(ELF)
