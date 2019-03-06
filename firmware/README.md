@@ -16,3 +16,7 @@ pyupdi can be used with a simple serial cable + 1 resistor.
 
 See https://github.com/mraardvark/pyupdi/
 
+Useful examples:
+
+https://github.com/chromia/attiny1614example
+

@@ -9,7 +9,7 @@
 char unused1;
 unsigned char somestorage[10];
 
-void init_ports_out()
+void init_hardware()
 {
 	// Set all the ports which need to be outputs, to be outputs.
 	// should all be low initially.
@@ -23,6 +23,19 @@ void init_ports_out()
 	PORTB.DIRSET = 1 << 0;
 	PORTB.DIRSET = 1 << 1;
 	PORTB.DIRSET = 1 << 2;
+
+	// Timer A = generate PWM on thos pins
+	
+	// UART0- need to use "alternate" pins 
+	// This puts TxD and RxD on PA1 and PA2
+	PORTMUX.CTRLB = 1; // Bit 0 = alt. usart pins
+
+	// TxD pin is used for debug, should be an output
+	PORTA.DIRSET = 1 << 1;
+
+	//
+	// Timer A should be in split mode
+	//
 }
 
 void init_timer_interrupts()
@@ -46,7 +59,7 @@ ISR(TCB0_INT_vect)
 int main(void)
 {
 	memset(somestorage, 0, sizeof(somestorage));
-	init_ports_out();	
+	init_hardware();	
 	init_timer_interrupts();
 	sei();  // enable interrupts
 	_delay_ms(100);
