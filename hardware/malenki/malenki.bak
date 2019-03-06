@@ -745,9 +745,8 @@ Wire Wire Line
 	2050 2300 2050 2400
 Connection ~ 2050 2400
 NoConn ~ 4700 4100
-NoConn ~ 6150 3900
-Text Notes 6200 3950 0    50   ~ 0
-TxD pin - could be used for diagnostic
+Text Notes 6600 3950 0    50   ~ 0
+TxD pin - for diagnostic
 Connection ~ 5700 6800
 Wire Wire Line
 	2900 2900 1350 2900
@@ -774,5 +773,8 @@ Text Notes 4400 5500 0    50   ~ 0
 Note: Not all pins can do hardware PWM.\nUsing TCA1 in split mode we can get up to 6 channels\nhardware PWM but most of them are on a fixed pin
 Text Notes 4000 850  0    100  ~ 0
 Tiny DC electronic speed controller\nFor e.g. Antweight combat robots
-NoConn ~ 1900 1050
+Text GLabel 6150 3900 2    50   Input ~ 0
+TXDEBUG
+Text GLabel 1900 1050 2    50   Input ~ 0
+TXDEBUG
 $EndSCHEMATC
