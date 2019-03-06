@@ -13,6 +13,7 @@
 char unused1;
 unsigned char somestorage[10];
 
+uint8_t junk1=0x2a;
 
 void init_hardware_rx()
 {
@@ -42,6 +43,7 @@ void init_hardware_rx()
 	uint32_t clk_per_hz = 3333L * 1000; // CLK_PER after prescaler in hz
 	uint16_t baud_param = (64 * clk_per_hz) / (16 * want_baud_hz);
 	USART0.BAUD = baud_param;
+        USART0.CTRLB = USART_TXEN_bm ; // Start Transmitter
 }
 
 void init_hardware_motors()
@@ -94,9 +96,8 @@ int main(void)
 	init_timer_interrupts();
 	sei();  // enable interrupts
 	diag_puts("Hello\n");
-	for (int i=0; i<20; i++) {
-		_delay_ms(100);
-		diag_printf("got %d timer interrupts\n", tickcount);	
+	while (1) {
+		_delay_ms(500);
+		diag_printf("ticks: %06d\n", tickcount);	
 	}
-	while(1) ;
 }

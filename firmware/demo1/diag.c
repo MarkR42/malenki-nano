@@ -8,7 +8,7 @@
 // This assumes the hardware is already configured.
 void diag_puts(const char *str)
 {
-	char *p;
+	const char *p=str;
 	while (*p != 0) {
 		// Wait for uart0 to be un-busy.
 		while (! (USART0.STATUS & USART_DREIF_bm)) {

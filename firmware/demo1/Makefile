@@ -20,12 +20,16 @@ link: $(OBJECTS) $(HEADERS)
 	avr-size $(ELF)
 	# disassemble, so can see what the compiler did
 	avr-objdump -S $(ELF) > $(OBJDIR)/main.asm
+	avr-objdump -t $(ELF) > $(OBJDIR)/main.sym
 	avr-objcopy -j .text -j .data -j .rodata -O ihex $(ELF) $(HEX)
 
-CFLAGS=-mmcu=$(MCU) -D__AVR_DEV_LIB_NAME__=tn1614 -Os
+CFLAGS=-mmcu=$(MCU) -D__AVR_DEV_LIB_NAME__=tn1614 -Os -Wall
 $(OBJDIR)/%.o: %.c Makefile
 	mkdir -p $(OBJDIR)
 	avr-gcc -c $(CFLAGS) -o $@ $<
 		
+install:
+	pyupdi.py -d tiny1614 -c /dev/ttyUSB0 -f $(HEX)
 
-
+clean:
+	rm -r obj/
