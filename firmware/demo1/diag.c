@@ -20,7 +20,7 @@ void diag_puts(const char *str)
 }
 
 #define DIAG_BUFSIZE 80
-void diag_printf(const char * fmt, ...)
+void diag_println(const char * fmt, ...)
 {
 	static char buf[DIAG_BUFSIZE];
 	va_list ap;
@@ -29,4 +29,5 @@ void diag_printf(const char * fmt, ...)
 	va_end(ap);
 	buf[DIAG_BUFSIZE -1] = '\0'; // ensure null terminated
 	diag_puts(buf);
+	diag_puts("\r\n");
 }
