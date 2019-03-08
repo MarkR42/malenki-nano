@@ -28,7 +28,19 @@ void init_hardware_rx()
 	EVSYS.ASYNCCH0 = EVSYS_ASYNCCH0_PORTA_PIN2_gc;
 	// routing for asynch user 0 == TCB0
 	EVSYS.ASYNCUSER0 = EVSYS_ASYNCUSER0_ASYNCCH0_gc;
-	// TODO:Configure TCB0
+	// Configure TCB0
+	// Set up Timer/Counter B to measure pulse length.
+	TCB0.CTRLB = TCB_CNTMODE_PW_gc |
+		TCB_CCMPEN_bm;
+	TCB0.EVCTRL = // default edge
+		TCB_CAPTEI_bm; // Enable capture.
+	TCB0.CTRLA = TCB_CLKSEL_CLKDIV2_gc | // Divide system clock by2
+		TCB_ENABLE_bm; // Turn on
+	// Now TCB0 will wait until the pin is active, then start counting,
+	// then capture the counter when the pin goes inactive.
+	// We can receive the interrupt from the pin and get the captured value.
+	// Enable the capture interrupt from TCB0.
+	TCB0.INTCTRL =	TCB_CAPT_bm;
 
 	// Diagnostic uart output	
 	// TxD pin PA1 is used for diag, should be an output
@@ -126,11 +138,26 @@ void init_timer_interrupts()
 	TCB1.CTRLA = TCB_ENABLE_bm;
 }
 
-volatile uint16_t tickcount = 0;
+volatile uint32_t tickcount = 0;
 ISR(TCB1_INT_vect)
 {
     tickcount++;
     TCB1.INTFLAGS |= TCB_CAPT_bm; //clear the interrupt flag(to reset TCB0.CNT)
+}
+
+uint16_t last_pulse_len = 0;
+uint16_t pulse_count = 0;
+ISR(TCB0_INT_vect)
+{
+    // Received when the rx pulse pin goes low.
+    // No need to explicitly clear the irq, it is automatically
+    // cleared when we read CCPM
+    uint16_t pulse_len = TCB0.CCMP;
+    // TODO: this will check if the pulse is very big, or very small.
+    // tiny pulses (<0.5ms) should be ignored.
+    // Very long pulses (>3ms) indicate end of ppm/ sync
+    last_pulse_len = pulse_len;
+    pulse_count ++;
 }
 
 int main(void)
@@ -142,6 +169,8 @@ int main(void)
 	diag_puts("Hello\r\n");
 	while (1) {
 		_delay_ms(500);
-		diag_println("ticks: %06d", tickcount);	
+		diag_println("ticks: %08d", tickcount);
+		diag_println("last_pulse_len: %06d pulse_count: %06d", 
+			(int) last_pulse_len, (int) pulse_count);
 	}
 }
