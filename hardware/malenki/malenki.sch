@@ -620,17 +620,6 @@ Connection ~ 2250 3950
 Wire Wire Line
 	2250 3950 2400 3950
 $Comp
-L Regulator_Linear:LM1117-5.0 U1
-U 1 1 5C5A3DD2
-P 2900 3950
-F 0 "U1" H 2900 4192 50  0000 C CNN
-F 1 "LM1117-5.0" H 2900 4101 50  0000 C CNN
-F 2 "Package_TO_SOT_SMD:SOT-89-3" H 2900 3950 50  0001 C CNN
-F 3 "http://www.ti.com/lit/ds/symlink/lm1117.pdf" H 2900 3950 50  0001 C CNN
-	1    2900 3950
-	1    0    0    -1  
-$EndComp
-$Comp
 L tinyesc:ATtiny1614 U2
 U 1 1 5C5CFA2B
 P 5350 3950
@@ -777,4 +766,15 @@ Text GLabel 6150 3900 2    50   Input ~ 0
 TXDEBUG
 Text GLabel 1900 1050 2    50   Input ~ 0
 TXDEBUG
+$Comp
+L hbridge:ME6210A50PG U1
+U 1 1 5C82BDB8
+P 2900 3800
+F 0 "U1" H 2900 3892 50  0000 C CNN
+F 1 "ME6210A50PG" H 2900 3801 50  0000 C CNN
+F 2 "Package_TO_SOT_SMD:SOT-89-3" H 2900 3800 50  0001 C CNN
+F 3 "" H 2900 3800 50  0001 C CNN
+	1    2900 3800
+	1    0    0    -1  
+$EndComp
 $EndSCHEMATC

@@ -1,0 +1,147 @@
+EESchema-DOCLIB  Version 2.0
+#
+$CMP AMS1117-1.5
+D 1A Low Dropout regulator, positive, 1.5V fixed output, SOT-223
+K linear regulator ldo fixed positive
+F http://www.advanced-monolithic.com/pdf/ds1117.pdf
+$ENDCMP
+#
+$CMP AMS1117-1.8
+D 1A Low Dropout regulator, positive, 1.8V fixed output, SOT-223
+K linear regulator ldo fixed positive
+F http://www.advanced-monolithic.com/pdf/ds1117.pdf
+$ENDCMP
+#
+$CMP AMS1117-2.5
+D 1A Low Dropout regulator, positive, 2.5V fixed output, SOT-223
+K linear regulator ldo fixed positive
+F http://www.advanced-monolithic.com/pdf/ds1117.pdf
+$ENDCMP
+#
+$CMP AMS1117-2.85
+D 1A Low Dropout regulator, positive, 2.85V fixed output, SOT-223
+K linear regulator ldo fixed positive
+F http://www.advanced-monolithic.com/pdf/ds1117.pdf
+$ENDCMP
+#
+$CMP AMS1117-3.3
+D 1A Low Dropout regulator, positive, 3.3V fixed output, SOT-223
+K linear regulator ldo fixed positive
+F http://www.advanced-monolithic.com/pdf/ds1117.pdf
+$ENDCMP
+#
+$CMP AMS1117-5.0
+D 1A Low Dropout regulator, positive, 5.0V fixed output, SOT-223
+K linear regulator ldo fixed positive
+F http://www.advanced-monolithic.com/pdf/ds1117.pdf
+$ENDCMP
+#
+$CMP AP1117-15
+D 1A Low Dropout regulator, positive, 1.5V fixed output, SOT-223
+K linear regulator ldo fixed positive obsolete
+F http://www.diodes.com/datasheets/AP1117.pdf
+$ENDCMP
+#
+$CMP AP1117-18
+D 1A Low Dropout regulator, positive, 1.8V fixed output, SOT-223
+K linear regulator ldo fixed positive obsolete
+F http://www.diodes.com/datasheets/AP1117.pdf
+$ENDCMP
+#
+$CMP AP1117-25
+D 1A Low Dropout regulator, positive, 2.5V fixed output, SOT-223
+K linear regulator ldo fixed positive obsolete
+F http://www.diodes.com/datasheets/AP1117.pdf
+$ENDCMP
+#
+$CMP AP1117-33
+D 1A Low Dropout regulator, positive, 3.3V fixed output, SOT-223
+K linear regulator ldo fixed positive obsolete
+F http://www.diodes.com/datasheets/AP1117.pdf
+$ENDCMP
+#
+$CMP AP1117-50
+D 1A Low Dropout regulator, positive, 5.0V fixed output, SOT-223
+K linear regulator ldo fixed positive obsolete
+F http://www.diodes.com/datasheets/AP1117.pdf
+$ENDCMP
+#
+$CMP LD1117S12TR_SOT223
+D 800mA Fixed Low Drop Positive Voltage Regulator, Fixed Output 1.2V, SOT-223
+K REGULATOR LDO 1.2V
+F http://www.st.com/st-web-ui/static/active/en/resource/technical/document/datasheet/CD00000544.pdf
+$ENDCMP
+#
+$CMP LD1117S18TR_SOT223
+D 800mA Fixed Low Drop Positive Voltage Regulator, Fixed Output 1.8V, SOT-223
+K REGULATOR LDO 1.8V
+F http://www.st.com/st-web-ui/static/active/en/resource/technical/document/datasheet/CD00000544.pdf
+$ENDCMP
+#
+$CMP LD1117S25TR_SOT223
+D 800mA Fixed Low Drop Positive Voltage Regulator, Fixed Output 2.5V, SOT-223
+K REGULATOR LDO 2.5V
+F http://www.st.com/st-web-ui/static/active/en/resource/technical/document/datasheet/CD00000544.pdf
+$ENDCMP
+#
+$CMP LD1117S33TR_SOT223
+D 800mA Fixed Low Drop Positive Voltage Regulator, Fixed Output 3.3V, SOT-223
+K REGULATOR LDO 3.3V
+F http://www.st.com/st-web-ui/static/active/en/resource/technical/document/datasheet/CD00000544.pdf
+$ENDCMP
+#
+$CMP LD1117S50TR_SOT223
+D 800mA Fixed Low Drop Positive Voltage Regulator, Fixed Output 5.0V, SOT-223
+K REGULATOR LDO 5.0V
+F http://www.st.com/st-web-ui/static/active/en/resource/technical/document/datasheet/CD00000544.pdf
+$ENDCMP
+#
+$CMP NCP1117-1.5_SOT223
+D 1A Low drop-out regulator, Fixed Output 1.5V, SOT-223
+K REGULATOR LDO 1.5V
+F http://www.onsemi.com/pub_link/Collateral/NCP1117-D.PDF
+$ENDCMP
+#
+$CMP NCP1117-1.8_SOT223
+D 1A Low drop-out regulator, Fixed Output 1.8V, SOT-223
+K REGULATOR LDO 1.8V
+F http://www.onsemi.com/pub_link/Collateral/NCP1117-D.PDF
+$ENDCMP
+#
+$CMP NCP1117-12_SOT223
+D 1A Low drop-out regulator, Fixed Output 12V, SOT-223
+K REGULATOR LDO 12V
+F http://www.onsemi.com/pub_link/Collateral/NCP1117-D.PDF
+$ENDCMP
+#
+$CMP NCP1117-2.0_SOT223
+D 1A Low drop-out regulator, Fixed Output 2V, SOT-223
+K REGULATOR LDO 2V
+F http://www.onsemi.com/pub_link/Collateral/NCP1117-D.PDF
+$ENDCMP
+#
+$CMP NCP1117-2.5_SOT223
+D 1A Low drop-out regulator, Fixed Output 2.5V, SOT-223
+K REGULATOR LDO 2.5V
+F http://www.onsemi.com/pub_link/Collateral/NCP1117-D.PDF
+$ENDCMP
+#
+$CMP NCP1117-2.85_SOT223
+D 1A Low drop-out regulator, Fixed Output 2.85V, SOT-223
+K REGULATOR LDO 2.85V
+F http://www.onsemi.com/pub_link/Collateral/NCP1117-D.PDF
+$ENDCMP
+#
+$CMP NCP1117-3.3_SOT223
+D 1A Low drop-out regulator, Fixed Output 3.3V, SOT-223
+K REGULATOR LDO 3.3V
+F http://www.onsemi.com/pub_link/Collateral/NCP1117-D.PDF
+$ENDCMP
+#
+$CMP NCP1117-5.0_SOT223
+D 1A Low drop-out regulator, Fixed Output 5V, SOT-223
+K REGULATOR LDO 5V
+F http://www.onsemi.com/pub_link/Collateral/NCP1117-D.PDF
+$ENDCMP
+#
+#End Doc Library

@@ -459,7 +459,7 @@ L Device:LED D1
 U 1 1 5C58DA88
 P 5700 6350
 F 0 "D1" V 5738 6233 50  0000 R CNN
-F 1 "LED" V 5647 6233 50  0000 R CNN
+F 1 "Red LED" V 5647 6233 50  0000 R CNN
 F 2 "LED_SMD:LED_0805_2012Metric_Castellated" H 5700 6350 50  0001 C CNN
 F 3 "~" H 5700 6350 50  0001 C CNN
 	1    5700 6350
@@ -470,7 +470,7 @@ L Device:LED D2
 U 1 1 5C58DB3E
 P 5700 7250
 F 0 "D2" V 5738 7133 50  0000 R CNN
-F 1 "LED" V 5647 7133 50  0000 R CNN
+F 1 "Blue LED" V 5647 7133 50  0000 R CNN
 F 2 "LED_SMD:LED_0805_2012Metric_Castellated" H 5700 7250 50  0001 C CNN
 F 3 "~" H 5700 7250 50  0001 C CNN
 	1    5700 7250
@@ -620,17 +620,6 @@ Connection ~ 2250 3950
 Wire Wire Line
 	2250 3950 2400 3950
 $Comp
-L Regulator_Linear:LM1117-5.0 U1
-U 1 1 5C5A3DD2
-P 2900 3950
-F 0 "U1" H 2900 4192 50  0000 C CNN
-F 1 "LM1117-5.0" H 2900 4101 50  0000 C CNN
-F 2 "Package_TO_SOT_SMD:SOT-89-3" H 2900 3950 50  0001 C CNN
-F 3 "http://www.ti.com/lit/ds/symlink/lm1117.pdf" H 2900 3950 50  0001 C CNN
-	1    2900 3950
-	1    0    0    -1  
-$EndComp
-$Comp
 L tinyesc:ATtiny1614 U2
 U 1 1 5C5CFA2B
 P 5350 3950
@@ -777,4 +766,15 @@ Text GLabel 6150 3900 2    50   Input ~ 0
 TXDEBUG
 Text GLabel 1900 1050 2    50   Input ~ 0
 TXDEBUG
+$Comp
+L Regulator_Linear:L78L05_SOT89 U1
+U 1 1 5C826E7A
+P 2900 3950
+F 0 "U1" H 2900 4192 50  0000 C CNN
+F 1 "L78L05_SOT89" H 2900 4101 50  0000 C CNN
+F 2 "Package_TO_SOT_SMD:SOT-89-3" H 2900 4150 50  0001 C CIN
+F 3 "http://www.st.com/content/ccc/resource/technical/document/datasheet/15/55/e5/aa/23/5b/43/fd/CD00000446.pdf/files/CD00000446.pdf/jcr:content/translations/en.CD00000446.pdf" H 2900 3900 50  0001 C CNN
+	1    2900 3950
+	1    0    0    -1  
+$EndComp
 $EndSCHEMATC
