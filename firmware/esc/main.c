@@ -11,11 +11,16 @@
 #include "diag.h"
 #include "rxin.h"
 #include "motors.h"
+#include "vsense.h"
+#include "state.h"
+
+volatile master_state_t master_state;
 
 void init_hardware()
 {
 	init_motors();
 	init_rxin();
+	init_vsense();
 }
 
 void init_timer_interrupts()
@@ -29,20 +34,26 @@ void init_timer_interrupts()
 	TCB1.CTRLA = TCB_ENABLE_bm;
 }
 
-volatile uint32_t tickcount = 0;
 ISR(TCB1_INT_vect)
 {
-    tickcount++;
+    master_state.tickcount++;
     TCB1.INTFLAGS |= TCB_CAPT_bm; //clear the interrupt flag(to reset TCB0.CNT)
 }
 
 static void mainloop()
 {
+	int pulsewidth = 0;
 	while (1) {
 		_delay_ms(500);
-		diag_println("ticks: %08d", tickcount);
+		diag_println("ticks: %08d", master_state.tickcount);
 		diag_println("last_pulse_len: %06d pulse_count: %06d", 
 			(int) rxin_state.last_pulse_len, (int) rxin_state.pulse_count);
+		TCA0.SPLIT.HCMP1 = pulsewidth;
+		pulsewidth += 10;
+		if (pulsewidth > 180) {
+			pulsewidth = 0;
+		}
+		vsense_test();
 	}
 }
 

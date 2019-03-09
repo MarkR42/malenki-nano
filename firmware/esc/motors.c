@@ -48,6 +48,8 @@ void init_motors()
 	// Set the period - use the same period for both halves.
 	TCA0.SPLIT.HPER = period_val;
 	TCA0.SPLIT.LPER = period_val;
+	// Set the halves to be "out of sync"
+	TCA0.SPLIT.HCNT = period_val /2;
 	// Finally, turn the timer on.
 	TCA0.SPLIT.CTRLA = 
 		TCA_SPLIT_CLKSEL_DIV16_gc | // divide sys. clock by 16

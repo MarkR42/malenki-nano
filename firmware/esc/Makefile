@@ -4,8 +4,8 @@
 #
 OBJDIR=obj
 
-OBJECTS=$(OBJDIR)/main.o $(OBJDIR)/diag.o $(OBJDIR)/rxin.o $(OBJDIR)/motors.o
-HEADERS=diag.h motors.h rxin.h
+OBJECTS=$(OBJDIR)/main.o $(OBJDIR)/diag.o $(OBJDIR)/rxin.o $(OBJDIR)/motors.o $(OBJDIR)/vsense.o
+HEADERS=diag.h motors.h rxin.h state.h
 
 MCU=attiny1614
 
