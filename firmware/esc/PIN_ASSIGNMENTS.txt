@@ -1,0 +1,47 @@
+Pin assignments / usage
+
+PA0 - RESET / UPDI - default - not used by code. Used for programming
+	firmware, wired to a pogo pin on underside.
+PA1 - UART0 TxD - used for diagnostic serial output.
+	connected to pin 3 of the pogo pins J6 on underside of board.
+
+PA2 - UART0 RxD - connected to the RXIN connection.
+	This is used to receive either PPM signals, or serial
+	from the radio.
+
+PA3 - Motor1F (Weapon)
+PA4 - Motor3R (Right)
+PA5 - Motor3F (Right)
+
+PA6 - BLINKY - high for blue LED, low for red LED.
+PA7 - VSENSE - senses battery voltage.
+	This is connected to two resistors pulled down by 10k, pulled up by 33k.
+	So it will give the voltage of approximately VBAT * (10 / 43)
+	Or approx 1/4 of the bat voltage.
+
+PB0 - Motor1R (Weapon)
+PB1 - Motor2R (Left)
+PB2 - Motor2F (Left)
+
+PB3 - Unused
+
+Peripheral usage
+
+USART0 - transmitter - for debug messages
+	receiver - to receive digial data from rx
+
+TCA0 - timer generates 6x PWM pulses on motors
+	use in "split mode"
+
+TCB0 - Count the pulse width on PA2 for pulse input
+	could generate irq when pulse ends
+TCB1 - Generate periodic interrupts
+	- so that we can increment a time counter
+	to run periodic tasks every so often
+
+TCD0 - unused
+
+EVENTSYSTEM - need to route event from pin PA2 to
+	the TCB0 to sense pulses.
+
+ADC - need just one channel to read bat. voltage
