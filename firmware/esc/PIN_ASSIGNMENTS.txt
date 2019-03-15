@@ -9,9 +9,9 @@ PA2 - UART0 RxD - connected to the RXIN connection.
 	This is used to receive either PPM signals, or serial
 	from the radio.
 
-PA3 - Motor1F (Weapon)
-PA4 - Motor3R (Right)
-PA5 - Motor3F (Right)
+PA3 - Motor1F (Weapon) - WO3
+PA4 - Motor3R (Right) - WO4
+PA5 - Motor3F (Right) - WO5
 
 PA6 - BLINKY - high for blue LED, low for red LED.
 PA7 - VSENSE - senses battery voltage.
@@ -19,9 +19,9 @@ PA7 - VSENSE - senses battery voltage.
 	So it will give the voltage of approximately VBAT * (10 / 43)
 	Or approx 1/4 of the bat voltage.
 
-PB0 - Motor1R (Weapon)
-PB1 - Motor2R (Left)
-PB2 - Motor2F (Left)
+PB0 - Motor1R (Weapon) - WO0
+PB1 - Motor2R (Left) - WO1
+PB2 - Motor2F (Left) - WO2
 
 PB3 - Unused
 
@@ -32,6 +32,14 @@ USART0 - transmitter - for debug messages
 
 TCA0 - timer generates 6x PWM pulses on motors
 	use in "split mode"
+
+I think the CMP mappings are probably:
+LCMP0 - WO0 - Motor1R
+LCMP1 - WO1 - Motor2R
+LCMP2 - WO2 - Motor2F
+HCMP0 - WO3 - Motor1F
+HCMP1 - WO4 - Motor3R
+HCMP2 - WO5 - Motor3F
 
 TCB0 - Count the pulse width on PA2 for pulse input
 	could generate irq when pulse ends

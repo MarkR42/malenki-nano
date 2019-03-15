@@ -45,10 +45,10 @@ static void mainloop()
 	int pulsewidth = 0;
 	while (1) {
 		_delay_ms(500);
-		diag_println("ticks: %08d", master_state.tickcount);
+		diag_println("ticks: %08ld", master_state.tickcount);
 		diag_println("last_pulse_len: %06d pulse_count: %06d", 
 			(int) rxin_state.last_pulse_len, (int) rxin_state.pulse_count);
-		TCA0.SPLIT.HCMP1 = pulsewidth;
+		TCA0.SPLIT.HCMP0 = pulsewidth;
 		pulsewidth += 10;
 		if (pulsewidth > 180) {
 			pulsewidth = 0;

@@ -24,16 +24,12 @@ void init_motors()
 	//
 	// Timer A should be in split mode
 	//
-	// We want a time period of about 1000hz.
-	// As CLK_PER is 3.33 mhz, we need about 3k counts
+	// As CLK_PER is 3.33 mhz, 
 	// HOWEVER, in split mode we have 2x 8-bit timers,
 	// so we cannot count to 3000.
 	//
-	// So we need to enable divide by 16
-	// 3333 / 16 =~ 208
-	//
 	// We can count to 200 because it's a more "round" number.
-	// that gives us 200 PWM levels and slightly > 1khz freq.
+	// that gives us 200 PWM levels
 	uint8_t period_val = 200;
 	// Enable split mode
 	TCA0.SPLIT.CTRLD = TCA_SPLIT_SPLITM_bm;
@@ -52,7 +48,7 @@ void init_motors()
 	TCA0.SPLIT.HCNT = period_val /2;
 	// Finally, turn the timer on.
 	TCA0.SPLIT.CTRLA = 
-		TCA_SPLIT_CLKSEL_DIV16_gc | // divide sys. clock by 16
+		TCA_SPLIT_CLKSEL_DIV64_gc | // divide sys. clock by 64 
 		TCA_SPLIT_ENABLE_bm;
 	// To set the PWM duty, we can now write to
 	// TCA0.HCMP0, .HCMP1, .HCMP2, .LCMP0, .LCMP1, .LCMP2
