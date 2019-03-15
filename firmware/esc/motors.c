@@ -1,7 +1,7 @@
 #include <avr/io.h>
 #include <avr/interrupt.h>
 
-void init_motors()
+void motors_init()
 {
 	// Set all the ports which need to be outputs, to be outputs.
 	// should all be low initially.
@@ -62,3 +62,7 @@ void init_motors()
 	TCA0.SPLIT.LCMP2 = 120; // WO2 / PB2
 }
 
+void motors_loop()
+{
+
+}

@@ -3,8 +3,9 @@
 
 #include "vsense.h"
 #include "diag.h"
+#include "state.h"
 
-void init_vsense()
+void vsense_init()
 {
    // Set voltage reference to 4.3v (highest)
    VREF.CTRLA = VREF_ADC0REFSEL_4V34_gc;
@@ -30,15 +31,25 @@ void init_vsense()
 
 }
 
-void vsense_test()
+static const uint32_t vsense_period = 25; // Centiseconds
+static uint32_t last_vsense_tickcount = 0;
+
+void vsense_loop()
 {
-	// Check if ready.
-	// if (ADC0.INTFLAGS & ADC_RESRDY_bm) {
-	if (ADC0.INTFLAGS & ADC_RESRDY_bm)
+    // called every loop.
+    // Only do stuff every vsense_period
+    uint32_t age = (master_state.tickcount - last_vsense_tickcount);
+    if (age >= vsense_period) 
     {
-        uint16_t val = ADC0.RES; // 0..1023
-        // Scale to give voltage in millivolts
-        uint32_t vsense_mv = (((uint32_t) val) * 4340) / 1023;
-        diag_println("vsense_mv=%08ld", vsense_mv);
+	    // Check if ready.
+    	// if (ADC0.INTFLAGS & ADC_RESRDY_bm) {
+	    if (ADC0.INTFLAGS & ADC_RESRDY_bm)
+        {
+            uint16_t val = ADC0.RES; // 0..1023
+            // Scale to give voltage in millivolts
+            uint32_t vsense_mv = (((uint32_t) val) * 4340) / 1023;
+            diag_println("vsense_mv=%08ld", vsense_mv);
+        }
+        last_vsense_tickcount = master_state.tickcount;
     }
 }

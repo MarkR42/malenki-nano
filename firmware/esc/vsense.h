@@ -1,2 +1,2 @@
-void init_vsense();
-void vsense_test();
+void vsense_init();
+void vsense_loop();

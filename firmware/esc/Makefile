@@ -29,7 +29,7 @@ $(OBJDIR)/%.o: %.c Makefile
 	avr-gcc -c $(CFLAGS) -o $@ $<
 		
 install: link
-	pyupdi.py -d tiny1614 -c /dev/ttyUSB0 -f $(HEX)
+	pyupdi.py -d tiny1614 -c /dev/ttyUSB1 -f $(HEX)
 
 clean:
 	rm -r obj/

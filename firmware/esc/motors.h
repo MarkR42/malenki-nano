@@ -1,2 +1,3 @@
-void init_motors();
+void motors_init();
+void motors_loop();
 

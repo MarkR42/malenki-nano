@@ -4,13 +4,41 @@
 #include "diag.h"
 #include "rxin.h"
 
-// Our global state
-rxin_state_t rxin_state;
+#include <string.h>
 
-void init_rxin()
+// Our global state
+volatile rxin_state_t rxin_state;
+
+// Set rxin_state.next_channel to CHANNEL_SYNC
+// if we are expecting a sync pulse.
+#define CHANNEL_SYNC (-1)
+
+// expected length of a sync pulse.
+const uint16_t SYNC_PULSE_MIN=3000; // us
+const uint16_t SYNC_PULSE_MAX=18000; // us
+// Normal pulse len
+// Allow a little bit of slack for weirdness etc.
+const uint16_t PULSE_MIN=800; // us
+const uint16_t PULSE_MAX=2500; // us
+
+/*
+
+    Our rx pin has a pull-down resistor. So if it has nothing
+    driving it, it should stay low.
+
+    If we are getting serial (uart) ibus or sbus data, we'd expect
+    it to be mostly high with a lot of very short pulses 
+    becuase they use baud rates of 100k+, so we'll see very short pulses
+    of 10-80 microseconds, maybe longer ones between packets.
+
+    If we are getting CPPM data, we expect it to be mostly high
+    with long sync pulses (3-18 ms) between normal packets.
+
+*/
+void rxin_init()
 {
 	// UART0- need to use "alternate" pins 
-	// This puts TxD and RxD on PA1 and PA2
+	// This puts T xD and RxD on PA1 and PA2
 	PORTMUX.CTRLB = PORTMUX_USART0_ALTERNATE_gc; 
 
 	// Timer B TCB0 is used to measure the pulse width.
@@ -50,6 +78,8 @@ void init_rxin()
         USART0.CTRLB = USART_TXEN_bm ; // Start Transmitter
 	rxin_state.last_pulse_len=0;
 	rxin_state.pulse_count=0;
+    rxin_state.next_channel = CHANNEL_SYNC;
+    rxin_state.pulses_valid = false;
 }
 
 ISR(TCB0_INT_vect)
@@ -58,10 +88,55 @@ ISR(TCB0_INT_vect)
     // No need to explicitly clear the irq, it is automatically
     // cleared when we read CCPM
     uint16_t pulse_len = TCB0.CCMP;
-    // TODO: this will check if the pulse is very big, or very small.
-    // tiny pulses (<0.5ms) should be ignored.
-    // Very long pulses (>3ms) indicate end of ppm/ sync
-    rxin_state.last_pulse_len = pulse_len;
+    // Early exit: quickly ignore very short pulses.
+    // This is because another short pulse might happen, we do not want
+    // to waste time in interrupts.
+    if (pulse_len < 20) {
+        return;
+    }
+    // This will be in clock units, which is 3.333mhz divided by
+    // whatever the divider is set to,
+    // so about 1.66mhz
+    uint16_t pulse_len_us = ((uint32_t) pulse_len) * 100 / 166;
+    rxin_state.last_pulse_len = pulse_len_us;
     rxin_state.pulse_count ++;
+    if ((pulse_len_us >= SYNC_PULSE_MIN) && (pulse_len_us < SYNC_PULSE_MAX))
+    {
+        // Got a sync pulse.
+        rxin_state.next_channel = 0;
+        rxin_state.pulses_valid = false;
+    } else {
+        if ((pulse_len_us >= PULSE_MIN) && (pulse_len_us < PULSE_MAX)) {
+            // Got a normal pulse
+            if (rxin_state.next_channel != CHANNEL_SYNC) {
+                rxin_state.pulse_lengths[rxin_state.next_channel] = pulse_len_us;
+                rxin_state.next_channel += 1;
+                if (rxin_state.next_channel >= RX_CHANNELS) {
+                    // Got all channels.
+                    // If the rx sends more channels, we ignore them.
+                    // We have enough channels now, the rx can send whatever it wants.
+                    rxin_state.pulses_valid = true; // tell main loop that the data are valid.
+                    rxin_state.next_channel = CHANNEL_SYNC;
+                } else {
+                    // Not valid yet.
+                }
+            }
+        }
+    }
+}
+
+void rxin_loop()
+{
+    // put rx logic here
+    if (rxin_state.pulses_valid) {
+        // Great! read the pulses.
+        // Avoid race condition - take a copy with irq disabled.
+        cli(); // interrupts off
+        uint16_t pulse_lengths_copy[RX_CHANNELS];
+        memcpy(pulse_lengths_copy, (void *) rxin_state.pulse_lengths, sizeof(pulse_lengths_copy));
+        // clear valid flag so we do not do the same work again.
+        rxin_state.pulses_valid = 0;
+        sei(); // interrupts on
+    }
 }
 

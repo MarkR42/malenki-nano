@@ -18,9 +18,9 @@ volatile master_state_t master_state;
 
 void init_hardware()
 {
-	init_motors();
-	init_rxin();
-	init_vsense();
+	motors_init();
+	rxin_init();
+	vsense_init();
 }
 
 void init_timer_interrupts()
@@ -40,20 +40,35 @@ ISR(TCB1_INT_vect)
     TCB1.INTFLAGS |= TCB_CAPT_bm; //clear the interrupt flag(to reset TCB0.CNT)
 }
 
-static void mainloop()
+static uint32_t last_test_tickcount=0;
+static int pulsewidth = 0;
+
+static void test_loop()
 {
-	int pulsewidth = 0;
-	while (1) {
-		_delay_ms(500);
+    // Do a few testing things, periodically
+    uint32_t age = master_state.tickcount - last_test_tickcount;
+    if (age > 100) {
 		diag_println("ticks: %08ld", master_state.tickcount);
 		diag_println("last_pulse_len: %06d pulse_count: %06d", 
 			(int) rxin_state.last_pulse_len, (int) rxin_state.pulse_count);
-		TCA0.SPLIT.HCMP0 = pulsewidth;
 		pulsewidth += 10;
 		if (pulsewidth > 180) {
 			pulsewidth = 0;
 		}
-		vsense_test();
+		TCA0.SPLIT.HCMP0 = pulsewidth;
+
+        last_test_tickcount = master_state.tickcount;
+    }    
+
+}
+
+static void mainloop()
+{
+	while (1) {
+		vsense_loop();
+        motors_loop();
+        rxin_loop();
+        test_loop();
 	}
 }
 
@@ -62,6 +77,8 @@ int main(void)
 	init_hardware();	
 	init_timer_interrupts();
 	sei();  // enable interrupts
+	diag_puts("\r\n\r\n");
 	diag_puts("Malenki-ESC starting.\r\n");
+	diag_puts("\r\n\r\n");
 	mainloop();
 }
