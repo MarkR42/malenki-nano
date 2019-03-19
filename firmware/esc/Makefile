@@ -4,7 +4,7 @@
 #
 OBJDIR=obj
 
-OBJECTS=$(OBJDIR)/main.o $(OBJDIR)/diag.o $(OBJDIR)/rxin.o $(OBJDIR)/motors.o $(OBJDIR)/vsense.o
+OBJECTS=$(OBJDIR)/main.o $(OBJDIR)/diag.o $(OBJDIR)/rxin.o $(OBJDIR)/motors.o $(OBJDIR)/vsense.o $(OBJDIR)/builddate.o
 HEADERS=diag.h motors.h rxin.h state.h
 
 MCU=attiny1614
@@ -25,11 +25,17 @@ link: $(OBJECTS) $(HEADERS)
 
 CFLAGS=-mmcu=$(MCU) -D__AVR_DEV_LIB_NAME__=tn1614 -Os -Wall
 $(OBJDIR)/%.o: %.c Makefile
-	mkdir -p $(OBJDIR)
+	@mkdir -p $(OBJDIR)
 	avr-gcc -c $(CFLAGS) -o $@ $<
-		
-install: link
-	pyupdi.py -d tiny1614 -c /dev/ttyUSB1 -f $(HEX)
 
+builddate.c: .phony
+	./gen-builddate.sh
+
+install: link
+	pyupdi.py -d tiny1614 -c /dev/ttyUSB0 -f $(HEX)
+
+# Dummy target:
+.phony:
+   
 clean:
-	rm -r obj/
+	rm -r obj/ builddate.c

@@ -31,6 +31,7 @@ void init_timer_interrupts()
 	TCB1.INTCTRL = TCB_CAPT_bm;
 	// CTRLB bits 0-2 are the mode, which by default
 	// 000 is "periodic interrupt" -which is correct
+	TCB1.CTRLB = 0;
 	TCB1.CTRLA = TCB_ENABLE_bm;
 }
 
@@ -78,7 +79,8 @@ int main(void)
 	init_timer_interrupts();
 	sei();  // enable interrupts
 	diag_puts("\r\n\r\n");
-	diag_puts("Malenki-ESC starting.\r\n");
+	diag_puts("Malenki-ESC starting. BUILD_DATE=");
+    diag_puts(build_date);
 	diag_puts("\r\n\r\n");
 	mainloop();
 }

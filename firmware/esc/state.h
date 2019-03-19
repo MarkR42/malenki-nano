@@ -11,3 +11,4 @@ typedef struct {
 
 extern volatile master_state_t master_state;
 
+extern const char * build_date;

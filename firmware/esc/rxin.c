@@ -50,8 +50,10 @@ void rxin_init()
 	EVSYS.ASYNCUSER0 = EVSYS_ASYNCUSER0_ASYNCCH0_gc;
 	// Configure TCB0
 	// Set up Timer/Counter B to measure pulse length.
-	TCB0.CTRLB = TCB_CNTMODE_PW_gc |
-		TCB_CCMPEN_bm;
+	TCB0.CTRLB = TCB_CNTMODE_PW_gc ;
+    // DO NOT SET TCB_CCMPEN_bm - because we don't want it outputting.
+    // If TCB_CCMPEN_bm is enabled, then the timer will take one of our
+    // gpio pins as its own, and TCA will not be able to send pulses.
 	TCB0.EVCTRL = // default edge
 		TCB_CAPTEI_bm; // Enable capture.
 	TCB0.CTRLA = TCB_CLKSEL_CLKDIV2_gc | // Divide system clock by2
