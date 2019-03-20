@@ -4,8 +4,9 @@
 #
 OBJDIR=obj
 
-OBJECTS=$(OBJDIR)/main.o $(OBJDIR)/diag.o $(OBJDIR)/rxin.o $(OBJDIR)/motors.o $(OBJDIR)/vsense.o $(OBJDIR)/builddate.o
-HEADERS=diag.h motors.h rxin.h state.h
+OBJ_FILES=main.o diag.o rxin.o motors.o vsense.o builddate.o
+OBJECTS=$(addprefix $(OBJDIR)/,$(OBJ_FILES))
+HEADERS=diag.h motors.h rxin.h state.h vsense.h
 
 MCU=attiny1614
 
@@ -24,7 +25,7 @@ link: $(OBJECTS) $(HEADERS)
 	avr-objcopy -j .text -j .data -j .rodata -O ihex $(ELF) $(HEX)
 
 CFLAGS=-mmcu=$(MCU) -D__AVR_DEV_LIB_NAME__=tn1614 -Os -Wall
-$(OBJDIR)/%.o: %.c Makefile
+$(OBJDIR)/%.o: %.c Makefile $(HEADERS)
 	@mkdir -p $(OBJDIR)
 	avr-gcc -c $(CFLAGS) -o $@ $<
 
