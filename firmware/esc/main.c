@@ -14,6 +14,8 @@
 #include "vsense.h"
 #include "state.h"
 
+#include <stdlib.h>
+
 volatile master_state_t master_state;
 
 void init_hardware()
@@ -65,11 +67,24 @@ static void test_loop()
 
 static void mainloop()
 {
+    int8_t movedir = 4;
+    int16_t speed = 0; // Range -DUTY_MAX to DUTY_MAX
 	while (1) {
 		vsense_loop();
         motors_loop();
         rxin_loop();
         test_loop();
+        speed += movedir;
+        if (speed >= DUTY_MAX) {
+            movedir = -abs(movedir);
+        }
+        if (speed <= -DUTY_MAX) {
+            movedir = abs(movedir);
+        }
+        set_motor_direction_duty(MOTOR_WEAPON,speed);
+        set_motor_direction_duty(MOTOR_LEFT,speed);
+        set_motor_direction_duty(MOTOR_RIGHT,speed);
+        _delay_ms(20);
 	}
 }
 
