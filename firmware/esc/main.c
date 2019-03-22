@@ -43,6 +43,15 @@ ISR(TCB1_INT_vect)
     TCB1.INTFLAGS |= TCB_CAPT_bm; //clear the interrupt flag(to reset TCB0.CNT)
 }
 
+uint32_t get_tickcount()
+{
+    uint32_t tc;
+    cli(); // disable irq
+    tc = master_state.tickcount;
+    sei(); // enable irq
+    return tc;
+}
+
 static uint32_t last_test_tickcount=0;
 static int pulsewidth = 0;
 

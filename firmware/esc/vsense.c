@@ -38,7 +38,8 @@ void vsense_loop()
 {
     // called every loop.
     // Only do stuff every vsense_period
-    uint32_t age = (master_state.tickcount - last_vsense_tickcount);
+    uint32_t now = get_tickcount();
+    uint32_t age = (now - last_vsense_tickcount);
     if (age >= vsense_period) 
     {
 	    // Check if ready.
@@ -50,6 +51,6 @@ void vsense_loop()
             uint32_t vsense_mv = (((uint32_t) val) * 4340) / 1023;
             diag_println("vsense_mv=%08ld", vsense_mv);
         }
-        last_vsense_tickcount = master_state.tickcount;
+        last_vsense_tickcount = now;
     }
 }
