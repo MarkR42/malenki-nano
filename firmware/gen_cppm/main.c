@@ -70,6 +70,7 @@ int main(void)
 {
     init();
     init_timer_interrupts();
+    sei(); // interrupts on
     static uint16_t widths[] = {
         1800, 1500, 1000, 1000, 1000, 1000, 0
     };
