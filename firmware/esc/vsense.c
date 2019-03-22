@@ -31,7 +31,7 @@ void vsense_init()
 
 }
 
-static const uint32_t vsense_period = 25; // Centiseconds
+static const uint32_t vsense_period = 200; // Centiseconds
 static uint32_t last_vsense_tickcount = 0;
 
 void vsense_loop()

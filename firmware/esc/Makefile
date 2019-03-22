@@ -4,9 +4,9 @@
 #
 OBJDIR=obj
 
-OBJ_FILES=main.o diag.o rxin.o motors.o vsense.o builddate.o
+OBJ_FILES=main.o diag.o rxin.o motors.o vsense.o builddate.o nvconfig.o
 OBJECTS=$(addprefix $(OBJDIR)/,$(OBJ_FILES))
-HEADERS=diag.h motors.h rxin.h state.h vsense.h
+HEADERS=diag.h motors.h rxin.h state.h vsense.h nvconfig.h
 
 MCU=attiny1614
 
@@ -34,6 +34,10 @@ builddate.c: .phony
 
 install: link
 	pyupdi.py -d tiny1614 -c /dev/ttyUSB0 -f $(HEX)
+
+# Show the gcc preprocessor defines
+show_defs:
+	avr-gcc -mmcu=$(MCU) -dM -E - </dev/null 
 
 # Dummy target:
 .phony:

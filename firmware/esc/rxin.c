@@ -35,7 +35,7 @@ const uint16_t PULSE_MAX=2500; // us
     with long sync pulses (3-18 ms) between normal packets.
 
 */
-void rxin_init()
+static void rxin_init_hw()
 {
 	// UART0- need to use "alternate" pins 
 	// This puts T xD and RxD on PA1 and PA2
@@ -78,10 +78,18 @@ void rxin_init()
 	uint16_t baud_param = (64 * clk_per_hz) / (16 * want_baud_hz);
 	USART0.BAUD = baud_param;
         USART0.CTRLB = USART_TXEN_bm ; // Start Transmitter
-	rxin_state.last_pulse_len=0;
-	rxin_state.pulse_count=0;
+}
+
+static void rxin_init_state()
+{
+    memset((void *) &rxin_state, 0, sizeof(rxin_state));
     rxin_state.next_channel = CHANNEL_SYNC;
-    rxin_state.pulses_valid = false;
+}
+
+void rxin_init()
+{
+    rxin_init_state();
+    rxin_init_hw();
 }
 
 ISR(TCB0_INT_vect)
@@ -104,14 +112,18 @@ ISR(TCB0_INT_vect)
     rxin_state.pulse_count ++;
     if ((pulse_len_us >= SYNC_PULSE_MIN) && (pulse_len_us < SYNC_PULSE_MAX))
     {
-        // Got a sync pulse.
+        // Got a sync pulse
+        // expect next channel 0.
+        // pulses are not yet valid.
         rxin_state.next_channel = 0;
         rxin_state.pulses_valid = false;
+        // Clear pulse_lengths_next
+        memset((void *) rxin_state.pulse_lengths_next, 0, sizeof(rxin_state.pulse_lengths_next));
     } else {
         if ((pulse_len_us >= PULSE_MIN) && (pulse_len_us < PULSE_MAX)) {
             // Got a normal pulse
             if (rxin_state.next_channel != CHANNEL_SYNC) {
-                rxin_state.pulse_lengths[rxin_state.next_channel] = pulse_len_us;
+                rxin_state.pulse_lengths_next[rxin_state.next_channel] = pulse_len_us;
                 rxin_state.next_channel += 1;
                 if (rxin_state.next_channel >= RX_CHANNELS) {
                     // Got all channels.
@@ -134,11 +146,11 @@ void rxin_loop()
         // Great! read the pulses.
         // Avoid race condition - take a copy with irq disabled.
         cli(); // interrupts off
-        uint16_t pulse_lengths_copy[RX_CHANNELS];
-        memcpy(pulse_lengths_copy, (void *) rxin_state.pulse_lengths, sizeof(pulse_lengths_copy));
+        memcpy((void *) rxin_state.pulse_lengths, (void *) rxin_state.pulse_lengths_next, sizeof(rxin_state.pulse_lengths));
         // clear valid flag so we do not do the same work again.
         rxin_state.pulses_valid = 0;
         sei(); // interrupts on
+        // TODO: Here is where we will call the function to set motor speeds etc.
     }
 }
 

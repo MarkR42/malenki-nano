@@ -13,6 +13,7 @@
 #include "motors.h"
 #include "vsense.h"
 #include "state.h"
+#include "nvconfig.h"
 
 #include <stdlib.h>
 
@@ -102,6 +103,7 @@ int main(void)
 	init_hardware();	
 	init_timer_interrupts();
 	sei();  // enable interrupts
+    nvconfig_init();
 	diag_puts("\r\n\r\n");
 	diag_puts("Malenki-ESC starting. BUILD_DATE=");
     diag_puts(build_date);
