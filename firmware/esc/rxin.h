@@ -4,6 +4,7 @@
 void rxin_init();
 void rxin_loop();
 
+// Minimum number of channels required
 #define RX_CHANNELS 6
 
 typedef struct {

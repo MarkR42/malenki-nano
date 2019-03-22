@@ -84,7 +84,10 @@ int main(void)
                 _delay_us(50); 
             }
         }
-        // Spend the rest of the 20ms waiting with output high
+        set_out(0);
+        _delay_us(100); 
+        set_out(1);
+        // Spend the rest of the 20ms waiting with output high (sync pulse)
         wait_for_interrupt();
     }	
 }

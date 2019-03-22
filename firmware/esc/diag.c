@@ -31,3 +31,5 @@ void diag_println(const char * fmt, ...)
 	diag_puts(buf);
 	diag_puts("\r\n");
 }
+
+

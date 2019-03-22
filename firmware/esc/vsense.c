@@ -49,7 +49,8 @@ void vsense_loop()
             uint16_t val = ADC0.RES; // 0..1023
             // Scale to give voltage in millivolts
             uint32_t vsense_mv = (((uint32_t) val) * 4340) / 1023;
-            diag_println("vsense_mv=%08ld", vsense_mv);
+            // Print some debug info  (which is annoying)
+            // diag_println("vsense_mv=%08ld", vsense_mv);
         }
         last_vsense_tickcount = now;
     }

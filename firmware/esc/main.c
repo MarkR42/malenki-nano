@@ -59,18 +59,19 @@ static int pulsewidth = 0;
 static void test_loop()
 {
     // Do a few testing things, periodically
-    uint32_t age = master_state.tickcount - last_test_tickcount;
+    uint32_t now = get_tickcount();
+    uint32_t age = now - last_test_tickcount;
     if (age > 100) {
 		diag_println("ticks: %08ld", master_state.tickcount);
-		diag_println("last_pulse_len: %06d pulse_count: %06d", 
-			(int) rxin_state.last_pulse_len, (int) rxin_state.pulse_count);
+		diag_println("last_pulse_len: %06d pulse_count: %06d next_channel: %d", 
+			(int) rxin_state.last_pulse_len, (int) rxin_state.pulse_count, (int) rxin_state.next_channel);
 		pulsewidth += 10;
 		if (pulsewidth > 180) {
 			pulsewidth = 0;
 		}
 		TCA0.SPLIT.HCMP0 = pulsewidth;
 
-        last_test_tickcount = master_state.tickcount;
+        last_test_tickcount = now;
     }    
 
 }
@@ -84,6 +85,8 @@ static void mainloop()
         motors_loop();
         rxin_loop();
         test_loop();
+        
+        /* 
         speed += movedir;
         if (speed >= DUTY_MAX) {
             movedir = -abs(movedir);
@@ -95,6 +98,7 @@ static void mainloop()
         set_motor_direction_duty(MOTOR_LEFT,speed);
         set_motor_direction_duty(MOTOR_RIGHT,speed);
         _delay_ms(20);
+        */
 	}
 }
 

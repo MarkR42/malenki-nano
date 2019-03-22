@@ -116,7 +116,6 @@ ISR(TCB0_INT_vect)
         // expect next channel 0.
         // pulses are not yet valid.
         rxin_state.next_channel = 0;
-        rxin_state.pulses_valid = false;
         // Clear pulse_lengths_next
         memset((void *) rxin_state.pulse_lengths_next, 0, sizeof(rxin_state.pulse_lengths_next));
     } else {
@@ -150,7 +149,15 @@ void rxin_loop()
         // clear valid flag so we do not do the same work again.
         rxin_state.pulses_valid = 0;
         sei(); // interrupts on
-        // TODO: Here is where we will call the function to set motor speeds etc.
+        // TODO: actually handle the pwm data.
+        if (rxin_state.debug_count > 0) {
+            rxin_state.debug_count -= 1;
+        } else {
+            rxin_state.debug_count = 50;
+            for (int i=0; i< RX_CHANNELS; i++) {
+                diag_println("rx:%d %05d", i, rxin_state.pulse_lengths[i]);
+            }
+        }
     }
 }
 
