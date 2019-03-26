@@ -2,7 +2,9 @@
 #include <stdint.h>
 
 #include "nvconfig.h"
+#include "diag.h"
 #include <avr/io.h>
+#include <avr/eeprom.h>
 
 #include <string.h>
 
@@ -12,16 +14,25 @@
 
 nvconfig_state_t nvconfig_state;
 
+static void * eeprom_addr = (void *) 0;
+
 void nvconfig_init() {
     memset((void *) &nvconfig_state, 0, sizeof(nvconfig_state));
+    nvconfig_state.magic = NVCONFIG_MAGIC_CORRECT;
 }
 
 void nvconfig_load() {
-
-    // Can just copy nvconfig_state from USERROW.
+    eeprom_read_block((void *) &nvconfig_state, eeprom_addr, sizeof(nvconfig_state)); 
+    diag_println("Loaded nvconfig magic=%04x", nvconfig_state.magic); 
+    diag_println("Loaded nvconfig boot_count=%ld", nvconfig_state.boot_count); 
+    if (nvconfig_state.magic != NVCONFIG_MAGIC_CORRECT) {
+        diag_println("nvconfig:wrong magic, reinitialising.");
+        nvconfig_init();
+    }
+    nvconfig_state.boot_count += 1;
 }
 
 void nvconfig_save(){
-    // TODO: something with the nvm controller
+    eeprom_update_block((void *) &nvconfig_state, eeprom_addr, sizeof(nvconfig_state)); 
 }
 

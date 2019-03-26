@@ -112,5 +112,7 @@ int main(void)
 	diag_puts("Malenki-ESC starting. BUILD_DATE=");
     diag_puts(build_date);
 	diag_puts("\r\n\r\n");
+    nvconfig_load();
+    nvconfig_save();
 	mainloop();
 }
