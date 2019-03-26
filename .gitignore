@@ -1,5 +1,8 @@
 # firmware object files:
 obj/
+# pcb gerbers
+plot/
 #kicad backups
 *.bak
+*-bak
 
