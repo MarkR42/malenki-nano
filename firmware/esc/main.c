@@ -14,6 +14,7 @@
 #include "vsense.h"
 #include "state.h"
 #include "nvconfig.h"
+#include "blinky.h"
 
 #include <stdlib.h>
 
@@ -24,6 +25,7 @@ void init_hardware()
 	motors_init();
 	rxin_init();
 	vsense_init();
+    blinky_init();
 }
 
 void init_timer_interrupts()
@@ -78,13 +80,14 @@ static void test_loop()
 
 static void mainloop()
 {
-    int8_t movedir = 4;
-    int16_t speed = 0; // Range -DUTY_MAX to DUTY_MAX
+    // int8_t movedir = 4;
+    // int16_t speed = 0; // Range -DUTY_MAX to DUTY_MAX
 	while (1) {
 		vsense_loop();
         motors_loop();
         rxin_loop();
         test_loop();
+        blinky_loop();
         
         /* 
         speed += movedir;

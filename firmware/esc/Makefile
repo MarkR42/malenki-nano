@@ -4,9 +4,9 @@
 #
 OBJDIR=obj
 
-OBJ_FILES=main.o diag.o rxin.o motors.o vsense.o builddate.o nvconfig.o
+OBJ_FILES=main.o diag.o rxin.o motors.o vsense.o builddate.o nvconfig.o blinky.o
 OBJECTS=$(addprefix $(OBJDIR)/,$(OBJ_FILES))
-HEADERS=diag.h motors.h rxin.h state.h vsense.h nvconfig.h
+HEADERS=diag.h motors.h rxin.h state.h vsense.h nvconfig.h blinky.h
 
 MCU=attiny1614
 
@@ -22,6 +22,7 @@ link: $(OBJECTS) $(HEADERS)
 	# disassemble, so can see what the compiler did
 	avr-objdump -S $(ELF) > $(OBJDIR)/esc.asm
 	avr-objdump -t $(ELF) > $(OBJDIR)/esc.sym
+	avr-objdump -j .bss -j .data -t $(ELF) | grep 00 |sort > $(OBJDIR)/ram.txt # show ram usage
 	avr-objcopy -j .text -j .data -j .rodata -O ihex $(ELF) $(HEX)
 
 CFLAGS=-mmcu=$(MCU) -D__AVR_DEV_LIB_NAME__=tn1614 -Os -Wall
