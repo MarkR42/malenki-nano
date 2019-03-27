@@ -31,7 +31,7 @@ void vsense_init()
 
 }
 
-static const uint32_t vsense_period = 200; // Centiseconds
+static const uint32_t vsense_period = 300; // Centiseconds
 static uint32_t last_vsense_tickcount = 0;
 
 void vsense_loop()
@@ -48,9 +48,12 @@ void vsense_loop()
         {
             uint16_t val = ADC0.RES; // 0..1023
             // Scale to give voltage in millivolts
-            uint32_t vsense_mv __attribute__((unused)) = (((uint32_t) val) * 4340) / 1023;
+            uint32_t vsense_mv __attribute__((unused)) = (((uint32_t) val) * 4300) / 1023;
+            // This is the voltage of the pin, we need to scale it up because we have
+            // A potential divider in circuit with 10k and 33k resistors to gnd and +v
+            vsense_mv = (vsense_mv * (10+33)) / 10;
             // Print some debug info  (which is annoying)
-            // diag_println("vsense_mv=%08ld", vsense_mv);
+            diag_println("battery voltage=%05ld mv", vsense_mv);
         }
         last_vsense_tickcount = now;
     }

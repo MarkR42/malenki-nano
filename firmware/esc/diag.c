@@ -32,4 +32,14 @@ void diag_println(const char * fmt, ...)
 	diag_puts("\r\n");
 }
 
+void diag_print(const char * fmt, ...)
+{
+	static char buf[DIAG_BUFSIZE];
+	va_list ap;
+	va_start(ap, fmt);
+	vsnprintf(buf, sizeof(buf), fmt, ap);
+	va_end(ap);
+	buf[DIAG_BUFSIZE -1] = '\0'; // ensure null terminated
+	diag_puts(buf);
+}
 

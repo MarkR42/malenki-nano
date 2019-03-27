@@ -139,3 +139,10 @@ void motors_loop()
 {
 
 }
+
+void motors_all_off()
+{
+    set_motor_direction_duty(MOTOR_WEAPON,0);
+    set_motor_direction_duty(MOTOR_LEFT,0);
+    set_motor_direction_duty(MOTOR_RIGHT,0);
+}
