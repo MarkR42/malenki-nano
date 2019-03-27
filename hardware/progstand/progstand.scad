@@ -33,9 +33,9 @@ module pogo_pins() {
 }
 
 module pogo_pins_surround() {
-    w = 5 * 2.54;
-    h = 4.0;
-    translate([pogo_offset_x + (1.5 * 2.54), board_height - pogo_offset_y])
+    w = 6 * 2.54;
+    h = 5.0;
+    translate([pogo_offset_x + (2 * 2.54), board_height - pogo_offset_y])
         square([w,h], center=true);
 }
 
