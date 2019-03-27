@@ -10,6 +10,9 @@
 #include <string.h>
 #include <stdlib.h>
 
+#define F_CPU 3333333 /* 20MHz / 6(default prescale) */
+#include <util/delay.h>
+
 // Our global state
 volatile rxin_state_t rxin_state;
 
@@ -100,6 +103,8 @@ void rxin_init()
     rxin_init_hw();
 }
 
+static volatile uint16_t last_pulse_len_ticks;
+
 ISR(TCB0_INT_vect)
 {
     // Received when the rx pulse pin goes low.
@@ -116,6 +121,7 @@ ISR(TCB0_INT_vect)
     // whatever the divider is set to,
     // so about 1.66mhz
     uint16_t pulse_len_us = ((uint32_t) pulse_len) * 100 / 166;
+    last_pulse_len_ticks = pulse_len;
     rxin_state.last_pulse_len = pulse_len_us;
     if ((pulse_len_us >= SYNC_PULSE_MIN) && (pulse_len_us < SYNC_PULSE_MAX))
     {
@@ -146,6 +152,32 @@ ISR(TCB0_INT_vect)
     }
 }
 
+static void special_test_tcb() {
+    diag_println("Special tcb test routine");
+    // allocate a stack buffer and clear it.
+    uint16_t buf[50];
+    memset(buf, 0, sizeof(buf));
+    // Wait for pulse to go low
+    uint8_t bm = 1 <<2;
+    while ( PORTA.IN & bm);
+    // Now debug write the value of the timer
+    // Keep spitting out the value of the timer until the pin goes back low
+    for (uint8_t n=0; n<50; n++) {
+        buf[n] = TCB0.CNT;
+        if (! (PORTA.IN & bm)) break;
+        _delay_us(50);
+    }
+    uint16_t c1 = TCB0.CCMP;
+    uint16_t c2 = last_pulse_len_ticks;
+    uint16_t c3 = rxin_state.last_pulse_len;
+    diag_println("CCMP was %04d", c1);
+    diag_println("last_pulse was %04d", c2);
+    diag_println("last_pulse in ms was %04d", c3);
+    for (uint8_t n=0; n<50; n++) {
+        diag_println("%04d", buf[n]);
+    }
+}
+
 static void handle_got_signal(uint32_t now) {
     // Called when we first get a signal.
     rxin_state.got_signal = true;
@@ -160,6 +192,7 @@ static void handle_got_signal(uint32_t now) {
         rxin_state.pulse_lengths[CHANNEL_INDEX_WEAPON];
     diag_println("Got tx signal, now waiting for calibration.");
     blinky_state.blue_on = true;
+    special_test_tcb();
 }
 
 static void handle_lost_signal(uint32_t now) {
