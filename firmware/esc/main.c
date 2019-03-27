@@ -82,6 +82,7 @@ static void mainloop()
 {
     // int8_t movedir = 4;
     // int16_t speed = 0; // Range -DUTY_MAX to DUTY_MAX
+    blinky_state.blue_on = 1;
 	while (1) {
 		vsense_loop();
         motors_loop();

@@ -34,9 +34,10 @@ void blinky_loop() {
     }
     if (red_on) {
         port->OUTCLR = pin_bm;
-    }
-    if (blue_on) {
-        port->OUTSET = pin_bm;
-    }
+    } else {
+        if (blue_on) {
+            port->OUTSET = pin_bm;
+        }
+    }    
 }
 
