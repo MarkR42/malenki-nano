@@ -3,8 +3,12 @@
 
 #include "diag.h"
 #include "rxin.h"
+#include "motors.h"
+#include "state.h"
+#include "blinky.h"
 
 #include <string.h>
+#include <stdlib.h>
 
 // Our global state
 volatile rxin_state_t rxin_state;
@@ -15,12 +19,16 @@ volatile rxin_state_t rxin_state;
 
 // expected length of a sync pulse.
 const uint16_t SYNC_PULSE_MIN=3000; // us
-const uint16_t SYNC_PULSE_MAX=18000; // us
+const uint16_t SYNC_PULSE_MAX=30000; // us
 // Normal pulse len
 // Allow a little bit of slack for weirdness etc.
-const uint16_t PULSE_MIN=800; // us
+const uint16_t PULSE_MIN=600; // us
 const uint16_t PULSE_MAX=2500; // us
 
+const uint32_t NOSIGNAL_TIME=50; // Centiseconds
+
+// Minimum range of throttle before calibration is considered complete:
+const uint16_t THROTTLE_RANGE_OK=600; // (microseconds)
 /*
 
     Our rx pin has a pull-down resistor. So if it has nothing
@@ -109,7 +117,6 @@ ISR(TCB0_INT_vect)
     // so about 1.66mhz
     uint16_t pulse_len_us = ((uint32_t) pulse_len) * 100 / 166;
     rxin_state.last_pulse_len = pulse_len_us;
-    rxin_state.pulse_count ++;
     if ((pulse_len_us >= SYNC_PULSE_MIN) && (pulse_len_us < SYNC_PULSE_MAX))
     {
         // Got a sync pulse
@@ -125,6 +132,7 @@ ISR(TCB0_INT_vect)
                 rxin_state.pulse_lengths_next[rxin_state.next_channel] = pulse_len_us;
                 rxin_state.next_channel += 1;
                 if (rxin_state.next_channel >= RX_CHANNELS) {
+                    rxin_state.packet_count ++;
                     // Got all channels.
                     // If the rx sends more channels, we ignore them.
                     // We have enough channels now, the rx can send whatever it wants.
@@ -138,9 +146,98 @@ ISR(TCB0_INT_vect)
     }
 }
 
+static void handle_got_signal(uint32_t now) {
+    // Called when we first get a signal.
+    rxin_state.got_signal = true;
+    rxin_state.running_mode = RUNNING_MODE_CALIBRATION;
+    // init calibration data
+    rxin_state.throttle_max_position = 0;
+    rxin_state.throttle_min_position = 10000;
+    // read the current steering and weapon pos for zero
+    rxin_state.steering_centre_position = 
+        rxin_state.pulse_lengths[CHANNEL_INDEX_STEERING];
+    rxin_state.weapon_centre_position = 
+        rxin_state.pulse_lengths[CHANNEL_INDEX_WEAPON];
+    diag_println("Got tx signal, now waiting for calibration.");
+    blinky_state.blue_on = true;
+}
+
+static void handle_lost_signal(uint32_t now) {
+    // Called when we lose the signal, i.e.
+    // no packets for a while.
+    diag_println("Lost tx signal");
+    rxin_state.got_signal = false;
+    rxin_state.running_mode = RUNNING_MODE_NOSIGNAL;
+    motors_all_off();
+    blinky_state.blue_on = false;
+}
+
+// min / max macros (used below)
+#define MAX(a,b) ((a) > (b) ? a : b)
+#define MIN(a,b) ((a) < (b) ? a : b)
+
+static void handle_data_calibration() {
+    // Called in calibration state.
+        // Do calibration
+        uint16_t throttle = rxin_state.pulse_lengths[CHANNEL_INDEX_THROTTLE];
+        rxin_state.throttle_min_position = MIN(rxin_state.throttle_min_position, throttle);
+        rxin_state.throttle_max_position = MAX(rxin_state.throttle_max_position, throttle);
+        rxin_state.throttle_centre_position = 
+            (rxin_state.throttle_min_position + rxin_state.throttle_max_position) / 2;
+        // Determine if calibration is finished?
+        int16_t throttlediff = (int16_t)throttle - (int16_t)rxin_state.throttle_centre_position;
+        uint16_t throttlerange = rxin_state.throttle_max_position - rxin_state.throttle_min_position;
+        if ((throttlerange > THROTTLE_RANGE_OK) && (abs(throttlediff) < 20) ) {
+            // Throttle moved up, down and is now centred.
+            diag_println("Calibration finished.");
+            rxin_state.running_mode = RUNNING_MODE_READY;
+        }
+}
+
+static void handle_data_ready() {
+    // get signed throttle, steering data etc
+    int16_t rel_throttle = (int16_t) rxin_state.pulse_lengths[CHANNEL_INDEX_THROTTLE] - 
+        (int16_t) rxin_state.throttle_centre_position;
+    int16_t rel_steering = (int16_t) rxin_state.pulse_lengths[CHANNEL_INDEX_STEERING] - 
+        (int16_t) rxin_state.steering_centre_position;
+    // Scale the throttle and steering data...
+    if (rxin_state.debug_count == 0) {
+        diag_println("ready: thr: %04d steer: %04d",
+            rel_throttle, rel_steering);
+    }
+    // TODO: Actually drive the motors
+}
+
+static void handle_stick_data() {
+    // Process the data in rxin_state.pulse_lengths
+    // Called every time we have new data.
+    uint32_t now = get_tickcount();
+    if (! rxin_state.got_signal) {
+        handle_got_signal(now);
+    }
+    rxin_state.last_signal_time = now;
+    if (rxin_state.running_mode == RUNNING_MODE_READY) {
+        handle_data_ready();
+    }
+    if (rxin_state.running_mode == RUNNING_MODE_CALIBRATION) {
+        handle_data_calibration();
+    }
+
+    if (rxin_state.debug_count > 0) {
+        rxin_state.debug_count -= 1;
+    } else {
+        rxin_state.debug_count = 50;
+        diag_puts("rxin:");
+        for (int i=0; i< RX_CHANNELS; i++) {
+            diag_print(" chan:%d %05d", i, rxin_state.pulse_lengths[i]);
+        }
+        diag_puts("\r\n");
+    }
+}
+
 void rxin_loop()
 {
-    // put rx logic here
+    // check cppm pulses:
     if (rxin_state.pulses_valid) {
         // Great! read the pulses.
         // Avoid race condition - take a copy with irq disabled.
@@ -149,15 +246,16 @@ void rxin_loop()
         // clear valid flag so we do not do the same work again.
         rxin_state.pulses_valid = 0;
         sei(); // interrupts on
-        // TODO: actually handle the pwm data.
-        if (rxin_state.debug_count > 0) {
-            rxin_state.debug_count -= 1;
-        } else {
-            rxin_state.debug_count = 50;
-            for (int i=0; i< RX_CHANNELS; i++) {
-                diag_println("rx:%d %05d", i, rxin_state.pulse_lengths[i]);
+        handle_stick_data();
+    } else {
+        if (rxin_state.got_signal)  {
+            uint32_t now = get_tickcount();
+            uint32_t nosig_time = (now - rxin_state.last_signal_time);
+            if (nosig_time > NOSIGNAL_TIME) {
+                handle_lost_signal(now);
             }
         }
     }
+    
 }
 

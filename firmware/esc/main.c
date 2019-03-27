@@ -56,22 +56,15 @@ uint32_t get_tickcount()
 }
 
 static uint32_t last_test_tickcount=0;
-static int pulsewidth = 0;
 
 static void test_loop()
 {
     // Do a few testing things, periodically
     uint32_t now = get_tickcount();
     uint32_t age = now - last_test_tickcount;
-    if (age > 100) {
-		diag_println("ticks: %08ld", master_state.tickcount);
-		diag_println("last_pulse_len: %06d pulse_count: %06d next_channel: %d", 
-			(int) rxin_state.last_pulse_len, (int) rxin_state.pulse_count, (int) rxin_state.next_channel);
-		pulsewidth += 10;
-		if (pulsewidth > 180) {
-			pulsewidth = 0;
-		}
-		TCA0.SPLIT.HCMP0 = pulsewidth;
+    if (age > 200) {
+		diag_println("ticks: %08ld packets: %06d", master_state.tickcount,
+			(int) rxin_state.packet_count);
 
         last_test_tickcount = now;
     }    
@@ -82,7 +75,6 @@ static void mainloop()
 {
     // int8_t movedir = 4;
     // int16_t speed = 0; // Range -DUTY_MAX to DUTY_MAX
-    blinky_state.blue_on = 1;
 	while (1) {
 		vsense_loop();
         motors_loop();

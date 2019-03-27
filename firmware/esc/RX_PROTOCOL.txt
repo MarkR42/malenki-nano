@@ -63,7 +63,7 @@ CHANNEL NUMBERS / ASSIGNMENT
 
 I don't know if there is a standard. It's not clear.
 
-index=0 (channel 1?) = Steering
+index=0 (channel 1) = Steering
 index=1 (channel 2) = (elevator) - use for weapon
 index=2 (channel 3) = throttle
 index=3 - another thing

@@ -14,6 +14,8 @@
 
 nvconfig_state_t nvconfig_state;
 
+EEMEM nvconfig_state_t state_in_eeprom;
+
 static void * eeprom_addr = (void *) 0;
 
 void nvconfig_init() {
