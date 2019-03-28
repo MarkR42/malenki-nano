@@ -15,7 +15,9 @@ typedef struct {
     int8_t next_channel; // The next channel we expect a pulse
     uint16_t pulse_lengths_next[RX_CHANNELS]; // Currently reading data
     uint16_t pulse_lengths[RX_CHANNELS]; // Good data
-    bool pulses_valid; // Flag - are the pulses valid
+    bool pulses_valid; // Flag - are the pulses valid (usable)
+    // pulses_valid false = pulses have been read already, new ones can be put in.
+    // pulses_valid true = pulses are valid and ready to use.
     uint32_t last_valid_tickcount;
     uint16_t debug_count;
 

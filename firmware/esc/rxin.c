@@ -26,7 +26,7 @@ const uint16_t SYNC_PULSE_MIN=3000; // us
 const uint16_t SYNC_PULSE_MAX=30000; // us
 // Normal pulse len
 // Allow a little bit of slack for weirdness etc.
-const uint16_t PULSE_MIN=600; // us
+const uint16_t PULSE_MIN=500; // us
 const uint16_t PULSE_MAX=2500; // us
 
 const uint32_t NOSIGNAL_TIME=50; // Centiseconds
@@ -106,6 +106,16 @@ void rxin_init()
 
 static volatile uint16_t last_pulse_len_ticks;
 
+static uint16_t scale_pulse(uint16_t pulse_ticks)
+{
+    // Convert ticks to microseconds.
+    // ticks are about 1.666 times faster than microseconds.
+    // We do not want to use the divide routine, so do some fixed-point trick.
+    const uint32_t scaler = (128 * 100) / 166;
+    uint32_t temp = (uint32_t) pulse_ticks * scaler;
+    return (temp >> 7); // divide by 128 the fast way
+}
+
 ISR(TCB0_INT_vect)
 {
     // Received when the rx pulse pin goes low.
@@ -121,7 +131,7 @@ ISR(TCB0_INT_vect)
     // This will be in clock units, which is 3.333mhz divided by
     // whatever the divider is set to,
     // so about 1.66mhz
-    uint16_t pulse_len_us = ((uint32_t) pulse_len) * 100 / 166;
+    uint16_t pulse_len_us = scale_pulse(pulse_len);
     last_pulse_len_ticks = pulse_len;
     rxin_state.last_pulse_len = pulse_len_us;
     if ((pulse_len_us >= SYNC_PULSE_MIN) && (pulse_len_us < SYNC_PULSE_MAX))
@@ -130,8 +140,6 @@ ISR(TCB0_INT_vect)
         // expect next channel 0.
         // pulses are not yet valid.
         rxin_state.next_channel = 0;
-        // Clear pulse_lengths_next
-        memset((void *) rxin_state.pulse_lengths_next, 0, sizeof(rxin_state.pulse_lengths_next));
     } else {
         if ((pulse_len_us >= PULSE_MIN) && (pulse_len_us < PULSE_MAX)) {
             // Got a normal pulse
@@ -140,42 +148,24 @@ ISR(TCB0_INT_vect)
                 rxin_state.next_channel += 1;
                 if (rxin_state.next_channel >= RX_CHANNELS) {
                     rxin_state.packet_count ++;
+                    // If pulses_valid is true already - we should drop the packet.
+                    // If pulses_valid is false, we copy pulses next 
+                    if (rxin_state.pulses_valid) {
+                        // Oops dropped packet  
+                    } else {
+                        // good packet.
+                        rxin_state.pulses_valid = true; // tell main loop that the data are valid.
+                        memcpy((void *) rxin_state.pulse_lengths, (void *) rxin_state.pulse_lengths_next, sizeof(rxin_state.pulse_lengths));
+                    }
                     // Got all channels.
                     // If the rx sends more channels, we ignore them.
                     // We have enough channels now, the rx can send whatever it wants.
-                    rxin_state.pulses_valid = true; // tell main loop that the data are valid.
                     rxin_state.next_channel = CHANNEL_SYNC;
                 } else {
                     // Not valid yet.
                 }
             }
         }
-    }
-}
-
-static void special_test_tcb() {
-    diag_println("Special tcb test routine");
-    // allocate a stack buffer and clear it.
-    uint16_t buf[50];
-    memset(buf, 0, sizeof(buf));
-    // Wait for pulse to go low
-    uint8_t bm = 1 <<2;
-    while ( PORTA.IN & bm);
-    // Now debug write the value of the timer
-    // Keep spitting out the value of the timer until the pin goes back low
-    for (uint8_t n=0; n<50; n++) {
-        buf[n] = TCB0.CNT;
-        if (! (PORTA.IN & bm)) break;
-        _delay_us(50);
-    }
-    uint16_t c1 = TCB0.CCMP;
-    uint16_t c2 = last_pulse_len_ticks;
-    uint16_t c3 = rxin_state.last_pulse_len;
-    diag_println("CCMP was %04d", c1);
-    diag_println("last_pulse was %04d", c2);
-    diag_println("last_pulse in ms was %04d", c3);
-    for (uint8_t n=0; n<50; n++) {
-        diag_println("%04d", buf[n]);
     }
 }
 
@@ -193,7 +183,6 @@ static void handle_got_signal(uint32_t now) {
         rxin_state.pulse_lengths[CHANNEL_INDEX_WEAPON];
     diag_println("Got tx signal, now waiting for calibration.");
     blinky_state.blue_on = true;
-    special_test_tcb();
 }
 
 static void handle_lost_signal(uint32_t now) {
@@ -277,14 +266,12 @@ void rxin_loop()
 {
     // check cppm pulses:
     if (rxin_state.pulses_valid) {
-        // Great! read the pulses.
-        // Avoid race condition - take a copy with irq disabled.
-        cli(); // interrupts off
-        memcpy((void *) rxin_state.pulse_lengths, (void *) rxin_state.pulse_lengths_next, sizeof(rxin_state.pulse_lengths));
-        // clear valid flag so we do not do the same work again.
-        rxin_state.pulses_valid = 0;
-        sei(); // interrupts on
+        // Great! we can read the pulses without race condition,
+        // the irq will not update them until pulses_valid is false.
+        // If another packet arrives while we are in handle_stick_data,
+        // it gets dropped.
         handle_stick_data();
+        rxin_state.pulses_valid = 0; // Allow new packet.
     } else {
         if (rxin_state.got_signal)  {
             uint32_t now = get_tickcount();
