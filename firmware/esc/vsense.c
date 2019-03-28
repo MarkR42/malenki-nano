@@ -34,6 +34,8 @@ void vsense_init()
 static const uint32_t vsense_period = 300; // Centiseconds
 static uint32_t last_vsense_tickcount = 0;
 
+static int cells_count = 0;
+
 void vsense_loop()
 {
     // called every loop.
@@ -53,7 +55,32 @@ void vsense_loop()
             // A potential divider in circuit with 10k and 33k resistors to gnd and +v
             vsense_mv = (vsense_mv * (10+33)) / 10;
             // Print some debug info  (which is annoying)
-            diag_println("battery voltage=%05ld mv", vsense_mv);
+            // Calculate the number of cells
+            // Do this only during startup.
+            if (now < 700) {
+                if (vsense_mv > 9000) {
+                    cells_count = 3;
+                } else if (vsense_mv > 5800) {
+                    cells_count = 2;
+                } else {
+                    cells_count = 0;
+                }
+                if (cells_count > 0) {
+                    diag_println("Detected %d battery cells", cells_count); 
+                } else {
+                    diag_println("Battery voltage too low, running off psu?");
+                }
+            }
+            if (cells_count > 0) 
+            {
+                // Only do battery diagnostics if we have a 2S or 3S pack.
+                diag_println("battery voltage=%05ld mv", vsense_mv);
+                int warn_voltage = cells_count  * 3400;
+                if (vsense_mv < warn_voltage) 
+                    diag_println("Warning: low battery");
+                // TODO: flash lights if low battery
+                // TODO: shut down the system if battery too low.
+            }
         }
         last_vsense_tickcount = now;
     }

@@ -6,6 +6,7 @@
 #include "motors.h"
 #include "state.h"
 #include "blinky.h"
+#include "mixing.h"
 
 #include <string.h>
 #include <stdlib.h>
@@ -203,6 +204,7 @@ static void handle_lost_signal(uint32_t now) {
     rxin_state.running_mode = RUNNING_MODE_NOSIGNAL;
     motors_all_off();
     blinky_state.blue_on = false;
+    blinky_state.flash_count = 1;
 }
 
 // min / max macros (used below)
@@ -224,6 +226,7 @@ static void handle_data_calibration() {
             // Throttle moved up, down and is now centred.
             diag_println("Calibration finished.");
             rxin_state.running_mode = RUNNING_MODE_READY;
+            blinky_state.flash_count = 0; // Ready
         }
 }
 
@@ -233,12 +236,14 @@ static void handle_data_ready() {
         (int16_t) rxin_state.throttle_centre_position;
     int16_t rel_steering = (int16_t) rxin_state.pulse_lengths[CHANNEL_INDEX_STEERING] - 
         (int16_t) rxin_state.steering_centre_position;
-    // Scale the throttle and steering data...
     if (rxin_state.debug_count == 0) {
         diag_println("ready: thr: %04d steer: %04d",
             rel_throttle, rel_steering);
     }
-    // TODO: Actually drive the motors
+    int16_t rel_weapon = (int16_t) rxin_state.pulse_lengths[CHANNEL_INDEX_WEAPON] -
+        (int16_t) rxin_state.weapon_centre_position;
+    // Call mixing to actually drive the motors
+    mixing_drive_motors(rel_throttle, rel_steering, rel_weapon);
 }
 
 static void handle_stick_data() {

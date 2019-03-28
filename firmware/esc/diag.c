@@ -20,9 +20,11 @@ void diag_puts(const char *str)
 }
 
 #define DIAG_BUFSIZE 80
+
+static char buf[DIAG_BUFSIZE];
+
 void diag_println(const char * fmt, ...)
 {
-	static char buf[DIAG_BUFSIZE];
 	va_list ap;
 	va_start(ap, fmt);
 	vsnprintf(buf, sizeof(buf), fmt, ap);
@@ -34,7 +36,6 @@ void diag_println(const char * fmt, ...)
 
 void diag_print(const char * fmt, ...)
 {
-	static char buf[DIAG_BUFSIZE];
 	va_list ap;
 	va_start(ap, fmt);
 	vsnprintf(buf, sizeof(buf), fmt, ap);
