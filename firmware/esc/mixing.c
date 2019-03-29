@@ -1,6 +1,7 @@
 #include <stdint.h>
 
 #include "motors.h"
+#include "diag.h"
 
 static int signedclamp(int n, int maxval)
 {
@@ -17,6 +18,8 @@ static int deadzone(int n, int deadzone)
     return n;
 }
 
+static uint16_t diag_count=0;
+
 void mixing_drive_motors(int16_t throttle, int16_t steering, int16_t weapon)
 {
     // inputs are already calibrated to centre on zero.
@@ -31,13 +34,13 @@ void mixing_drive_motors(int16_t throttle, int16_t steering, int16_t weapon)
     throttle = signedclamp(throttle, 100);  
     steering = signedclamp(steering, 100);  
     
-    throttle = deadzone(throttle, 5);    
-    steering = deadzone(steering, 5);    
+    throttle = deadzone(throttle, 10);    
+    steering = deadzone(steering, 10);    
     // Scale steering further, to stop steering too fast.
     steering = steering / 2;
     
-    int right = throttle + steering;   
-    int left = throttle - steering;   
+    int left = throttle + steering;   
+    int right = throttle - steering;   
    
     // left / right should now have range -150 ... 150
     // Clamp them again at 100
@@ -49,11 +52,16 @@ void mixing_drive_motors(int16_t throttle, int16_t steering, int16_t weapon)
     
     // Fix up weapon to correct range 
     weapon = (weapon * 20) / 45; // -200 ... 200
-    weapon = deadzone(weapon, 10);
+    weapon = deadzone(weapon, 20);
     weapon = signedclamp(weapon, 200);
 
     set_motor_direction_duty(MOTOR_WEAPON, weapon);
     set_motor_direction_duty(MOTOR_LEFT, left);
     set_motor_direction_duty(MOTOR_RIGHT, right);
-
+    if (diag_count == 0) {
+        diag_count = 10;
+        diag_println("L: %03d R: %03d W: %03d", left, right, weapon);
+    } else {
+        --diag_count;
+    }
 }

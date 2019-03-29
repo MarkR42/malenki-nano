@@ -7,9 +7,14 @@ void rxin_loop();
 // Minimum number of channels required
 #define RX_CHANNELS 6
 
+// Ibus packet length is 2* channels + 4
+#define IBUS_DATA_LEN_MIN ((RX_CHANNELS * 2) +4)
+#define IBUS_DATA_LEN_MAX 32
+
 typedef struct {
 	uint16_t last_pulse_len;
 	uint16_t packet_count;
+    bool detected_serial_data; // Set this to true if we ever detect serial data.
 
     // Used for decoding PPM:
     int8_t next_channel; // The next channel we expect a pulse
@@ -20,6 +25,12 @@ typedef struct {
     // pulses_valid true = pulses are valid and ready to use.
     uint32_t last_valid_tickcount;
     uint16_t debug_count;
+
+    // Used for decoding serial data.
+    uint8_t ibus_len; // Length byte, if one was received
+    uint8_t serial_previous_byte; // Just the previous byte
+    uint8_t ibus_buf[IBUS_DATA_LEN_MAX];
+    uint8_t ibus_index; // index of next byte to be received in ibus_buf
 
     // State data 
     bool got_signal; // If we have a signal NOW

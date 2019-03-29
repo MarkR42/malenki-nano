@@ -89,7 +89,72 @@ static void rxin_init_hw()
 	uint32_t clk_per_hz = 3333L * 1000; // CLK_PER after prescaler in hz
 	uint16_t baud_param = (64 * clk_per_hz) / (16 * want_baud_hz);
 	USART0.BAUD = baud_param;
-        USART0.CTRLB = USART_TXEN_bm ; // Start Transmitter
+        USART0.CTRLB = USART_TXEN_bm | USART_RXEN_bm; // Start Transmitter and receiver
+    // Enable interrupts from the usart rx
+    USART0.CTRLA |= USART_RXCIE_bm;
+}
+
+static bool check_ibus_checksum()
+{
+    uint16_t chksum = 0xffff;
+    uint8_t ibus_len = rxin_state.ibus_len;
+    for (uint8_t i=0; i< ibus_len-2; i++) {
+        chksum -= rxin_state.ibus_buf[i];
+    }
+    // Get checksum from last 2 bytes
+    uint16_t rxsum = * ((uint16_t *) (rxin_state.ibus_buf + (ibus_len - 2)));
+    return chksum == rxsum;
+}
+
+// Interrupt handler for byte received from USART
+ISR(USART0_RXC_vect)
+{
+    // Reading the byte automatically clears irq?
+    uint8_t b = USART0.RXDATAL;
+    // handle ibus protocol. We expect command 0x40
+    if (rxin_state.ibus_len == 0) {
+        // Start of ibus
+        if (b == 0x40) { // cmd byte
+            // Save length
+            uint8_t len = rxin_state.serial_previous_byte;
+            if ((len <= IBUS_DATA_LEN_MAX) && (len >= IBUS_DATA_LEN_MIN)) {
+                // Length seems reasonable.
+                // Write first 2 bytes
+                rxin_state.ibus_buf[0] = rxin_state.serial_previous_byte;
+                rxin_state.ibus_buf[1] = b;
+                rxin_state.ibus_len = len; // length including first two bytes.
+                rxin_state.ibus_index = 2; // already seen first two bytes length and cmd
+                rxin_state.detected_serial_data = true;
+            }
+            // If not reasonable length - ibus_len remains zero.
+        }
+    } else {
+        // Part of ibus packet.
+        rxin_state.ibus_buf[rxin_state.ibus_index] = b;
+        rxin_state.ibus_index += 1;
+        if (rxin_state.ibus_index == rxin_state.ibus_len) {
+            // ibus packet finished.
+            if (rxin_state.pulses_valid) {
+                // Drop packet, previous packet unprocessed.
+            } else {
+                // Check pulses are reasonable.
+                bool good=check_ibus_checksum();
+
+                // handle ibus data.
+                for (uint8_t n = 0; n < RX_CHANNELS; n++) {
+                    // decode pulses as 16-bit integers little endian
+                    uint16_t pulse = *( (uint16_t *) (rxin_state.ibus_buf + 2 + 2*n));
+                    rxin_state.pulse_lengths[n] = pulse;
+                }
+                // good packet
+                rxin_state.pulses_valid = good; // tell main loop that the data are valid.
+            }
+            // reset state for next
+            rxin_state.ibus_index = 0;
+            rxin_state.ibus_len = 0;
+        }
+    }
+    rxin_state.serial_previous_byte = b;
 }
 
 static void rxin_init_state()
@@ -99,7 +164,7 @@ static void rxin_init_state()
 }
 
 void rxin_init()
-{
+    {
     rxin_init_state();
     rxin_init_hw();
 }
@@ -116,6 +181,18 @@ static uint16_t scale_pulse(uint16_t pulse_ticks)
     return (temp >> 7); // divide by 128 the fast way
 }
 
+/*
+ * NOTE: This ISR can take quite a long time because it does some integer maths.
+ * So we try to quit early.
+ *
+ * Also, if the serial data is active, these IRQs are useless and can cause
+ * missed bytes in the serial protocol (=very bad). So we disable the TCB irqs
+ * if we see (plausible) serial data.
+ *
+ * This permanently disables PPM mode, once we see some serial data. If the user
+ * wants to switch from serial to ppm mode, they need to power-cycle the device.
+ * We need to make sure we don't activate serial mode accidentally when using PPM mode.
+ */
 ISR(TCB0_INT_vect)
 {
     // Received when the rx pulse pin goes low.
@@ -125,7 +202,12 @@ ISR(TCB0_INT_vect)
     // Early exit: quickly ignore very short pulses.
     // This is because another short pulse might happen, we do not want
     // to waste time in interrupts.
-    if (pulse_len < 20) {
+    if (pulse_len < 100) {
+        if (rxin_state.detected_serial_data) {
+            // We seem to have serial data,
+            // Now we can permanently disable the tcb0 interrupt.
+	        TCB0.INTCTRL = 0; // this ISR should never be called again.
+        }
         return;
     }
     // This will be in clock units, which is 3.333mhz divided by

@@ -27,12 +27,15 @@ This is the protocol used by Futaba receivers, servos, and some other things. It
 
 Some details are here:
 https://os.mbed.com/users/Digixx/notebook/futaba-s-bus-controlled-by-mbed/
+https://github.com/uzh-rpg/rpg_quadrotor_control/wiki/SBUS-Protocol
+
+NOTE: s-bus is "upside down" - normally low, and uses low=0, high=1.
 
 TURNIGY / HOBBYKING / FLYSKY - I-BUS
 ------------
 
 This is a different serial protocol, it uses a bit rate of 115,200 baud.
-
+I-bus is "the usual orientation", normally high, low=1, high=0
 
 In principle we might be able to auto-detect s-bus or i-bus.
 
@@ -41,6 +44,18 @@ The pulses will be much shorter on the serial protocols.
 Unfortunately s-bus and i-bus do not use the same bit rate, and it's probably not close
 enough to work. We could detect known patterns which might appear if the wrong
 bit rate is selected and switch protocols?
+
+I-bus packets:
+
+1 byte length (usually 0x20)
+1 byte command (0x40 = tx data)
+followed by 2 bytes per channel - typically 14 channels
+2 bytes = checksum
+
+IBUS PROBLEMS:
+* rx continues sending pulses after signal is lost.
+    - Maybe there is a channel with signal quality sent?
+    - Can we detect other types of packet with signal info in?
 
 SERIAL PROTOCOLS
 --------
