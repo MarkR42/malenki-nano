@@ -6,9 +6,13 @@
 #include "motors.h"
 #include "state.h"
 #include "blinky.h"
+#include "mixing.h"
 
 #include <string.h>
 #include <stdlib.h>
+
+#define F_CPU 3333333 /* 20MHz / 6(default prescale) */
+#include <util/delay.h>
 
 // Our global state
 volatile rxin_state_t rxin_state;
@@ -22,7 +26,7 @@ const uint16_t SYNC_PULSE_MIN=3000; // us
 const uint16_t SYNC_PULSE_MAX=30000; // us
 // Normal pulse len
 // Allow a little bit of slack for weirdness etc.
-const uint16_t PULSE_MIN=600; // us
+const uint16_t PULSE_MIN=500; // us
 const uint16_t PULSE_MAX=2500; // us
 
 const uint32_t NOSIGNAL_TIME=50; // Centiseconds
@@ -85,7 +89,72 @@ static void rxin_init_hw()
 	uint32_t clk_per_hz = 3333L * 1000; // CLK_PER after prescaler in hz
 	uint16_t baud_param = (64 * clk_per_hz) / (16 * want_baud_hz);
 	USART0.BAUD = baud_param;
-        USART0.CTRLB = USART_TXEN_bm ; // Start Transmitter
+        USART0.CTRLB = USART_TXEN_bm | USART_RXEN_bm; // Start Transmitter and receiver
+    // Enable interrupts from the usart rx
+    USART0.CTRLA |= USART_RXCIE_bm;
+}
+
+static bool check_ibus_checksum()
+{
+    uint16_t chksum = 0xffff;
+    uint8_t ibus_len = rxin_state.ibus_len;
+    for (uint8_t i=0; i< ibus_len-2; i++) {
+        chksum -= rxin_state.ibus_buf[i];
+    }
+    // Get checksum from last 2 bytes
+    uint16_t rxsum = * ((uint16_t *) (rxin_state.ibus_buf + (ibus_len - 2)));
+    return chksum == rxsum;
+}
+
+// Interrupt handler for byte received from USART
+ISR(USART0_RXC_vect)
+{
+    // Reading the byte automatically clears irq?
+    uint8_t b = USART0.RXDATAL;
+    // handle ibus protocol. We expect command 0x40
+    if (rxin_state.ibus_len == 0) {
+        // Start of ibus
+        if (b == 0x40) { // cmd byte
+            // Save length
+            uint8_t len = rxin_state.serial_previous_byte;
+            if ((len <= IBUS_DATA_LEN_MAX) && (len >= IBUS_DATA_LEN_MIN)) {
+                // Length seems reasonable.
+                // Write first 2 bytes
+                rxin_state.ibus_buf[0] = rxin_state.serial_previous_byte;
+                rxin_state.ibus_buf[1] = b;
+                rxin_state.ibus_len = len; // length including first two bytes.
+                rxin_state.ibus_index = 2; // already seen first two bytes length and cmd
+                rxin_state.detected_serial_data = true;
+            }
+            // If not reasonable length - ibus_len remains zero.
+        }
+    } else {
+        // Part of ibus packet.
+        rxin_state.ibus_buf[rxin_state.ibus_index] = b;
+        rxin_state.ibus_index += 1;
+        if (rxin_state.ibus_index == rxin_state.ibus_len) {
+            // ibus packet finished.
+            if (rxin_state.pulses_valid) {
+                // Drop packet, previous packet unprocessed.
+            } else {
+                // Check pulses are reasonable.
+                bool good=check_ibus_checksum();
+
+                // handle ibus data.
+                for (uint8_t n = 0; n < RX_CHANNELS; n++) {
+                    // decode pulses as 16-bit integers little endian
+                    uint16_t pulse = *( (uint16_t *) (rxin_state.ibus_buf + 2 + 2*n));
+                    rxin_state.pulse_lengths[n] = pulse;
+                }
+                // good packet
+                rxin_state.pulses_valid = good; // tell main loop that the data are valid.
+            }
+            // reset state for next
+            rxin_state.ibus_index = 0;
+            rxin_state.ibus_len = 0;
+        }
+    }
+    rxin_state.serial_previous_byte = b;
 }
 
 static void rxin_init_state()
@@ -95,11 +164,35 @@ static void rxin_init_state()
 }
 
 void rxin_init()
-{
+    {
     rxin_init_state();
     rxin_init_hw();
 }
 
+static volatile uint16_t last_pulse_len_ticks;
+
+static uint16_t scale_pulse(uint16_t pulse_ticks)
+{
+    // Convert ticks to microseconds.
+    // ticks are about 1.666 times faster than microseconds.
+    // We do not want to use the divide routine, so do some fixed-point trick.
+    const uint32_t scaler = (128 * 100) / 166;
+    uint32_t temp = (uint32_t) pulse_ticks * scaler;
+    return (temp >> 7); // divide by 128 the fast way
+}
+
+/*
+ * NOTE: This ISR can take quite a long time because it does some integer maths.
+ * So we try to quit early.
+ *
+ * Also, if the serial data is active, these IRQs are useless and can cause
+ * missed bytes in the serial protocol (=very bad). So we disable the TCB irqs
+ * if we see (plausible) serial data.
+ *
+ * This permanently disables PPM mode, once we see some serial data. If the user
+ * wants to switch from serial to ppm mode, they need to power-cycle the device.
+ * We need to make sure we don't activate serial mode accidentally when using PPM mode.
+ */
 ISR(TCB0_INT_vect)
 {
     // Received when the rx pulse pin goes low.
@@ -109,13 +202,19 @@ ISR(TCB0_INT_vect)
     // Early exit: quickly ignore very short pulses.
     // This is because another short pulse might happen, we do not want
     // to waste time in interrupts.
-    if (pulse_len < 20) {
+    if (pulse_len < 100) {
+        if (rxin_state.detected_serial_data) {
+            // We seem to have serial data,
+            // Now we can permanently disable the tcb0 interrupt.
+	        TCB0.INTCTRL = 0; // this ISR should never be called again.
+        }
         return;
     }
     // This will be in clock units, which is 3.333mhz divided by
     // whatever the divider is set to,
     // so about 1.66mhz
-    uint16_t pulse_len_us = ((uint32_t) pulse_len) * 100 / 166;
+    uint16_t pulse_len_us = scale_pulse(pulse_len);
+    last_pulse_len_ticks = pulse_len;
     rxin_state.last_pulse_len = pulse_len_us;
     if ((pulse_len_us >= SYNC_PULSE_MIN) && (pulse_len_us < SYNC_PULSE_MAX))
     {
@@ -123,8 +222,6 @@ ISR(TCB0_INT_vect)
         // expect next channel 0.
         // pulses are not yet valid.
         rxin_state.next_channel = 0;
-        // Clear pulse_lengths_next
-        memset((void *) rxin_state.pulse_lengths_next, 0, sizeof(rxin_state.pulse_lengths_next));
     } else {
         if ((pulse_len_us >= PULSE_MIN) && (pulse_len_us < PULSE_MAX)) {
             // Got a normal pulse
@@ -133,10 +230,18 @@ ISR(TCB0_INT_vect)
                 rxin_state.next_channel += 1;
                 if (rxin_state.next_channel >= RX_CHANNELS) {
                     rxin_state.packet_count ++;
+                    // If pulses_valid is true already - we should drop the packet.
+                    // If pulses_valid is false, we copy pulses next 
+                    if (rxin_state.pulses_valid) {
+                        // Oops dropped packet  
+                    } else {
+                        // good packet.
+                        rxin_state.pulses_valid = true; // tell main loop that the data are valid.
+                        memcpy((void *) rxin_state.pulse_lengths, (void *) rxin_state.pulse_lengths_next, sizeof(rxin_state.pulse_lengths));
+                    }
                     // Got all channels.
                     // If the rx sends more channels, we ignore them.
                     // We have enough channels now, the rx can send whatever it wants.
-                    rxin_state.pulses_valid = true; // tell main loop that the data are valid.
                     rxin_state.next_channel = CHANNEL_SYNC;
                 } else {
                     // Not valid yet.
@@ -170,6 +275,7 @@ static void handle_lost_signal(uint32_t now) {
     rxin_state.running_mode = RUNNING_MODE_NOSIGNAL;
     motors_all_off();
     blinky_state.blue_on = false;
+    blinky_state.flash_count = 1;
 }
 
 // min / max macros (used below)
@@ -191,6 +297,7 @@ static void handle_data_calibration() {
             // Throttle moved up, down and is now centred.
             diag_println("Calibration finished.");
             rxin_state.running_mode = RUNNING_MODE_READY;
+            blinky_state.flash_count = 0; // Ready
         }
 }
 
@@ -200,12 +307,14 @@ static void handle_data_ready() {
         (int16_t) rxin_state.throttle_centre_position;
     int16_t rel_steering = (int16_t) rxin_state.pulse_lengths[CHANNEL_INDEX_STEERING] - 
         (int16_t) rxin_state.steering_centre_position;
-    // Scale the throttle and steering data...
     if (rxin_state.debug_count == 0) {
         diag_println("ready: thr: %04d steer: %04d",
             rel_throttle, rel_steering);
     }
-    // TODO: Actually drive the motors
+    int16_t rel_weapon = (int16_t) rxin_state.pulse_lengths[CHANNEL_INDEX_WEAPON] -
+        (int16_t) rxin_state.weapon_centre_position;
+    // Call mixing to actually drive the motors
+    mixing_drive_motors(rel_throttle, rel_steering, rel_weapon);
 }
 
 static void handle_stick_data() {
@@ -239,14 +348,12 @@ void rxin_loop()
 {
     // check cppm pulses:
     if (rxin_state.pulses_valid) {
-        // Great! read the pulses.
-        // Avoid race condition - take a copy with irq disabled.
-        cli(); // interrupts off
-        memcpy((void *) rxin_state.pulse_lengths, (void *) rxin_state.pulse_lengths_next, sizeof(rxin_state.pulse_lengths));
-        // clear valid flag so we do not do the same work again.
-        rxin_state.pulses_valid = 0;
-        sei(); // interrupts on
+        // Great! we can read the pulses without race condition,
+        // the irq will not update them until pulses_valid is false.
+        // If another packet arrives while we are in handle_stick_data,
+        // it gets dropped.
         handle_stick_data();
+        rxin_state.pulses_valid = 0; // Allow new packet.
     } else {
         if (rxin_state.got_signal)  {
             uint32_t now = get_tickcount();
