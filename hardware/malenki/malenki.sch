@@ -6,8 +6,8 @@ $Descr A4 11693 8268
 encoding utf-8
 Sheet 1 1
 Title "Malenki ESC"
-Date "2019-03-05"
-Rev ""
+Date "2019-03-30"
+Rev "3"
 Comp "Mark Robson"
 Comment1 "DC Electronic speed controller for small combat robot"
 Comment2 "markxr@gmail.com"

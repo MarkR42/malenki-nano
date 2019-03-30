@@ -1,0 +1,37 @@
+Bill of materials
+------
+
+Sourcing
+----
+
+All parts ordered from lcsc.com, except for the attiny1614 microcontroller.
+
+The microcontroller can be sourced from RS or your favourite supplier (digi-key, farnell etc)
+
+Parts
+-----
+
+Ref / LCSC part number / Manufacturer / Manuf. part number / Desc
+U1 / C82940 /  Nanjing Micro One Elec /  ME6210A50PG / 5v voltage regulator
+U2 / NA / Microchip / ATTINY1614 / MCU
+U3,U4,U5 / C92373 /  Wuxi Smart Microelectronics /  rz7899 / Motor driver
+C1 /  C1713 /  Samsung Electro-Mechanics /  CL21A106KOQNNNE / 10uF 16v cap 0805
+C2 / C128353 /  Walsin Tech Corp /  0805B104K250 / 100nF 25V cap 0805
+C3,C4,C5 / C90146 /  Samsung Electro-Mechanics /  22uF 16V cap 1206 
+D1 / C94868 /  Lite-On /  LTST-C170KRKT / Red LED 0805
+D2 / C98222 /  Lite-On /  LTST-C170TBKT / Blue LED 0805
+R1,R6  / C163991 /  Walsin Tech Corp /  WR08X3302FTL / 0805 33k resistor
+R2 / C84376 / YAGEO /  RC0805FR-0710KL / 0805 10k resistor
+R3,R4 / C229164 / YAGEO /  AC0805JR-07220RL  / 0805 220R resistor
+
+PCBs
+----
+
+For maximum current capacity, we should use "2oz" copper. This can be expensive from
+many low volume makers, but:
+
+OSHPARK - give 2oz copper + 0.8mm board for the same price as standard
+(slower turnaround for 2oz copper)
+
+JLCPCB - Very good prices and quick turnaround.
+
