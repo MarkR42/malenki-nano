@@ -29,7 +29,7 @@ const uint16_t SYNC_PULSE_MAX=30000; // us
 const uint16_t PULSE_MIN=500; // us
 const uint16_t PULSE_MAX=2500; // us
 
-const uint32_t NOSIGNAL_TIME=50; // Centiseconds
+const uint32_t NOSIGNAL_TIME=20; // Centiseconds
 
 // Minimum range of throttle before calibration is considered complete:
 const uint16_t THROTTLE_RANGE_OK=600; // (microseconds)
@@ -38,15 +38,53 @@ const uint16_t THROTTLE_RANGE_OK=600; // (microseconds)
     Our rx pin has a pull-down resistor. So if it has nothing
     driving it, it should stay low.
 
-    If we are getting serial (uart) ibus or sbus data, we'd expect
+    If we are getting serial (uart) ibus data, we'd expect
     it to be mostly high with a lot of very short pulses 
     becuase they use baud rates of 100k+, so we'll see very short pulses
     of 10-80 microseconds, maybe longer ones between packets.
+
+    In S-bus the pulses are inverted (normally low, going high for 10us multiples)
 
     If we are getting CPPM data, we expect it to be mostly high
     with long sync pulses (3-18 ms) between normal packets.
 
 */
+
+static void init_serial()
+{
+    // Set serial port for ibus or s-bus. Also enable the port
+    // and enable interrupts.
+    // Note that setting the rx baud rate also sets the 
+    // tx baud rate, which we use for debugging.
+    // (Too bad!)
+	uint32_t want_baud_hz = 115200; // Baud rate
+    if (rxin_state.serial_mode == SERIAL_MODE_IBUS) {
+        // ibus 
+        // Do not invert input
+        PORTA.PIN2CTRL = 0; // all defaults
+	    USART0.CTRLC =
+        	USART_CMODE_ASYNCHRONOUS_gc | // Mode: Asynchronous[default]
+        	USART_PMODE_DISABLED_gc | // Parity: None[default]
+        	USART_SBMODE_1BIT_gc | // StopBit: 1bit[default]
+		    USART_CHSIZE_8BIT_gc; // CharacterSize: 8bit[default]
+    } else {
+        // sbus
+        PORTA.PIN2CTRL = PORT_INVEN_bm; // invert input
+        want_baud_hz = 100000;
+	    USART0.CTRLC =
+        	USART_CMODE_ASYNCHRONOUS_gc | // Mode: Asynchronous[default]
+        	USART_PMODE_EVEN_gc | // Parity: Even
+        	USART_SBMODE_2BIT_gc | // 2 stop bits
+		    USART_CHSIZE_8BIT_gc; // CharacterSize: 8bit[default]
+    }
+	uint32_t clk_per_hz = 3333L * 1000; // CLK_PER after prescaler in hz
+	uint16_t baud_param = (64 * clk_per_hz) / (16 * want_baud_hz);
+	USART0.BAUD = baud_param;
+    USART0.CTRLB = USART_TXEN_bm | USART_RXEN_bm; // Start Transmitter and receiver
+    // Enable interrupts from the usart rx
+    USART0.CTRLA |= USART_RXCIE_bm;
+}
+
 static void rxin_init_hw()
 {
 	// UART0- need to use "alternate" pins 
@@ -79,19 +117,7 @@ static void rxin_init_hw()
 	// Diagnostic uart output	
 	// TxD pin PA1 is used for diag, should be an output
 	PORTA.DIRSET = 1 << 1;
-	// Set baud rate etc
-	USART0.CTRLC =
-        	USART_CMODE_ASYNCHRONOUS_gc | // Mode: Asynchronous[default]
-        	USART_PMODE_DISABLED_gc | // Parity: None[default]
-        	USART_SBMODE_1BIT_gc | // StopBit: 1bit[default]
-		USART_CHSIZE_8BIT_gc; // CharacterSize: 8bit[default]
-	uint32_t want_baud_hz = 115200; // Baud rate
-	uint32_t clk_per_hz = 3333L * 1000; // CLK_PER after prescaler in hz
-	uint16_t baud_param = (64 * clk_per_hz) / (16 * want_baud_hz);
-	USART0.BAUD = baud_param;
-        USART0.CTRLB = USART_TXEN_bm | USART_RXEN_bm; // Start Transmitter and receiver
-    // Enable interrupts from the usart rx
-    USART0.CTRLA |= USART_RXCIE_bm;
+    init_serial(); // Set baud rate etc.
 }
 
 static bool check_ibus_checksum()
@@ -106,11 +132,8 @@ static bool check_ibus_checksum()
     return chksum == rxsum;
 }
 
-// Interrupt handler for byte received from USART
-ISR(USART0_RXC_vect)
+static void handle_byte_ibus(uint8_t b)
 {
-    // Reading the byte automatically clears irq?
-    uint8_t b = USART0.RXDATAL;
     // handle ibus protocol. We expect command 0x40
     if (rxin_state.ibus_len == 0) {
         // Start of ibus
@@ -148,6 +171,9 @@ ISR(USART0_RXC_vect)
                 }
                 // good packet
                 rxin_state.pulses_valid = good; // tell main loop that the data are valid.
+                if (good) {
+                    rxin_state.rx_protocol = RX_PROTOCOL_IBUS;
+                }
             }
             // reset state for next
             rxin_state.ibus_index = 0;
@@ -157,6 +183,90 @@ ISR(USART0_RXC_vect)
     rxin_state.serial_previous_byte = b;
 }
 
+
+static void decode_sbus_channels()
+{
+    // decode the data in sbus_buf
+    // into pulse_lengths
+    uint8_t bitoffset=0;
+    for (uint8_t chan=0; chan<RX_CHANNELS; chan++) {
+        uint16_t pulse=0;
+        for (uint8_t chanbit=0; chanbit < 11; chanbit ++) {
+            // Get the bit at bitoffset
+            // and put it into pulse at chanbit.
+            uint8_t bitmask = 1 << (bitoffset & 0x7) ; 
+            uint8_t byteindex = bitoffset / 8;
+            uint8_t bit = rxin_state.sbus_buf[byteindex + 1] & bitmask;
+            if (bit) {
+                // set corresponding bit to 1
+                pulse |= 1 << chanbit;
+            }
+            bitoffset += 1;
+        }
+        rxin_state.pulse_lengths[chan] = pulse;
+    }
+    // Sbus values are approximately 200-1800 - so a range of 1600 instead of 1000.
+    // scale them accordingly.
+    for (uint8_t chan=0; chan < RX_CHANNELS; chan++) {
+        uint16_t pulse = rxin_state.pulse_lengths[chan];
+        // Check that this multiply doesn't overflow
+        pulse = (pulse * 10)  / 16; // Divide by 16 is optimised to a shift.
+        rxin_state.pulse_lengths[chan] = pulse;
+    }
+}
+
+static void handle_byte_sbus(uint8_t b)
+{
+    if (rxin_state.sbus_index == 0) {
+        // First byte of sbus.
+        if (b == 0x0f) {
+            // great!
+            rxin_state.sbus_buf[0] = b;
+            rxin_state.sbus_index += 1;
+        }
+    } else {
+        rxin_state.sbus_buf[rxin_state.sbus_index] = b;
+        rxin_state.sbus_index ++;
+        if (rxin_state.sbus_index == SBUS_DATA_LEN) {
+            // Got a complete message, is it rubbish?
+            bool good=true;
+            if (rxin_state.sbus_buf[SBUS_DATA_LEN -1] != 0x0) {
+                // Last byte must be zero
+                good=false;
+            }
+            // Plant fake data.
+            if (good) {
+                // stop switching protocol
+                rxin_state.rx_protocol = RX_PROTOCOL_SBUS;
+                rxin_state.detected_serial_data = true;
+            }
+            if (good && ! rxin_state.pulses_valid) {
+                // TODO: decode channels data
+                decode_sbus_channels();
+                uint8_t flags = rxin_state.sbus_buf[SBUS_DATA_LEN - 2];
+                bool failsafe = (flags & 0x8); // Failsafe bit: set if no tx.
+                rxin_state.pulses_valid = ! (failsafe); 
+            } 
+            // Start again.
+            rxin_state.sbus_index=0;
+        }
+    }
+    // todo
+}
+
+// Interrupt handler for byte received from USART
+ISR(USART0_RXC_vect)
+{
+    // Reading the byte automatically clears irq?
+    uint8_t b = USART0.RXDATAL;
+    if (rxin_state.serial_mode == SERIAL_MODE_IBUS) {
+        handle_byte_ibus(b);
+    } else {
+        handle_byte_sbus(b);
+    }
+}
+
+
 static void rxin_init_state()
 {
     memset((void *) &rxin_state, 0, sizeof(rxin_state));
@@ -164,7 +274,7 @@ static void rxin_init_state()
 }
 
 void rxin_init()
-    {
+{
     rxin_init_state();
     rxin_init_hw();
 }
@@ -237,6 +347,8 @@ ISR(TCB0_INT_vect)
                     } else {
                         // good packet.
                         rxin_state.pulses_valid = true; // tell main loop that the data are valid.
+                        rxin_state.detected_ppm_data = true;
+                        rxin_state.rx_protocol = RX_PROTOCOL_PPM;
                         memcpy((void *) rxin_state.pulse_lengths, (void *) rxin_state.pulse_lengths_next, sizeof(rxin_state.pulse_lengths));
                     }
                     // Got all channels.
@@ -252,8 +364,25 @@ ISR(TCB0_INT_vect)
 }
 
 static void handle_got_signal(uint32_t now) {
-    // Called when we first get a signal.
     rxin_state.got_signal = true;
+    if (rxin_state.rx_protocol != RX_PROTOCOL_SBUS) {
+        // If we are in any mode *except* sbus,
+        // reset the serial parameters to default
+        rxin_state.serial_mode = SERIAL_MODE_IBUS;
+        init_serial();
+    }
+    diag_print("RX protocol:");
+    switch (rxin_state.rx_protocol) {
+        case RX_PROTOCOL_PPM:
+            diag_println("PPM"); break;
+        case RX_PROTOCOL_IBUS:
+            diag_println("IBUS"); break;
+        case RX_PROTOCOL_SBUS:
+            diag_println("SBUS"); break;
+    }
+    diag_println("Got tx signal, now waiting for calibration.");
+    blinky_state.blue_on = true;
+    // Called when we first get a signal.
     rxin_state.running_mode = RUNNING_MODE_CALIBRATION;
     // init calibration data
     rxin_state.throttle_max_position = 0;
@@ -263,8 +392,6 @@ static void handle_got_signal(uint32_t now) {
         rxin_state.pulse_lengths[CHANNEL_INDEX_STEERING];
     rxin_state.weapon_centre_position = 
         rxin_state.pulse_lengths[CHANNEL_INDEX_WEAPON];
-    diag_println("Got tx signal, now waiting for calibration.");
-    blinky_state.blue_on = true;
 }
 
 static void handle_lost_signal(uint32_t now) {
@@ -336,11 +463,35 @@ static void handle_stick_data() {
         rxin_state.debug_count -= 1;
     } else {
         rxin_state.debug_count = 50;
+        uint8_t serial_old = rxin_state.serial_mode;
+        // temporarily change to ibus while we write this debug.
+        if (serial_old == SERIAL_MODE_SBUS) {
+            rxin_state.serial_mode = SERIAL_MODE_IBUS;
+            init_serial(); 
+        }
         diag_puts("rxin:");
         for (int i=0; i< RX_CHANNELS; i++) {
             diag_print(" chan:%d %05d", i, rxin_state.pulse_lengths[i]);
         }
-        diag_puts("\r\n");
+        diag_puts("\r\n ");
+        if (serial_old == SERIAL_MODE_SBUS) {
+            rxin_state.serial_mode = serial_old;
+            init_serial(); 
+        }
+    }
+}
+
+static void autodetect_switch()
+{
+    uint32_t now = get_tickcount();
+    // Alternate every so often, between ibus and sbus mode
+    // this is so that we can autodetect ibus or sbus.
+    // In either mode, we might autodetect ppm.
+    uint8_t ticktock = (uint8_t) (now >> 6);
+    ticktock = ticktock & 1;
+    if (rxin_state.serial_mode != ticktock) {
+        rxin_state.serial_mode = ticktock;
+        init_serial();        
     }
 }
 
@@ -360,6 +511,10 @@ void rxin_loop()
             uint32_t nosig_time = (now - rxin_state.last_signal_time);
             if (nosig_time > NOSIGNAL_TIME) {
                 handle_lost_signal(now);
+            }
+        } else {
+            if (rxin_state.rx_protocol == RX_PROTOCOL_AUTO) {
+                autodetect_switch();
             }
         }
     }
