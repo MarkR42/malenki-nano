@@ -1,5 +1,6 @@
 #include <stdint.h>
 
+#include "mixing.h"
 #include "motors.h"
 #include "diag.h"
 
@@ -20,7 +21,7 @@ static int deadzone(int n, int deadzone)
 
 static uint16_t diag_count=0;
 
-void mixing_drive_motors(int16_t throttle, int16_t steering, int16_t weapon)
+void mixing_drive_motors(int16_t throttle, int16_t steering, int16_t weapon, bool invert)
 {
     // inputs are already calibrated to centre on zero.
     // Inputs should be in (approx) microseconds of pulse.
@@ -54,7 +55,14 @@ void mixing_drive_motors(int16_t throttle, int16_t steering, int16_t weapon)
     weapon = (weapon * 20) / 45; // -200 ... 200
     weapon = deadzone(weapon, 20);
     weapon = signedclamp(weapon, 200);
-
+    
+    if (invert) {
+        int temp;
+        // Swap left and right and invert.
+        temp = left;
+        left = -right;
+        right = -temp; 
+    }
     set_motor_direction_duty(MOTOR_WEAPON, weapon);
     set_motor_direction_duty(MOTOR_LEFT, left);
     set_motor_direction_duty(MOTOR_RIGHT, right);
