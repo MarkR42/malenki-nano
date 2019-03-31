@@ -11,10 +11,17 @@ void rxin_loop();
 #define IBUS_DATA_LEN_MIN ((RX_CHANNELS * 2) +4)
 #define IBUS_DATA_LEN_MAX 32
 
+// SBUS packets are exactly 25 bytes long
+// 1 header (always 0x0f) + 22 channels + 1 flags + 1 trailer (always 0)
+#define SBUS_DATA_LEN 25
+
 typedef struct {
 	uint16_t last_pulse_len;
 	uint16_t packet_count;
     bool detected_serial_data; // Set this to true if we ever detect serial data.
+    bool detected_ppm_data; // Set this to true if we ever detect serial data.
+    uint8_t rx_protocol; // RX protocol in use, or autodetect
+    uint8_t serial_mode; // Serial mode in use right now
 
     // Used for decoding PPM:
     int8_t next_channel; // The next channel we expect a pulse
@@ -32,6 +39,9 @@ typedef struct {
     uint8_t ibus_buf[IBUS_DATA_LEN_MAX];
     uint8_t ibus_index; // index of next byte to be received in ibus_buf
 
+    // Decoding sbus data
+    uint8_t sbus_buf[SBUS_DATA_LEN];
+    uint8_t sbus_index;
     // State data 
     bool got_signal; // If we have a signal NOW
     uint32_t last_signal_time; // tickcount
@@ -61,6 +71,14 @@ typedef struct {
 #define CHANNEL_INDEX_STEERING 0
 #define CHANNEL_INDEX_WEAPON 1
 #define CHANNEL_INDEX_THROTTLE 2
+
+#define RX_PROTOCOL_AUTO 0
+#define RX_PROTOCOL_PPM 1
+#define RX_PROTOCOL_IBUS 2
+#define RX_PROTOCOL_SBUS 3
+
+#define SERIAL_MODE_IBUS 0
+#define SERIAL_MODE_SBUS 1
 
 extern volatile rxin_state_t rxin_state;
 
