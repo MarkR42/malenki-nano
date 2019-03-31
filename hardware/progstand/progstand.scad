@@ -51,15 +51,15 @@ module board_outline() {
 module main() {
     difference() {
         translate([-3, -3, 0])
-            cube([board_width + 6.0, board_height + 6.0, 11.0]);
+            cube([board_width + 6.0, board_height + 6.0, 7.0]);
         
         // Cut the board out of a cube
         // Give a small offset, to allow the board a little wiggle room
-        translate([0,0,7])
+        translate([0,0,2])
             linear_extrude(height=10.0)
                 offset(r=0.2) board_outline();
         // Cut out the inner
-        translate([0,0,5])
+        translate([0,0,1])
             linear_extrude(height=10.0, convexity=3)
                 difference() {
                     offset(r=-1.25) board_outline();
@@ -69,15 +69,15 @@ module main() {
         // Drill through the pogo pins
         linear_extrude(height=20.0)
             pogo_pins();
-        // Drill a big hole in the middle to allow use to poke the board
-        // back out of the holder
-        linear_extrude(height=20.0)
-            translate([board_width/2, board_height/2])
-                circle(r=3.0);
+        // Cut off the corners 
+        translate([-10, -10, 0]) 
+            cube([10+(board_width/2)-3, 10+(board_height/2)-2, 20]);
+        translate([(board_width/2) + 3, -10, 0]) 
+            cube([10+(board_width/2)-2, 10+(board_height/2)-2, 20]);
     }
     // A piece up the top to allow it to stand upright on the bench
     translate([-6,board_height + 3.0, 0])
-        cube([board_width + 12.0, 1.5, 20.0]);
+        cube([board_width + 12.0, 1.5, 15.0]);
 }
 
 main();
