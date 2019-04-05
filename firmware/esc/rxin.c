@@ -50,6 +50,10 @@ const uint16_t THROTTLE_RANGE_OK=600; // (microseconds)
 
 */
 
+// Minimum change (increase) in value before a switch is "on" 
+// (for aux channels)
+const int16_t SWITCH_THRESHOLD=300;
+
 static void init_serial()
 {
     // Set serial port for ibus or s-bus. Also enable the port
@@ -210,7 +214,7 @@ static void decode_sbus_channels()
     for (uint8_t chan=0; chan < RX_CHANNELS; chan++) {
         uint16_t pulse = rxin_state.pulse_lengths[chan];
         // Check that this multiply doesn't overflow
-        pulse = (pulse * 10)  / 16; // Divide by 16 is optimised to a shift.
+        pulse = (pulse * 9)  / 16; // Divide by 16 is optimised to a shift.
         rxin_state.pulse_lengths[chan] = pulse;
     }
 }
@@ -388,10 +392,9 @@ static void handle_got_signal(uint32_t now) {
     rxin_state.throttle_max_position = 0;
     rxin_state.throttle_min_position = 10000;
     // read the current steering and weapon pos for zero
-    rxin_state.steering_centre_position = 
-        rxin_state.pulse_lengths[CHANNEL_INDEX_STEERING];
-    rxin_state.weapon_centre_position = 
-        rxin_state.pulse_lengths[CHANNEL_INDEX_WEAPON];
+    // Save the initial positions:
+    memcpy((void * ) &(rxin_state.initial_positions), (void *) &(rxin_state.pulse_lengths), 
+        sizeof(rxin_state.initial_positions));
 }
 
 static void handle_lost_signal(uint32_t now) {
@@ -428,20 +431,31 @@ static void handle_data_calibration() {
         }
 }
 
+static bool get_switch_pos(uint8_t index)
+{
+    uint16_t centre = rxin_state.initial_positions[index];
+    uint16_t pulse = rxin_state.pulse_lengths[index];
+    int16_t diff = (int16_t) pulse - (int16_t) centre;
+    return (diff > SWITCH_THRESHOLD);
+}
 static void handle_data_ready() {
     // get signed throttle, steering data etc
     int16_t rel_throttle = (int16_t) rxin_state.pulse_lengths[CHANNEL_INDEX_THROTTLE] - 
         (int16_t) rxin_state.throttle_centre_position;
+    uint16_t steering_centre = rxin_state.initial_positions[CHANNEL_INDEX_STEERING];
     int16_t rel_steering = (int16_t) rxin_state.pulse_lengths[CHANNEL_INDEX_STEERING] - 
-        (int16_t) rxin_state.steering_centre_position;
+        (int16_t) steering_centre;
     if (rxin_state.debug_count == 0) {
         diag_println("ready: thr: %04d steer: %04d",
             rel_throttle, rel_steering);
     }
+    uint16_t weapon_centre = rxin_state.initial_positions[CHANNEL_INDEX_WEAPON];
     int16_t rel_weapon = (int16_t) rxin_state.pulse_lengths[CHANNEL_INDEX_WEAPON] -
-        (int16_t) rxin_state.weapon_centre_position;
+        (int16_t) weapon_centre;
+    // Check invert
+    bool invert = get_switch_pos(CHANNEL_INDEX_INVERT);
     // Call mixing to actually drive the motors
-    mixing_drive_motors(rel_throttle, rel_steering, rel_weapon);
+    mixing_drive_motors(rel_throttle, rel_steering, rel_weapon, invert);
 }
 
 static void handle_stick_data() {

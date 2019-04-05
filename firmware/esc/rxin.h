@@ -52,9 +52,9 @@ typedef struct {
     // Set when we first receive data
     uint16_t throttle_max_position;
     uint16_t throttle_min_position;
-    uint16_t throttle_centre_position;;
-    uint16_t steering_centre_position; 
-    uint16_t weapon_centre_position; 
+    uint16_t throttle_centre_position;
+    // initial positions of all channels:
+    uint16_t initial_positions[RX_CHANNELS];
 } rxin_state_t;
 
 
@@ -71,6 +71,8 @@ typedef struct {
 #define CHANNEL_INDEX_STEERING 0
 #define CHANNEL_INDEX_WEAPON 1
 #define CHANNEL_INDEX_THROTTLE 2
+// Invert switch (aux)
+#define CHANNEL_INDEX_INVERT 4
 
 #define RX_PROTOCOL_AUTO 0
 #define RX_PROTOCOL_PPM 1

@@ -83,7 +83,7 @@ Malenki-ESC supports the following receiver formats:
 
 * PPM aka cPPM - which is a "combined PPM" signal with successive channels PPM and a long sync pulse.
 * Turnigy / Flysky "I-Bus" protocol
-* TODO: s-bus
+* S-BUS
 
 It will automatically detect which protocol is in use, but will not change protocols unless restarted.
 
@@ -95,14 +95,22 @@ Channels are as follows:
 * 2 = Weapon
 * 3 = Throttle
 * 4 = (unused)
-* 5 = Invert option (todo)
+* 5 = Invert option 
 * 6 = Set config (todo)
 
 Calibration
 -----------
 
-After the receiver is powered on, the ESC will be in calibration mode. Move the throttle (channenl 3) 
+After the receiver is powered on, the ESC will be in calibration mode. Move the throttle (channel 3) 
 to minimum, maximum, then back to the centre. 
+
+Ensure that all switches are in their default position (off etc) during power-on.
+
+Inverted operation
+-----
+
+Channel 5 will work as an invert switch - if this is switched while in running mode
+then left & right are inverted and swapped.
 
 LEDs
 ----
