@@ -6,8 +6,8 @@ $Descr A4 11693 8268
 encoding utf-8
 Sheet 1 1
 Title "Malenki ESC"
-Date "2019-03-05"
-Rev ""
+Date "2019-03-30"
+Rev "3"
 Comp "Mark Robson"
 Comment1 "DC Electronic speed controller for small combat robot"
 Comment2 "markxr@gmail.com"
@@ -76,7 +76,7 @@ Connection ~ 2900 4350
 Text GLabel 3500 3950 2    50   Input ~ 0
 VLOGIC
 Wire Wire Line
-	3200 3950 3500 3950
+	3200 3950 3450 3950
 Text GLabel 5350 2750 1    50   Input ~ 0
 VLOGIC
 $Comp
@@ -511,36 +511,8 @@ F 3 "" H 5700 7400 50  0001 C CNN
 $EndComp
 Text GLabel 5700 6200 1    50   Input ~ 0
 VLOGIC
-$Comp
-L Connector:Conn_01x04_Male J5
-U 1 1 5C5A1F27
-P 1150 2300
-F 0 "J5" H 1256 2578 50  0000 C CNN
-F 1 "Conn_01x04_Male" H 1256 2487 50  0000 C CNN
-F 2 "tinyesc:PinHeader_1x04_P2.54mm_BIG1" H 1150 2300 50  0001 C CNN
-F 3 "~" H 1150 2300 50  0001 C CNN
-	1    1150 2300
-	1    0    0    -1  
-$EndComp
-Text Notes 1100 1700 0    50   ~ 0
-Receiver interface RX
-Wire Wire Line
-	1350 2200 2900 2200
-Wire Wire Line
-	2900 2200 2900 2700
-$Comp
-L power:GND #PWR0101
-U 1 1 5C5A396C
-P 2900 3050
-F 0 "#PWR0101" H 2900 2800 50  0001 C CNN
-F 1 "GND" H 2905 2877 50  0000 C CNN
-F 2 "" H 2900 3050 50  0001 C CNN
-F 3 "" H 2900 3050 50  0001 C CNN
-	1    2900 3050
-	1    0    0    -1  
-$EndComp
-Text GLabel 1350 2400 2    50   Input ~ 0
-VLOGIC
+Text Notes 1100 1300 0    50   ~ 0
+Receiver interface RX \n+programming
 Text GLabel 2300 2400 2    50   Input ~ 0
 RXIN
 Text GLabel 6150 3800 2    50   Input ~ 0
@@ -548,46 +520,22 @@ RXIN
 $Comp
 L Device:R R6
 U 1 1 5C5AB7F7
-P 2050 2550
-F 0 "R6" H 1980 2504 50  0000 R CNN
-F 1 "33k" H 1980 2595 50  0000 R CNN
-F 2 "Resistor_SMD:R_0805_2012Metric" V 1980 2550 50  0001 C CNN
-F 3 "~" H 2050 2550 50  0001 C CNN
-	1    2050 2550
+P 2200 2550
+F 0 "R6" H 2130 2504 50  0000 R CNN
+F 1 "33k" H 2130 2595 50  0000 R CNN
+F 2 "Resistor_SMD:R_0805_2012Metric" V 2130 2550 50  0001 C CNN
+F 3 "~" H 2200 2550 50  0001 C CNN
+	1    2200 2550
 	-1   0    0    1   
 $EndComp
 Wire Wire Line
-	2050 2400 2300 2400
-Wire Wire Line
-	2050 2700 2900 2700
-Connection ~ 2900 2700
-Wire Wire Line
-	2900 2700 2900 2900
+	2200 2400 2300 2400
 Text Notes 1900 2800 0    50   ~ 0
 Pulldown
 Wire Wire Line
 	2600 3950 2400 3950
 Connection ~ 2400 3950
 Text GLabel 7000 4000 2    50   Input ~ 0
-PROG_RESET
-Text Notes 1600 750  0    50   ~ 0
-Programming interface
-$Comp
-L power:GND #PWR0104
-U 1 1 5C5DA786
-P 2750 1150
-F 0 "#PWR0104" H 2750 900 50  0001 C CNN
-F 1 "GND" H 2755 977 50  0000 C CNN
-F 2 "" H 2750 1150 50  0001 C CNN
-F 3 "" H 2750 1150 50  0001 C CNN
-	1    2750 1150
-	1    0    0    -1  
-$EndComp
-Text GLabel 1900 1250 2    50   Input ~ 0
-VLOGIC
-Wire Wire Line
-	1900 1150 2750 1150
-Text GLabel 1900 950  2    50   Input ~ 0
 PROG_RESET
 $Comp
 L power:PWR_FLAG #FLG0101
@@ -632,17 +580,6 @@ F 3 "" H 5350 3950 50  0001 C CNN
 $EndComp
 Wire Wire Line
 	6150 4000 7000 4000
-$Comp
-L Connector_Generic:Conn_01x04 J6
-U 1 1 5C5E3F13
-P 1700 1150
-F 0 "J6" H 1806 1428 50  0000 C CNN
-F 1 "Conn_01x04" H 1806 1337 50  0000 C CNN
-F 2 "tinyesc:pogopins-4" H 1700 1150 50  0001 C CNN
-F 3 "" H 1700 1150 50  0001 C CNN
-	1    1700 1150
-	-1   0    0    1   
-$EndComp
 $Comp
 L Mechanical:MountingHole MH2
 U 1 1 5C5D8355
@@ -728,25 +665,13 @@ F 3 "~" H 1900 7100 50  0001 C CNN
 $EndComp
 Text Notes 5100 6350 0    50   ~ 0
 Blinky Lights\n
-Wire Wire Line
-	1350 2300 2050 2300
-Wire Wire Line
-	2050 2300 2050 2400
-Connection ~ 2050 2400
 NoConn ~ 4700 4100
 Text Notes 6600 3950 0    50   ~ 0
 TxD pin - for diagnostic
 Connection ~ 5700 6800
-Wire Wire Line
-	2900 2900 1350 2900
-Wire Wire Line
-	1350 2900 1350 2500
-Connection ~ 2900 2900
-Wire Wire Line
-	2900 2900 2900 3050
 Text Notes 750  3600 0    50   ~ 0
 Power in- Battery voltage from 6-14v is permitted, to allow\nusage of a 2S or 3S lipo pack, or some other type which\nprovides at least 6V
-Text Notes 1100 1950 0    50   ~ 0
+Text Notes 1100 1550 0    50   ~ 0
 RX interface will be for a CPPM type of single wire\npulses, or similar. It might be auto detected at runtime\nor need to be set in firmware.
 Text Notes 2950 4250 0    50   ~ 0
 Voltage reg.
@@ -764,8 +689,6 @@ Text Notes 4000 850  0    100  ~ 0
 Tiny DC electronic speed controller\nFor e.g. Antweight combat robots
 Text GLabel 6150 3900 2    50   Input ~ 0
 TXDEBUG
-Text GLabel 1900 1050 2    50   Input ~ 0
-TXDEBUG
 $Comp
 L hbridge:ME6210A50PG U1
 U 1 1 5C82BDB8
@@ -777,4 +700,98 @@ F 3 "" H 2900 3800 50  0001 C CNN
 	1    2900 3800
 	1    0    0    -1  
 $EndComp
+Text GLabel 1350 2200 2    50   Input ~ 0
+VLOGIC
+$Comp
+L Connector:Conn_01x05_Male J5
+U 1 1 5CA766AF
+P 1150 2100
+F 0 "J5" H 1256 2478 50  0000 C CNN
+F 1 "Conn_01x05_Male" H 1256 2387 50  0000 C CNN
+F 2 "tinyesc:PinHeader_1x05_P2.54mm_BIG1" H 1150 2100 50  0001 C CNN
+F 3 "~" H 1150 2100 50  0001 C CNN
+	1    1150 2100
+	1    0    0    -1  
+$EndComp
+Text GLabel 1800 1850 2    50   Input ~ 0
+PROG_RESET
+Text GLabel 2900 2400 2    50   Input ~ 0
+TXDEBUG
+Wire Wire Line
+	1350 2300 1350 2700
+Wire Wire Line
+	1350 2700 1650 2700
+$Comp
+L power:GND #PWR010
+U 1 1 5CA7BD56
+P 1650 2700
+F 0 "#PWR010" H 1650 2450 50  0001 C CNN
+F 1 "GND" H 1655 2527 50  0000 C CNN
+F 2 "" H 1650 2700 50  0001 C CNN
+F 3 "" H 1650 2700 50  0001 C CNN
+	1    1650 2700
+	1    0    0    -1  
+$EndComp
+Connection ~ 1650 2700
+Wire Wire Line
+	1650 2700 2200 2700
+$Comp
+L Device:C C6
+U 1 1 5CA763D7
+P 3450 4100
+F 0 "C6" H 3565 4146 50  0000 L CNN
+F 1 "10uF" H 3565 4055 50  0000 L CNN
+F 2 "Capacitor_SMD:C_0805_2012Metric_Pad1.15x1.40mm_HandSolder" H 3488 3950 50  0001 C CNN
+F 3 "~" H 3450 4100 50  0001 C CNN
+	1    3450 4100
+	1    0    0    -1  
+$EndComp
+Connection ~ 3450 3950
+Wire Wire Line
+	3450 3950 3500 3950
+Wire Wire Line
+	2900 4350 3450 4350
+Wire Wire Line
+	3450 4350 3450 4250
+$Comp
+L Device:R R7
+U 1 1 5CA7F3D1
+P 2200 2250
+F 0 "R7" H 2130 2204 50  0000 R CNN
+F 1 "68R" H 2130 2295 50  0000 R CNN
+F 2 "Resistor_SMD:R_0805_2012Metric" V 2130 2250 50  0001 C CNN
+F 3 "~" H 2200 2250 50  0001 C CNN
+	1    2200 2250
+	-1   0    0    1   
+$EndComp
+Connection ~ 2200 2400
+Wire Wire Line
+	1350 2100 2200 2100
+$Comp
+L Device:R R8
+U 1 1 5CA82CAD
+P 2750 2250
+F 0 "R8" H 2900 2300 50  0000 R CNN
+F 1 "68R" H 2950 2200 50  0000 R CNN
+F 2 "Resistor_SMD:R_0805_2012Metric" V 2680 2250 50  0001 C CNN
+F 3 "~" H 2750 2250 50  0001 C CNN
+	1    2750 2250
+	1    0    0    -1  
+$EndComp
+Text Label 1400 2100 0    50   ~ 0
+RXIN_PIN
+Text Label 1400 2000 0    50   ~ 0
+TXDEBUG_PIN
+Wire Wire Line
+	1800 1850 1650 1850
+Wire Wire Line
+	1650 1850 1650 1900
+Wire Wire Line
+	1650 1900 1350 1900
+Wire Wire Line
+	2900 2400 2750 2400
+Wire Wire Line
+	1350 2000 2750 2000
+Wire Wire Line
+	2750 2100 2750 2000
 $EndSCHEMATC
