@@ -24,19 +24,17 @@ module bevelledsquare(size=[1,1], radius=0.1) {
         ]);
 }
 
-module pogo_pins() {
+module pogo_pins(r=0.8) {
     for (n = [0:3]) {
         offset = n * 2.54;
         translate([pogo_offset_x + offset, board_height - pogo_offset_y])
-            circle(0.8);
+            circle(r);
     }
 }
-
 module pogo_pins_surround() {
-    w = 6 * 2.54;
-    h = 5.0;
-    translate([pogo_offset_x + (2 * 2.54), board_height - pogo_offset_y])
-        square([w,h], center=true);
+    hull() {
+        pogo_pins(r=1.8);
+    }
 }
 
 module board_outline() {
@@ -68,13 +66,21 @@ module main() {
         
         // Drill through the pogo pins
         linear_extrude(height=20.0)
-            pogo_pins();
+            pogo_pins(r=1.1);
         // Cut off the corners 
         translate([-10, -10, 0]) 
             cube([10+(board_width/2)-3, 10+(board_height/2)-2, 20]);
         translate([(board_width/2) + 3, -10, 0]) 
             cube([10+(board_width/2)-2, 10+(board_height/2)-2, 20]);
     }
+    // Back of pogo pins surround
+    translate([0,0,-18])
+    linear_extrude(height=19.0, convexity=3)
+    difference() {
+        pogo_pins_surround();
+        pogo_pins();
+    }
+    
     // A piece up the top to allow it to stand upright on the bench
     translate([-6,board_height + 3.0, 0])
         cube([board_width + 12.0, 1.5, 15.0]);
