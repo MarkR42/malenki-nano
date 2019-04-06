@@ -23,7 +23,7 @@ of a short circuit.
 Connectors
 -----
 
-All of the end-user connectors are pin-through-hole for mechanical strength and use 2.54mm pitch.
+All of the connectors are pin-through-hole for mechanical strength and use 2.54mm pitch.
 
 J1 and J7 are duplicate input power connectors. They are connected together and both
 contain a GND and battery positive voltage. It is recommended to connect a 
@@ -39,18 +39,15 @@ respectively. They are labelled on the board.
 J5 is the receiver interface which provides power to the receiver (i.e. "BEC" battery elimination circuit)
 and receives data.
 
-J6 is the set of pads on the back of the board intended for programming and debugging.
-
 Getting started
 ---------------
 
 1. Connect your battery pack, or battery connector, to J7. Observe the correct polarity.
 2. (Optional) solder a wire from the positive pin of J1 to J8 for weapon power
 3. Connect motors to J2,J3,J4
-4. Connect your receiver to J5
+4. Connect your receiver to J5 ping GND, +5 and RX
 
-Note that there are two GND pins on J5; you only need to use one, use whichever is
-more convenient. You can solder straight pin headers, right-angle pin headers, or
+Note that there you can solder straight pin headers, right-angle pin headers, or
 flying wires to J5.
 
 Maximum ratings
@@ -61,7 +58,7 @@ might explode them or short them and cause a fire.
 
 Maximum recommended current per channel is 2A.
 
-Maximum recommended current on the rx interface is 250mA
+Maximum recommended current on the rx interface is 150mA
 
 It is recommended to use a 2S lipo pack with nominal 7.4v. A 3S pack could also
 be used carefully.
