@@ -93,7 +93,7 @@ Channels are as follows:
 * 3 = Throttle
 * 4 = (unused)
 * 5 = Invert option 
-* 6 = Set config (todo)
+* 6 = Set config (see below)
 
 Calibration
 -----------
@@ -108,6 +108,20 @@ Inverted operation
 
 Channel 5 will work as an invert switch - if this is switched while in running mode
 then left & right are inverted and swapped.
+
+Configuration
+-----
+The channels can be inverted by the following procedure:
+
+1. With RX on, switch on the transmitter
+2. Leave the throttle at minimum.
+3. Set up a switch on auxilliary channel 6
+4. Press the aux switch (on+off, or positive then negative) a number of times with less than 2 seconds between each press:
+
+* 2 pushes = invert left channel
+* 3 pushes = invert right channel
+* 4 pushes = invert weapon channel
+* 5 pushes = reset to defaults (nothing inverted)
 
 LEDs
 ----
