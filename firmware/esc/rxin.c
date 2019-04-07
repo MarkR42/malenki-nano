@@ -7,6 +7,7 @@
 #include "state.h"
 #include "blinky.h"
 #include "mixing.h"
+#include "nvconfig.h"
 
 #include <string.h>
 #include <stdlib.h>
@@ -395,6 +396,9 @@ static void handle_got_signal(uint32_t now) {
     // Save the initial positions:
     memcpy((void * ) &(rxin_state.initial_positions), (void *) &(rxin_state.pulse_lengths), 
         sizeof(rxin_state.initial_positions));
+    rxin_state.button_down = false;
+    rxin_state.button_count = 0;
+    rxin_state.last_button_time = 0;
 }
 
 static void handle_lost_signal(uint32_t now) {
@@ -408,29 +412,6 @@ static void handle_lost_signal(uint32_t now) {
     blinky_state.flash_count = 1;
 }
 
-// min / max macros (used below)
-#define MAX(a,b) ((a) > (b) ? a : b)
-#define MIN(a,b) ((a) < (b) ? a : b)
-
-static void handle_data_calibration() {
-    // Called in calibration state.
-        // Do calibration
-        uint16_t throttle = rxin_state.pulse_lengths[CHANNEL_INDEX_THROTTLE];
-        rxin_state.throttle_min_position = MIN(rxin_state.throttle_min_position, throttle);
-        rxin_state.throttle_max_position = MAX(rxin_state.throttle_max_position, throttle);
-        rxin_state.throttle_centre_position = 
-            (rxin_state.throttle_min_position + rxin_state.throttle_max_position) / 2;
-        // Determine if calibration is finished?
-        int16_t throttlediff = (int16_t)throttle - (int16_t)rxin_state.throttle_centre_position;
-        uint16_t throttlerange = rxin_state.throttle_max_position - rxin_state.throttle_min_position;
-        if ((throttlerange > THROTTLE_RANGE_OK) && (abs(throttlediff) < 20) ) {
-            // Throttle moved up, down and is now centred.
-            diag_println("Calibration finished.");
-            rxin_state.running_mode = RUNNING_MODE_READY;
-            blinky_state.flash_count = 0; // Ready
-        }
-}
-
 static bool get_switch_pos(uint8_t index)
 {
     uint16_t centre = rxin_state.initial_positions[index];
@@ -438,6 +419,85 @@ static bool get_switch_pos(uint8_t index)
     int16_t diff = (int16_t) pulse - (int16_t) centre;
     return (diff > SWITCH_THRESHOLD);
 }
+
+
+static void handle_calibration_command(uint8_t button_count)
+{
+    bool save = false;
+    switch (button_count) {
+        case 1:
+            // Ignore a single button press. It might be a mistake.
+            break;
+        case 2:
+            // Invert left
+            nvconfig_state.invert_left = !(nvconfig_state.invert_left);
+            save = true;
+            break; 
+        case 3:
+            // Invert right
+            nvconfig_state.invert_right = !(nvconfig_state.invert_right);
+            save = true;
+            break; 
+        case 4:
+            // Invert weapon
+            nvconfig_state.invert_weapon = !(nvconfig_state.invert_weapon);
+            save = true;
+            break; 
+        case 5:
+            // reset to default
+            nvconfig_state.invert_weapon = false;
+            nvconfig_state.invert_left = false;
+            nvconfig_state.invert_right = false;
+            save = true;
+            break; 
+    }
+    if (save) {
+        nvconfig_save();
+    }
+}
+
+// min / max macros (used below)
+#define MAX(a,b) ((a) > (b) ? a : b)
+#define MIN(a,b) ((a) < (b) ? a : b)
+
+static void handle_data_calibration() {
+    // Called in calibration state.
+    // Do calibration
+    uint16_t throttle = rxin_state.pulse_lengths[CHANNEL_INDEX_THROTTLE];
+    rxin_state.throttle_min_position = MIN(rxin_state.throttle_min_position, throttle);
+    rxin_state.throttle_max_position = MAX(rxin_state.throttle_max_position, throttle);
+    rxin_state.throttle_centre_position = 
+        (rxin_state.throttle_min_position + rxin_state.throttle_max_position) / 2;
+    // Check calibration button
+    bool calib_button = false;
+    uint32_t now = get_tickcount();
+    calib_button = get_switch_pos( CHANNEL_INDEX_CALIBRATE);
+    if (calib_button && (! rxin_state.button_down) ) {
+        // Button press edge
+        rxin_state.last_button_time = now;
+        rxin_state.button_count += 1;
+    }
+    rxin_state.button_down = calib_button;
+    if ((! calib_button) && (rxin_state.button_count > 0)) {
+        uint32_t idle_time = now - rxin_state.last_button_time;
+        if (idle_time > 200) {
+            // No button pressed for a while, but some were pressed before.
+            handle_calibration_command(rxin_state.button_count);
+            rxin_state.button_count = 0; // reset button state
+        }
+    }
+
+    // Determine if calibration is finished?
+    int16_t throttlediff = (int16_t)throttle - (int16_t)rxin_state.throttle_centre_position;
+    uint16_t throttlerange = rxin_state.throttle_max_position - rxin_state.throttle_min_position;
+    if ((throttlerange > THROTTLE_RANGE_OK) && (abs(throttlediff) < 20) ) {
+        // Throttle moved up, down and is now centred.
+        diag_println("Calibration finished.");
+        rxin_state.running_mode = RUNNING_MODE_READY;
+        blinky_state.flash_count = 0; // Ready
+    }
+}
+
 static void handle_data_ready() {
     // get signed throttle, steering data etc
     int16_t rel_throttle = (int16_t) rxin_state.pulse_lengths[CHANNEL_INDEX_THROTTLE] - 

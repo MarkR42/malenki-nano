@@ -23,6 +23,14 @@ void nvconfig_init() {
     nvconfig_state.magic = NVCONFIG_MAGIC_CORRECT;
 }
 
+static void diag_show_flags()
+{
+    diag_println("invert flags: L: %hhd R: %hhd W: %hhd",
+            nvconfig_state.invert_left,
+            nvconfig_state.invert_right,
+            nvconfig_state.invert_weapon);
+}
+
 void nvconfig_load() {
     eeprom_read_block((void *) &nvconfig_state, eeprom_addr, sizeof(nvconfig_state)); 
     diag_println("Loaded nvconfig magic=%04x", nvconfig_state.magic); 
@@ -32,9 +40,11 @@ void nvconfig_load() {
         nvconfig_init();
     }
     nvconfig_state.boot_count += 1;
+    diag_show_flags();
 }
 
 void nvconfig_save(){
     eeprom_update_block((void *) &nvconfig_state, eeprom_addr, sizeof(nvconfig_state)); 
+    diag_show_flags();
 }
 

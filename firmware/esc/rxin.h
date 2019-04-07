@@ -55,6 +55,10 @@ typedef struct {
     uint16_t throttle_centre_position;
     // initial positions of all channels:
     uint16_t initial_positions[RX_CHANNELS];
+    bool button_down; // was the button down the last time we checked?
+    // Number of clicks on the calibration button (/switch)
+    uint8_t button_count;
+    uint32_t last_button_time; // time of last button
 } rxin_state_t;
 
 
@@ -73,6 +77,8 @@ typedef struct {
 #define CHANNEL_INDEX_THROTTLE 2
 // Invert switch (aux)
 #define CHANNEL_INDEX_INVERT 4
+// Calibration button/switch (aux)
+#define CHANNEL_INDEX_CALIBRATE 5
 
 #define RX_PROTOCOL_AUTO 0
 #define RX_PROTOCOL_PPM 1

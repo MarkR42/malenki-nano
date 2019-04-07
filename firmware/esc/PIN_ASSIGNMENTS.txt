@@ -1,9 +1,8 @@
 Pin assignments / usage
 
 PA0 - RESET / UPDI - default - not used by code. Used for programming
-	firmware, wired to a pogo pin on underside.
+	firmware
 PA1 - UART0 TxD - used for diagnostic serial output.
-	connected to pin 3 of the pogo pins J6 on underside of board.
 
 PA2 - UART0 RxD - connected to the RXIN connection.
 	This is used to receive either PPM signals, or serial

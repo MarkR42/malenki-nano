@@ -3,6 +3,7 @@
 #include "mixing.h"
 #include "motors.h"
 #include "diag.h"
+#include "nvconfig.h"
 
 static int signedclamp(int n, int maxval)
 {
@@ -63,6 +64,14 @@ void mixing_drive_motors(int16_t throttle, int16_t steering, int16_t weapon, boo
         left = -right;
         right = -temp; 
     }
+    // Check nvconfig and invert channels
+    if (nvconfig_state.invert_left)
+        left = -left;
+    if (nvconfig_state.invert_right)
+        right = -right;
+    if (nvconfig_state.invert_weapon)
+        weapon = -weapon;
+
     set_motor_direction_duty(MOTOR_WEAPON, weapon);
     set_motor_direction_duty(MOTOR_LEFT, left);
     set_motor_direction_duty(MOTOR_RIGHT, right);
