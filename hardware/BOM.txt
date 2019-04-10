@@ -12,7 +12,7 @@ Parts
 -----
 
 Ref / LCSC part number / Manufacturer / Manuf. part number / Desc
-U1 /  / 5v voltage regulator
+U1 / C16106 / Holtek / HT7550-1 / 5v voltage regulator
 U2 / NA / Microchip / ATTINY1614 / MCU
 U3,U4,U5 / C92373 /  Wuxi Smart Microelectronics /  rz7899 / Motor driver
 C1, C6 /  C1713 /  Samsung Electro-Mechanics /  CL21A106KOQNNNE / 10uF 16v cap 0805
