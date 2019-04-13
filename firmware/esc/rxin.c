@@ -246,7 +246,7 @@ static void handle_byte_sbus(uint8_t b)
                 rxin_state.detected_serial_data = true;
             }
             if (good && ! rxin_state.pulses_valid) {
-                // TODO: decode channels data
+                // decode channels data
                 decode_sbus_channels();
                 uint8_t flags = rxin_state.sbus_buf[SBUS_DATA_LEN - 2];
                 bool failsafe = (flags & 0x8); // Failsafe bit: set if no tx.
@@ -375,6 +375,15 @@ static void handle_got_signal(uint32_t now) {
         // reset the serial parameters to default
         rxin_state.serial_mode = SERIAL_MODE_IBUS;
         init_serial();
+    }
+    // If we are in PPM mode, then we should disable 
+    // serial IRQs.
+    // Otherwise, we get garbage serial rx IRQs from the 
+    // PPM data which can disrupt the ppm decoding interrupts,
+    // as they take too long to process causing us to miss
+    // real ppm irqs.
+    if (rxin_state.rx_protocol == RX_PROTOCOL_PPM) {
+            USART0.CTRLA &= (~ USART_RXCIE_bm);
     }
     diag_print("RX protocol:");
     switch (rxin_state.rx_protocol) {

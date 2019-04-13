@@ -37,8 +37,6 @@ TURNIGY / HOBBYKING / FLYSKY - I-BUS
 This is a different serial protocol, it uses a bit rate of 115,200 baud.
 I-bus is "the usual orientation", normally high, low=1, high=0
 
-In principle we might be able to auto-detect s-bus or i-bus.
-
 The pulses will be much shorter on the serial protocols.
 
 Unfortunately s-bus and i-bus do not use the same bit rate, and it's probably not close
@@ -53,7 +51,7 @@ followed by 2 bytes per channel - typically 14 channels
 2 bytes = checksum
 
 IBUS PROBLEMS:
-* rx continues sending pulses after signal is lost.
+* on some rx, signals continue sending packets after signal is lost.
     - Maybe there is a channel with signal quality sent?
     - Can we detect other types of packet with signal info in?
 
@@ -65,6 +63,37 @@ tx signals for all channels (up to 16 maybe) and some other metadata.
 
 This packet is then repeated at regular intervals, and can be quite fast
 because of the relatively high bit-rate.
+
+AUTODETECTING
+----
+
+At boot up, we try to auto detect a signal until we get a valid signal.
+
+Because we can only run the usart at one baud rate at once, we periodically
+switch from ibus/sbus until we get a valid signal.
+
+We could receive a valid ppm signal while in ibus mode (sbus is inverted). 
+
+Once this happens, we need to:
+* Stop auto-detecting - stay in the correct mode, either sbus, or
+    ibus mode (even if ppm signal detected)
+* Disable unwanted interrupts, because they break each other.
+    There are very fast interrupts (<1ms spacing) and we don't have
+    much time to muck about.
+
+    If we are in PPM mode, disable serial irq, if we are in
+    serial mode, disable ppm IRQ.
+
+Also, because sbus is inverted, we need to keep switching the pin to
+inverted and non-inverted mode, this screws up ppm, we just hope that
+we receive a valid ppm at some time :)
+
+Effectively, if we get three interrupts at once, e.g. a ppm edge interrupt, and
+a byte from the usart, and a timer interrupt happens to clash, then we 
+might not have time to handle them all before the next irq arrives, and the
+hardware can lose some data.
+
+(the timer irq is every 10ms and is fairly quick)
 
 FAILSAFE
 ----
