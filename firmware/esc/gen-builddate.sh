@@ -2,6 +2,6 @@
 now=$(date '+%Y%m%d %H:%M')
 
 cat >builddate.c <<EOF
-const char * build_date="$now";
+const char * const build_date="$now";
 EOF
 

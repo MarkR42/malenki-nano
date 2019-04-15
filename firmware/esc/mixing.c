@@ -73,8 +73,17 @@ void mixing_drive_motors(int16_t throttle, int16_t steering, int16_t weapon, boo
         weapon = -weapon;
 
     set_motor_direction_duty(MOTOR_WEAPON, weapon);
-    set_motor_direction_duty(MOTOR_LEFT, left);
-    set_motor_direction_duty(MOTOR_RIGHT, right);
+    if (left == 0) {
+        enable_motor_brake(MOTOR_LEFT);
+    } else {
+        set_motor_direction_duty(MOTOR_LEFT, left);
+    }
+    if (right == 0) {
+        enable_motor_brake(MOTOR_RIGHT);
+    } else {
+        set_motor_direction_duty(MOTOR_RIGHT, right);
+    }
+
     if (diag_count == 0) {
         diag_count = 10;
         diag_println("L: %03d R: %03d W: %03d", left, right, weapon);

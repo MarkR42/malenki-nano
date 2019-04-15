@@ -79,26 +79,21 @@ void motors_init()
 #define MOTOR_3F 4
 #define MOTOR_3R 5
 
+// Table mapping the motor ID to the compare register
+// which controls its duty.
+static uint8_t volatile * motor_map[] = {
+    & (TCA0.SPLIT.HCMP0), // 1F, PA3
+    & (TCA0.SPLIT.LCMP0), // 1R, PB0
+    & (TCA0.SPLIT.LCMP2), // 2F, PB2
+    & (TCA0.SPLIT.LCMP1), // 2R, PB1
+    & (TCA0.SPLIT.HCMP2), // 3F, PA5
+    & (TCA0.SPLIT.HCMP1), // 3R, PA4
+} ;
+
 static void set_pin_duty(uint8_t signal_id, uint8_t duty)
 {
-    volatile uint8_t * compare_register=0; 
-    switch(signal_id) {
-        case MOTOR_1F: compare_register= & (TCA0.SPLIT.HCMP0); // PA3
-            break;
-        case MOTOR_1R: compare_register= & (TCA0.SPLIT.LCMP0); // PB0
-            break;
-        case MOTOR_2F: compare_register= & (TCA0.SPLIT.LCMP2); // PB0
-            break;
-        case MOTOR_2R: compare_register= & (TCA0.SPLIT.LCMP1); // PB1
-            break;
-        case MOTOR_3F: compare_register= & (TCA0.SPLIT.HCMP2); // PA5
-            break;
-        case MOTOR_3R: compare_register= & (TCA0.SPLIT.HCMP1); // PA4
-            break;
-    }
-    if (compare_register) {
-        *compare_register = duty;
-    }
+    volatile uint8_t * compare_register=motor_map[signal_id]; 
+    *compare_register = duty;
 }
 
 void set_motor_direction_duty(uint8_t motor_id, int16_t direction_and_duty)
@@ -133,6 +128,16 @@ void set_motor_direction_duty(uint8_t motor_id, int16_t direction_and_duty)
         set_pin_duty(fwd, fwd_duty);
         set_pin_duty(rev, rev_duty);
     }
+}
+
+void enable_motor_brake(uint8_t motor_id)
+{
+    volatile uint8_t * comp1 = motor_map[motor_id * 2]; 
+    volatile uint8_t * comp2 = motor_map[motor_id * 2 + 1]; 
+    // Set both pins high.
+    // We should do this as quickly as possible.
+    *comp1 = DUTY_MAX;
+    *comp2 = DUTY_MAX;
 }
 
 void motors_loop()

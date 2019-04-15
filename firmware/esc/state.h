@@ -13,6 +13,6 @@ uint32_t get_tickcount();
 
 extern volatile master_state_t master_state;
 
-extern const char * build_date;
+extern const char * const build_date;
 
 

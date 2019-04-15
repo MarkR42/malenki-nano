@@ -22,6 +22,7 @@ link: $(OBJECTS) $(HEADERS)
 	# disassemble, so can see what the compiler did
 	avr-objdump -S $(ELF) > $(OBJDIR)/esc.asm
 	avr-objdump -t $(ELF) > $(OBJDIR)/esc.sym
+	avr-objdump -t $(ELF) |grep 00 |sort  > $(OBJDIR)/esc-sorted.sym
 	avr-objdump -j .bss -j .data -t $(ELF) | grep 00 |sort > $(OBJDIR)/ram.txt # show ram usage
 	avr-objcopy -j .text -j .data -j .rodata -O ihex $(ELF) $(HEX)
 
