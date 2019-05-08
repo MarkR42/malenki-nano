@@ -1,4 +1,5 @@
 #include <stdint.h>
+#include <stdlib.h>
 
 #include "mixing.h"
 #include "motors.h"
@@ -20,6 +21,18 @@ static int deadzone(int n, int deadzone)
     return n;
 }
 
+// Take a channel in the range -200 .. 200
+static void squaring(int *channel, int maxval)
+{
+    int32_t c32 = *channel;
+
+    // This takes it in the range 200*200 (=40k) 
+    c32 *= abs(c32);
+    
+    c32 /= maxval;
+    *channel = (int) c32;
+}
+
 static uint16_t diag_count=0;
 
 void mixing_drive_motors(int16_t throttle, int16_t steering, int16_t weapon, bool invert)
@@ -38,6 +51,9 @@ void mixing_drive_motors(int16_t throttle, int16_t steering, int16_t weapon, boo
     
     throttle = deadzone(throttle, 10);    
     steering = deadzone(steering, 10);    
+    // Apply "squaring"
+    squaring(&throttle,100);
+    squaring(&steering,100);
     // Scale steering further, to stop steering too fast.
     steering = steering / 2;
     
@@ -51,7 +67,11 @@ void mixing_drive_motors(int16_t throttle, int16_t steering, int16_t weapon, boo
     // Now scale back to += 200 which is correct for pwm
     left = left *2;
     right = right * 2;
-    
+   
+    // Apply "squaring"
+    // squaring(&left,200);
+    // squaring(&right,200);
+  
     // Fix up weapon to correct range 
     weapon = (weapon * 20) / 45; // -200 ... 200
     weapon = deadzone(weapon, 20);
