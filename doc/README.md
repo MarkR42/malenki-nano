@@ -50,6 +50,8 @@ Getting started
 Note that there you can solder straight pin headers, right-angle pin headers, or
 flying wires to J5.
 
+![instruction pic](malenki-instruction.png "Wiring instruction")
+
 Maximum ratings
 ---------------
 
