@@ -29,6 +29,7 @@ static void diag_show_flags()
             nvconfig_state.invert_left,
             nvconfig_state.invert_right,
             nvconfig_state.invert_weapon);
+    diag_println("weapon mode: %d", (int) nvconfig_state.weapon_mode);
 }
 
 void nvconfig_load() {

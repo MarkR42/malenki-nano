@@ -33,7 +33,7 @@ static void squaring(int *channel, int maxval)
     *channel = (int) c32;
 }
 
-static uint16_t apply_weapon_rules(uint16_t throttle, uint16_t steering, uint16_t weapon)
+static uint16_t apply_weapon_rules(int16_t throttle, int16_t steering, int16_t weapon)
 {
     // Fix up weapon to correct range 
     weapon = (weapon * 20) / 45; // -200 ... 200
