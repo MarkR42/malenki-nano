@@ -15,6 +15,7 @@
 #include "state.h"
 #include "nvconfig.h"
 #include "blinky.h"
+#include "configmode.h"
 
 #include <stdlib.h>
 
@@ -81,6 +82,7 @@ static void mainloop()
         rxin_loop();
         test_loop();
         blinky_loop();
+        configmode_loop();
         
         /* 
         speed += movedir;
@@ -104,6 +106,7 @@ int main(void)
 	init_timer_interrupts();
 	sei();  // enable interrupts
     nvconfig_init();
+    configmode_init();
 	diag_puts("\r\n\r\n");
 	diag_puts("Malenki-ESC starting. BUILD_DATE=");
     diag_puts(build_date);

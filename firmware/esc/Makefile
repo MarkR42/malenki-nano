@@ -4,9 +4,9 @@
 #
 OBJDIR=obj
 
-OBJ_FILES=main.o diag.o rxin.o motors.o vsense.o builddate.o nvconfig.o blinky.o mixing.o
+OBJ_FILES=main.o diag.o rxin.o motors.o vsense.o builddate.o nvconfig.o blinky.o mixing.o configmode.o
 OBJECTS=$(addprefix $(OBJDIR)/,$(OBJ_FILES))
-HEADERS=diag.h motors.h rxin.h state.h vsense.h nvconfig.h blinky.h mixing.h
+HEADERS=diag.h motors.h rxin.h state.h vsense.h nvconfig.h blinky.h mixing.h configmode.h
 
 MCU=attiny1614
 

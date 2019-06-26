@@ -33,6 +33,35 @@ static void squaring(int *channel, int maxval)
     *channel = (int) c32;
 }
 
+static uint16_t apply_weapon_rules(uint16_t throttle, uint16_t steering, uint16_t weapon)
+{
+    // Fix up weapon to correct range 
+    weapon = (weapon * 20) / 45; // -200 ... 200
+    uint8_t mode  = nvconfig_state.weapon_mode;
+
+    if (mode == WEAPON_MODE_FLIPHARD) {
+        if (weapon > 70) {
+            // threshold to give maximum flip power.
+            weapon = 200;
+        } else if (weapon < -70 ) {
+            // retract with a dead zone, but gradually.
+            weapon = signedclamp(weapon, 200);
+        } else {
+            // dead zone
+            weapon = 0;
+            // If we are driving, let's auto-retract the weapon.
+            if (abs(throttle) > 20) {
+                weapon = -40;
+            }
+        }
+    } else {
+        // Default weapon mode
+        weapon = deadzone(weapon, 20);
+        weapon = signedclamp(weapon, 200);
+    }
+    return weapon;
+}
+
 static uint16_t diag_count=0;
 
 void mixing_drive_motors(int16_t throttle, int16_t steering, int16_t weapon, bool invert)
@@ -72,10 +101,7 @@ void mixing_drive_motors(int16_t throttle, int16_t steering, int16_t weapon, boo
     // squaring(&left,200);
     // squaring(&right,200);
   
-    // Fix up weapon to correct range 
-    weapon = (weapon * 20) / 45; // -200 ... 200
-    weapon = deadzone(weapon, 20);
-    weapon = signedclamp(weapon, 200);
+    weapon = apply_weapon_rules(throttle, steering, weapon);
     
     if (invert) {
         int temp;

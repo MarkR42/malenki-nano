@@ -8,6 +8,7 @@
 #include "blinky.h"
 #include "mixing.h"
 #include "nvconfig.h"
+#include "configmode.h"
 
 #include <string.h>
 #include <stdlib.h>
@@ -85,9 +86,16 @@ static void init_serial()
 	uint32_t clk_per_hz = 3333L * 1000; // CLK_PER after prescaler in hz
 	uint16_t baud_param = (64 * clk_per_hz) / (16 * want_baud_hz);
 	USART0.BAUD = baud_param;
-    USART0.CTRLB = USART_TXEN_bm | USART_RXEN_bm; // Start Transmitter and receiver
+    // "Open drain" mode
+    USART0.CTRLB = USART_ODME_bm |
+        USART_TXEN_bm | USART_RXEN_bm; // Start Transmitter and receiver
     // Enable interrupts from the usart rx
     USART0.CTRLA |= USART_RXCIE_bm;
+}
+
+void rxin_init_serial()
+{
+    init_serial();
 }
 
 static void rxin_init_hw()
@@ -256,7 +264,6 @@ static void handle_byte_sbus(uint8_t b)
             rxin_state.sbus_index=0;
         }
     }
-    // todo
 }
 
 // Interrupt handler for byte received from USART
@@ -264,13 +271,17 @@ ISR(USART0_RXC_vect)
 {
     // Reading the byte automatically clears irq?
     uint8_t b = USART0.RXDATAL;
-    if (rxin_state.serial_mode == SERIAL_MODE_IBUS) {
+    uint8_t mode = rxin_state.serial_mode;
+    if (mode == SERIAL_MODE_IBUS) {
         handle_byte_ibus(b);
-    } else {
+    } 
+    if (mode == SERIAL_MODE_SBUS) {
         handle_byte_sbus(b);
     }
+    if (rxin_state.rx_protocol == RX_PROTOCOL_CONFIG) {
+        configmode_handle_byte(b);
+    }
 }
-
 
 static void rxin_init_state()
 {
@@ -459,6 +470,14 @@ static void handle_calibration_command(uint8_t button_count)
             nvconfig_state.invert_right = false;
             save = true;
             break; 
+        case 6:
+            // cycle weapon mode.
+            nvconfig_state.weapon_mode += 1;
+            if (nvconfig_state.weapon_mode > WEAPON_MODE_MAX) {
+                nvconfig_state.weapon_mode = 0;
+            }
+            save = true;
+            break; 
     }
     if (save) {
         nvconfig_save();
@@ -601,6 +620,5 @@ void rxin_loop()
             }
         }
     }
-    
 }
 

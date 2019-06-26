@@ -3,6 +3,7 @@
 
 void rxin_init();
 void rxin_loop();
+void rxin_init_serial(); // call this to reinit serial or change mode to rxin_state.serial_mode
 
 // Minimum number of channels required
 #define RX_CHANNELS 6
@@ -84,6 +85,7 @@ typedef struct {
 #define RX_PROTOCOL_PPM 1
 #define RX_PROTOCOL_IBUS 2
 #define RX_PROTOCOL_SBUS 3
+#define RX_PROTOCOL_CONFIG 4
 
 #define SERIAL_MODE_IBUS 0
 #define SERIAL_MODE_SBUS 1

@@ -3,6 +3,12 @@ Pin assignments / usage
 PA0 - RESET / UPDI - default - not used by code. Used for programming
 	firmware
 PA1 - UART0 TxD - used for diagnostic serial output.
+    This pin is enabled with internal pull-up and 
+    in open-drain mode. This allows us to detect if
+    something else is pulling the pin down.
+    
+    If we detect a long low pulse on the TxD pin, that's our signal
+    to enter config mode.
 
 PA2 - UART0 RxD - connected to the RXIN connection.
 	This is used to receive either PPM signals, or serial

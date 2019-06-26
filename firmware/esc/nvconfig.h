@@ -11,6 +11,16 @@ void nvconfig_save();
 // newly reflashed units won't pick up junk config.
 #define NVCONFIG_MAGIC_CORRECT 0x9176
 
+// Normal weapon mode - directly proportional to controller position
+// with reasonable size dead zone:
+#define WEAPON_MODE_NORMAL 0
+// "Flip hard" weapon mode - 
+// Flip with full force when controller > 25%
+// Do nothing between 0-25%
+// retract normally.
+#define WEAPON_MODE_FLIPHARD 1
+#define WEAPON_MODE_MAX 1
+
 typedef struct {
     uint32_t boot_count;
     uint16_t unused1;
@@ -19,6 +29,7 @@ typedef struct {
     bool invert_left;
     bool invert_right;
     bool invert_weapon;
+    uint8_t weapon_mode;
     uint16_t magic;
 } nvconfig_state_t;
 
