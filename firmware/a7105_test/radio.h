@@ -1,0 +1,2 @@
+void radio_init();
+
