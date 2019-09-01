@@ -98,6 +98,17 @@ void spi_write_byte(uint8_t addr, uint8_t data)
     scs_high();
 }
 
+void spi_write_block(uint8_t addr, const uint8_t *buf, uint8_t datalen)
+{
+    uint8_t firstbyte = addr & 0x3f;
+    scs_low();
+    send_byte(firstbyte);
+    for (uint8_t i=0; i < datalen; i++) {
+        send_byte(buf[i]);
+    }
+    scs_high();
+}
+
 void spi_strobe(uint8_t cmd)
 {
     uint8_t firstbyte = cmd; // must have top bit set.
@@ -122,4 +133,23 @@ uint8_t spi_read_byte(uint8_t addr) {
     }
     scs_high();
     return data;
+}
+
+void spi_read_block(uint8_t addr, uint8_t *buf, uint8_t datalen) {
+    // Read more than 1 byte
+    uint8_t firstbyte = (addr & 0x3f) | 0x40; // Set read flag.
+    scs_low();
+    send_byte(firstbyte);
+    for (uint8_t i=0; i< datalen; i++) {
+        uint8_t data = 0;
+        for (uint8_t n=0; n<8; n++) {
+            data = data << 1;
+            pulse_clock();
+            if (SDIO_PORT->IN & (1 << SDIO_PIN)) {
+                data = data | 1; // High = 1 bit.
+            }
+        }
+        buf[i] = data;
+    }
+    scs_high();
 }

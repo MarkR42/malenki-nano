@@ -51,31 +51,6 @@ static void init()
     PORTA.DIRSET = 1 << 4;
 }
 
-static void register_dump()
-{
-    // Dump regs
-    diag_println("Register dump");
-    for (uint8_t n=0; n<0x30; n++) {
-        uint8_t b = spi_read_byte(n);
-        diag_print("%02x ", (int) b);
-        if ((n % 8) == 7) {
-            diag_println("");
-        }
-    }
-    diag_println("");
-}
-
-static void atest() {
-    diag_println("Resetting the a7105");
-    spi_write_byte(0, 0x01); // Zero - reset register.
-    _delay_ms(100); 
-    register_dump();
-    spi_write_byte(0x06, 0xa9); // ID register
-    _delay_ms(100); 
-    register_dump();
-}
-
-
 int main(void)
 {
     init();
@@ -87,14 +62,15 @@ int main(void)
     diag_println("This is a test program to test SPI communication with the A7105");
     diag_println("And also the A7105 radio");
     radio_init();
+    test_read_start();
     
     int counter=0;
     while(1) {
         counter ++;
-        PORTA.OUTSET = 1 << 4;
-        _delay_ms(1000); 
-        PORTA.OUTCLR = 1 << 4;
-        _delay_ms(1000); 
-        diag_println("loop %d", counter);
+        // PORTA.OUTSET = 1 << 4;
+        _delay_ms(50); 
+        // PORTA.OUTCLR = 1 << 4;
+        if ((counter & 0x0f) ==0) diag_println("loop %d", counter);
+        test_read();
     }
 }
