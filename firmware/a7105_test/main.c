@@ -61,10 +61,14 @@ int main(void)
     diag_println("Hello, world");
     diag_println("This is a test program to test SPI communication with the A7105");
     diag_println("And also the A7105 radio");
+    PORTA.OUTSET = 1 << 4;
+    _delay_ms(250); 
+    PORTA.OUTCLR = 1 << 4;
     radio_init();
     test_read_start();
     
     int counter=0;
+    PORTA.OUTSET = 1 << 4; // led on
     while(1) {
         counter ++;
         // PORTA.OUTSET = 1 << 4;
