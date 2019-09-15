@@ -1,0 +1,66 @@
+Pin and peripheral hardware assignments / usage
+Peripherals of the attiny1614 MCU
+
+PA0 - RESET / UPDI - default - not used by code. Used for programming
+	firmware
+PA1 - UART0 TxD - used for diagnostic serial output.
+    Also connected to a red LED (active high) for general usage.
+    Maybe we keep this led on most of the time,
+    as the serial will be mostly high.
+
+PA2 - GIO1 gpio pin from A7105 radio
+
+PA3 - Motor1F (Weapon) - WO3
+PA4 - Motor3R (Right) - WO4
+PA5 - Motor3F (Right) - WO5
+
+PA6 - SPI_SDIO - connected to the A7105 radio
+PA7 - SPI_SCK - connected to the A7105
+
+PB0 - Motor1R (Weapon) - WO0
+PB1 - Motor2R (Left) - WO1
+PB2 - Motor2F (Left) - WO2
+
+PB3 - SPI_SCS - chip select - connected to A7105
+
+Peripheral usage
+
+USART0 - transmitter - for debug messages
+	receiver - to receive digial data from rx
+
+TCA0 - timer generates 6x PWM pulses on motors
+	use in "split mode"
+
+I think the CMP mappings are probably:
+LCMP0 - WO0 - Motor1R
+LCMP1 - WO1 - Motor2R
+LCMP2 - WO2 - Motor2F
+HCMP0 - WO3 - Motor1F
+HCMP1 - WO4 - Motor3R
+HCMP2 - WO5 - Motor3F
+
+TCB0 - 
+TCB1 - 16-bit timer running at max clock speed, interrupts cpu every 10ms.
+
+TCD0 - unused
+
+Note that the SPI peripheral is not used for spi communication;
+    it's not necessary for our usage. SPI can be bit-banged efficiently.
+
+In principle it is possible with this hardware setup, to use gio1 to 
+receive data from the a7105 in direct mode using the USART0 peripheral. 
+This is complicated and probably not required.
+
+A7105 pin connections:
+
+GIO1 - connected to mcu PA2 pin
+GIO2 - connected to a blue LED,
+    active high.
+
+SPI pins also connected to respective lines as above.
+
+Note that the a7105 breakout module we use does not break out the 
+voltage sense of the a7105 to be used; it is a shame because we could
+use it to detect the battery voltage.
+
+There are no spare gpio on the mcu.
