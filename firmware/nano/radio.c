@@ -5,9 +5,12 @@
 
 #include "a7105_spi.h"
 #include "diag.h"
+#include "radio.h"
 
-#define F_CPU 3333333 /* 20MHz / 6(default prescale) */
+#define F_CPU 2000000
 #include <util/delay.h>
+
+#include <string.h>
 
 // GIO port is on this pin
 PORT_t * const GIO1_PORT = &PORTA;
@@ -68,6 +71,9 @@ static void wait_auto_clear(uint8_t reg, uint8_t bit)
 static const uint8_t radio_id[] = {
     0x54, 0x75, 0xc5, 0x2a
     };
+
+static void radio_state_init();
+
 void radio_init()
 {
     // Assume spi is initialised.
@@ -124,7 +130,7 @@ void radio_init()
         diag_println("id_readback[%d]=%02x", i, id_readback[i]);
     }
     diag_println("End radio_init");
-    
+    radio_state_init(); 
 }
 
 static bool wait_gio1()
@@ -172,38 +178,11 @@ static void set_led(bool on)
     }
 }
 
-void test_read()
-{
-    diag_println("Scannig some channels");
-    for (uint8_t channel=0; channel < 0xa0; channel += 1) {
-        set_led(channel & 0x1); // Flash led
-        // diag_println("Channel %02x", (int) channel);
-        spi_strobe(STROBE_STANDBY);
-        spi_write_byte(0x0f, channel); // set channel
-        for (int n=0; n<15; n++) {
-            // Check flags
-            spi_strobe(STROBE_READ_PTR_RESET);
-            spi_strobe(STROBE_RX); 
-            if (wait_gio1()) {
-                uint8_t modeflags = spi_read_byte(0);
-                // I think flag 0x01 (bit 0) is the "read data ready" flag, active low,doc is not clear about this.
-                // bits 5 and 6 are read error flags.
+radio_state_t radio_state;
 
-                // diag_println("modeflags=%02x endptr=%02x", (int) modeflags, (int) endptr);
-                uint8_t errflags = (1 << 6) | (1 << 5);
-                // uint8_t rxflag = 1 << 1;
-                if (! (modeflags & errflags)) {
-                    diag_print("c=%02x modeflags=%02x data=", channel, (int) modeflags);
-                    // Read buffer
-                    uint8_t buf[37];
-                    spi_read_block(0x5, buf, sizeof(buf));
-                    print_packet(buf, sizeof(buf));
-                } else {
-                    // diag_println("Read error %02x c=%02x ", (int) modeflags, (int) channel);
-                }
-            }
-        }
-    }
+static void radio_state_init() {
+    memset((void *) &radio_state, 0, sizeof(radio_state));
+    radio_state.state = RADIO_STATE_WAITING; // We may set it to bind later.
 }
 
 // BIND MODE: uses channels
