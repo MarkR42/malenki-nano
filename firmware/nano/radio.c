@@ -6,6 +6,7 @@
 #include "a7105_spi.h"
 #include "diag.h"
 #include "radio.h"
+#include "state.h"
 
 #define F_CPU 2000000
 #include <util/delay.h>
@@ -185,6 +186,94 @@ static void radio_state_init() {
     radio_state.state = RADIO_STATE_WAITING; // We may set it to bind later.
 }
 
+static bool is_all_zeros(const uint8_t *buf, uint8_t len)
+{
+    for (uint8_t i=0; i<len; i++) {
+        if (buf[i] != 0) {
+            return false;
+        }
+    } 
+    return true;
+}
+
+static void set_rx_channel(uint8_t channel)
+{
+    spi_write_byte(0x0f, channel);
+}
+
+static void start_rx()
+{
+    spi_strobe(STROBE_READ_PTR_RESET);
+    spi_strobe(STROBE_RX);
+    // after a packet is received, it goes into standby automatically.
+    // then we have to re-trigger it by doing a READ_PTR_RESET
+    // Then RX strobe.
+}
+
+static void enter_bind_mode()
+{
+    diag_println("Entering bind mode");
+    radio_state.state = RADIO_STATE_BIND;
+    // In bind mode, the tx uses 0x0d, but we need to set one channel lower.
+    set_rx_channel(0x0c); 
+    radio_state.flash_time = get_micros();
+    start_rx();
+}
+
+
+static void do_radio_waiting()
+{
+    // Waiting for a signal from the tx
+    // Check if the tx ID is actually zeros?
+    if (is_all_zeros((uint8_t *) & radio_state.tx_id, sizeof(radio_state.tx_id))) {
+        diag_println("No tx id stored.");
+        enter_bind_mode();
+        return;
+    }
+    // here we should check for received packet, etc.
+}
+
+static bool rx_packet()
+{   
+    bool ret = false;
+    // Return true iff a packet is received.
+    // Put the packet data in radio_state.packet
+    if (! (GIO1_PORT->IN & GIO1_bm)) {
+        // Got something?
+        uint8_t modeflags = spi_read_byte(0);
+        // I think flag 0x01 (bit 0) is the "read data ready" flag, active low,doc is not clear about this.
+        // bits 5 and 6 are read error flags.
+        uint8_t errflags = (1 << 6) | (1 << 5);
+        if (! (modeflags & errflags)) {
+            // No error.    
+            // Read packet buffer, 
+            spi_read_block(0x5, radio_state.packet, RADIO_PACKET_LEN);
+            ret = true;
+        }
+        // restart the rx.
+        start_rx();
+    }
+    return ret;
+}
+
+
+static void do_radio_bind()
+{
+    uint32_t now = get_micros();
+    // Blink led quickly.
+    if ((now - radio_state.flash_time) > 0x10000) {
+        set_led((now / 0x10000) % 2);  
+    }
+    if (rx_packet()) {
+        // Switch to next channel
+        radio_state.packet_counter += 1;
+        uint8_t newchan = (radio_state.packet_counter & 1) ? 0x0c : 0x8b;
+        set_rx_channel(newchan);        
+        diag_print("bind: got packet ");
+        print_packet(radio_state.packet, RADIO_PACKET_LEN);
+    }
+}
+
 // BIND MODE: uses channels
 // 0c and 8b
 // Transmitter transmits one channel number higher?
@@ -192,5 +281,17 @@ static void radio_state_init() {
 void radio_loop()
 {
     // called each time
+    switch (radio_state.state) {
+        case RADIO_STATE_BIND:
+            do_radio_bind();
+            break;
+        case RADIO_STATE_WAITING:
+            do_radio_waiting();
+            break;
+        case RADIO_STATE_HOPPING:
+            // TODO
+            break;
+
+    }
 }
 

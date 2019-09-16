@@ -110,6 +110,6 @@ int main(void)
     
     while(1) {
         // Main loop
-
+        radio_loop();
     }
 }
