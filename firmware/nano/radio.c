@@ -274,6 +274,15 @@ static void hop_next_channel()
     start_rx(nextchan - 1); // subtract 1 because reasons.
 }
 
+static void enter_hopping_mode()
+{
+    // Called when we reach "full" hopping mode and receive a signal
+    diag_println("gotsticks");
+    radio_state.state = RADIO_STATE_HOPPING;
+    radio_state.missed_packet_count = 0;
+    set_led(1);
+}
+
 // Time to automatically enter bind mode if we get no signal
 // from power-on
 #define AUTOBIND_TIME (80 * 1000L * 1000L)
@@ -293,9 +302,9 @@ static void do_radio_waiting()
     if (rx_packet(false)) {
         radio_state.got_signal_ever = 1;
         if (process_sticks_packet()) {
-            diag_println("gotsticks");
             hop_next_channel();
-            radio_state.state = RADIO_STATE_HOPPING;
+            enter_hopping_mode();
+            radio_state.last_packet_micros = micros_now;
         } else { 
            restart_rx();
         }
@@ -304,6 +313,13 @@ static void do_radio_waiting()
 
 static uint32_t timediffs[NR_HOP_CHANNELS];
 static uint32_t timelast;
+
+// Packets are normally sent every 3.8 ms
+#define MISSED_PACKET_MICROS 3900
+
+// If we miss so many packets, something is wrong
+// and we will need to resynchronise.
+#define MISSED_PACKET_MAX 8
 
 static void do_radio_hopping()
 {
@@ -323,16 +339,40 @@ static void do_radio_hopping()
             uint8_t i = radio_state.hop_index;
             if (i == 0) {
                 diag_puts("\r\n");
-                diag_print("tdiff=%ld", timediffs[0]);
+                // diag_print("tdiff=%ld", timediffs[0]);
             }
             diag_puts("+");
-            timediffs[i] = (now - timelast);
-            timelast = now;
             // uint32_t endnow = get_micros();
             // diag_println("proctime=%ld", endnow - now);
+            radio_state.last_packet_micros = now;
+            radio_state.missed_packet_count = 0;
         }
+    } else {
+        // handle missed packet.
+        uint32_t age = (now - radio_state.last_packet_micros);
+        if (age > MISSED_PACKET_MICROS) {
+            hop_next_channel();
+            if (age > 10000) {
+                diag_println("age=%lu", age);
+                diag_println("now=%lu last=%lu", now, radio_state.last_packet_micros);
+            }
+            // Missed packet.
+            radio_state.missed_packet_count += 1;
+            // Remember that the last packet was sent about now, even though
+            // we didn't receive it.
+            radio_state.last_packet_micros = now;
+            // Make a nice pattern.
+            diag_puts("-");
+            if (radio_state.hop_index == 0) {
+                diag_puts("\r\n");
+            }
+            if (radio_state.missed_packet_count > MISSED_PACKET_MAX ) {
+                diag_print("Lost too many packets.");
+                enter_waiting_mode();
+            }  
+        }
+
     }
-    // TODO: handle missed packet.
 }
 
 static void do_successful_bind(uint8_t *tx_id, uint8_t *hop_channels)

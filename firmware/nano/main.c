@@ -68,11 +68,19 @@ static void init_timer()
 // This will wrap after less than 2 hours.
 uint32_t get_micros()
 {
-    cli();
-    uint32_t ticks = master_state.tickcount;
-    uint16_t cnt = TCB1.CNT / 5; // clock cycles 
-    uint32_t micros = ticks * 10000 + cnt;
-    sei();
+    uint32_t ticks;
+    uint16_t cnt;
+    // There is an occasional race condition if cnt
+    // has wrapped very recently, and an interrupt is due
+    // but not happened yet.
+    do {
+        cli();
+        ticks = master_state.tickcount;
+        cnt = TCB1.CNT; // clock cycles
+        sei();
+    } while (cnt < 10); // if we lost the race, try again to allow irq
+    cnt = cnt / 5;  // ticks to microsec
+    uint32_t micros = ticks * 10000L + cnt;
     return micros;
 }
 
@@ -84,11 +92,13 @@ ISR(TCB1_INT_vect)
 
 static void __attribute__ ((unused)) test_get_micros()
 {
-    uint32_t times[10];
-    for (uint8_t i=0; i< 10; i++) {
+    uint32_t times[50];
+    _delay_us(99L * 1000L);
+    for (uint8_t i=0; i< 50; i++) {
         times[i] = get_micros();
+        _delay_us(3);
     }
-    for (uint8_t i=0; i< 10; i++) {
+    for (uint8_t i=0; i< 50; i++) {
         diag_println("micros = %ld", times[i]); 
     }
     uint32_t t0 = get_micros();
@@ -96,6 +106,25 @@ static void __attribute__ ((unused)) test_get_micros()
     uint32_t t1 = get_micros();
     diag_println("before  delay = %ld", t0);
     diag_println("after delay = %ld", t1);
+    diag_println("Testing monotonic clock");
+    uint32_t fin_time = get_micros() + 500000L;
+    uint32_t now = get_micros();
+    while (1) {
+        if (now > fin_time) {
+            break;
+        }
+        _delay_us(50);
+        uint32_t now2 = get_micros();
+        if (now2 < now) {
+            diag_println("ERROR ERROR - time went backwards");
+            diag_println("%ld to %ld", now2, now);
+            while(1) { 
+                // it's the end.
+            }
+        }
+        now = now2;
+    }
+    diag_println("ok");
 }
 
 int main(void)
@@ -105,10 +134,10 @@ int main(void)
     // Write the greeting message as soon as possible.
     diag_println("Malenki-nano receiver starting up");
     init_timer();
+    sei(); // interrupts on
     test_get_micros();
     spi_init();
     motors_init();
-    sei(); // interrupts on
     nvconfig_load();
     radio_init();
     

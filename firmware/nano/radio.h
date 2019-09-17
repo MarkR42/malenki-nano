@@ -15,12 +15,14 @@ typedef struct {
 #define RADIO_PACKET_LEN 37
 typedef struct {
     // Saved binding info from the transmitter:
+    // saved into nvrame:
     uint8_t tx_id[4]; // Transmitter ID
     uint8_t hop_channels[NR_HOP_CHANNELS]; // List of hopping channels.
-    // Other info
+    // Other info - not saved between boots
     uint8_t state;
     uint8_t hop_index;
     uint32_t last_packet_micros; // so we can detect late etc
+    uint16_t missed_packet_count; 
     uint32_t flash_time; // for blinking the lamp 
     uint8_t packet[RADIO_PACKET_LEN];
     uint32_t packet_counter;
