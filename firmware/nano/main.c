@@ -50,15 +50,17 @@ static void init_serial()
 static void init_timer()
 {
     // This uses TCB1 for timer interrupts.
-    const unsigned short compare_value = 10000; // 100hz in clock ticks
+    // We need to count 100k clock cycles, so count to 50k
+    // and enable divide by 2
+    const unsigned short compare_value = 50000; 
     TCB1.CCMP = compare_value;
     TCB1.INTCTRL = TCB_CAPT_bm;
     // CTRLB bits 0-2 are the mode, which by default
     // 000 is "periodic interrupt" -which is correct
     TCB1.CTRLB = 0;
     TCB1.CNT = 0;
-    // CTRLA- select CLK_PER and enable.
-    TCB1.CTRLA = TCB_ENABLE_bm;
+    // CTRLA- select CLK_PER/2 and enable.
+    TCB1.CTRLA = TCB_ENABLE_bm | TCB_CLKSEL_CLKDIV2_gc;
     master_state.tickcount = 0;
 }
 
@@ -68,7 +70,7 @@ uint32_t get_micros()
 {
     cli();
     uint32_t ticks = master_state.tickcount;
-    uint16_t cnt = TCB1.CNT / 10; // clock cycles 
+    uint16_t cnt = TCB1.CNT / 5; // clock cycles 
     uint32_t micros = ticks * 10000 + cnt;
     sei();
     return micros;
@@ -103,7 +105,7 @@ int main(void)
     // Write the greeting message as soon as possible.
     diag_println("Malenki-nano receiver starting up");
     init_timer();
-    // test_get_micros();
+    test_get_micros();
     spi_init();
     motors_init();
     sei(); // interrupts on
