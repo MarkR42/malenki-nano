@@ -1,7 +1,7 @@
 #include <avr/io.h>
 #include <avr/interrupt.h>
 
-#define F_CPU 2000000 /* 2MHz / prescale=10 */
+#define F_CPU 10000000 /* 10MHz / prescale=2 */
 #include <util/delay.h>
 
 #include <string.h>
@@ -14,13 +14,14 @@
 #include "radio.h"
 #include "state.h"
 #include "motors.h"
+#include "nvconfig.h"
 
 volatile master_state_t master_state;
 
 static void init_clock()
 {
     // This is where we change the cpu clock if required.
-    uint8_t val = CLKCTRL_PDIV_10X_gc | 0x1;  // 0x1 = PEN enable prescaler.
+    uint8_t val = CLKCTRL_PDIV_2X_gc | 0x1;  // 0x1 = PEN enable prescaler.
     _PROTECTED_WRITE(CLKCTRL.MCLKCTRLB, val);
     _delay_ms(10);
 }
@@ -56,8 +57,8 @@ static void init_timer()
     // 000 is "periodic interrupt" -which is correct
     TCB1.CTRLB = 0;
     TCB1.CNT = 0;
-    // CTRLA- select CLK_PER / 2 and enable.
-    TCB1.CTRLA = TCB_ENABLE_bm | TCB_CLKSEL_CLKDIV2_gc;
+    // CTRLA- select CLK_PER and enable.
+    TCB1.CTRLA = TCB_ENABLE_bm;
     master_state.tickcount = 0;
 }
 
@@ -67,7 +68,7 @@ uint32_t get_micros()
 {
     cli();
     uint32_t ticks = master_state.tickcount;
-    uint16_t cnt = TCB1.CNT; // clock cycles 
+    uint16_t cnt = TCB1.CNT / 10; // clock cycles 
     uint32_t micros = ticks * 10000 + cnt;
     sei();
     return micros;
@@ -79,7 +80,7 @@ ISR(TCB1_INT_vect)
     TCB1.INTFLAGS |= TCB_CAPT_bm; //clear the interrupt flag(to reset TCB0.CNT)
 }
 
-static void test_get_micros()
+static void __attribute__ ((unused)) test_get_micros()
 {
     uint32_t times[10];
     for (uint8_t i=0; i< 10; i++) {
@@ -102,10 +103,11 @@ int main(void)
     // Write the greeting message as soon as possible.
     diag_println("Malenki-nano receiver starting up");
     init_timer();
-    test_get_micros();
+    // test_get_micros();
     spi_init();
     motors_init();
     sei(); // interrupts on
+    nvconfig_load();
     radio_init();
     
     while(1) {

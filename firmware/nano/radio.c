@@ -7,8 +7,9 @@
 #include "diag.h"
 #include "radio.h"
 #include "state.h"
+#include "nvconfig.h"
 
-#define F_CPU 2000000
+#define F_CPU 10000000
 #include <util/delay.h>
 
 #include <string.h>
@@ -73,7 +74,8 @@ static const uint8_t radio_id[] = {
     0x54, 0x75, 0xc5, 0x2a
     };
 
-static void radio_state_init();
+static void enter_waiting_mode();
+static void enter_bind_mode();
 
 void radio_init()
 {
@@ -131,32 +133,7 @@ void radio_init()
         diag_println("id_readback[%d]=%02x", i, id_readback[i]);
     }
     diag_println("End radio_init");
-    radio_state_init(); 
-}
-
-static bool wait_gio1()
-{
-    // Wait for gio1 to go high then low
-    // wait for it to go high (rx started)
-    int i=0;
-    while (! ( GIO1_PORT->IN & GIO1_bm))  {
-        // Nothing 
-        _delay_us(100);
-        i += 1;
-        if (i >= 2000) {
-            return false;
-        }
-    }
-    // Wait for it to go low (rx finished)
-    i=0;
-    while (GIO1_PORT->IN & GIO1_bm) {
-        // Nothing 
-        i += 1;
-        if (i >= 2000) {
-            return false;
-        }
-    }
-    return true;
+    enter_waiting_mode();
 }
 
 static void print_packet(const uint8_t *buf, uint8_t len)
@@ -181,11 +158,6 @@ static void set_led(bool on)
 
 radio_state_t radio_state;
 
-static void radio_state_init() {
-    memset((void *) &radio_state, 0, sizeof(radio_state));
-    radio_state.state = RADIO_STATE_WAITING; // We may set it to bind later.
-}
-
 static bool is_all_zeros(const uint8_t *buf, uint8_t len)
 {
     for (uint8_t i=0; i<len; i++) {
@@ -196,44 +168,79 @@ static bool is_all_zeros(const uint8_t *buf, uint8_t len)
     return true;
 }
 
-static void set_rx_channel(uint8_t channel)
-{
-    spi_write_byte(0x0f, channel);
-}
+/*
+ * Note when calling set_rx_channel we need to subtract 1 from the channel number
+ * used by the tx,
+ *
+ * Because of Reasons :)
+ */
 
-static void start_rx()
+static void start_rx(uint8_t channel)
 {
-    spi_strobe(STROBE_READ_PTR_RESET);
+    spi_strobe2(STROBE_STANDBY, STROBE_READ_PTR_RESET);
+    spi_write_byte(0x0f, channel);
     spi_strobe(STROBE_RX);
     // after a packet is received, it goes into standby automatically.
     // then we have to re-trigger it by doing a READ_PTR_RESET
     // Then RX strobe.
 }
 
-static void enter_bind_mode()
+static void restart_rx()
 {
-    diag_println("Entering bind mode");
-    radio_state.state = RADIO_STATE_BIND;
-    // In bind mode, the tx uses 0x0d, but we need to set one channel lower.
-    set_rx_channel(0x0c); 
-    radio_state.flash_time = get_micros();
-    start_rx();
+    spi_strobe3(STROBE_STANDBY, STROBE_READ_PTR_RESET, STROBE_RX);
 }
 
-
-static void do_radio_waiting()
+static void enter_waiting_mode()
 {
-    // Waiting for a signal from the tx
+    diag_println("Entering waiting mode; waiting for sticks data signal");
+    radio_state.state = RADIO_STATE_WAITING;
+    set_led(0);
     // Check if the tx ID is actually zeros?
     if (is_all_zeros((uint8_t *) & radio_state.tx_id, sizeof(radio_state.tx_id))) {
         diag_println("No tx id stored.");
         enter_bind_mode();
         return;
     }
-    // here we should check for received packet, etc.
+    diag_print("stored tx id: "); print_packet(radio_state.tx_id, 4);
+    radio_state.hop_index = 0;
+    start_rx(radio_state.hop_channels[0] - 1); // subtract 1 from tx channel
 }
 
-static bool rx_packet()
+static void enter_bind_mode()
+{
+    diag_println("Entering bind mode");
+    radio_state.state = RADIO_STATE_BIND;
+    // Clear the tx list (in case we used it earlier?)
+    memset((void *) &(radio_state.possible_tx_list), 0, sizeof(radio_state.possible_tx_list));
+    // In bind mode, the tx uses 0x0d, but we need to set one channel lower.
+    start_rx(0x0c); 
+    radio_state.flash_time = get_micros();
+}
+
+static bool process_sticks_packet()
+{
+    // Returns true iff it is a sticks packet from our tx
+    // Check tx id.
+    uint8_t * tx_id = (radio_state.packet + 1);
+    if (memcmp(tx_id, radio_state.tx_id, 4)) {
+        // Wrong transmitter.
+        return false;
+    }
+    uint8_t cmd = radio_state.packet[0];
+    if (cmd != 0x58) {
+        // Not a sticks packet.
+        // diag_puts("odd:");
+        // print_packet(radio_state.packet, 10);
+        return false;
+    } else {
+        // got a good sticks packet.
+        // todo: store sticks data.
+        // print_packet(radio_state.packet, RADIO_PACKET_LEN);
+        return true;
+    } 
+}
+
+static bool rx_packet(bool restart_always)
 {   
     bool ret = false;
     // Return true iff a packet is received.
@@ -250,10 +257,93 @@ static bool rx_packet()
             spi_read_block(0x5, radio_state.packet, RADIO_PACKET_LEN);
             ret = true;
         }
-        // restart the rx.
-        start_rx();
+        // restart the rx, if restart_always is on,
+        // or if we didn't receive a valid packet.
+        if (restart_always || (! ret) ) restart_rx();
     }
     return ret;
+}
+
+static void hop_next_channel()
+{
+    radio_state.hop_index += 1;
+    if (radio_state.hop_index >= NR_HOP_CHANNELS)  {
+        radio_state.hop_index = 0;
+    }
+    uint8_t nextchan = radio_state.hop_channels[radio_state.hop_index];
+    start_rx(nextchan - 1); // subtract 1 because reasons.
+}
+
+// Time to automatically enter bind mode if we get no signal
+// from power-on
+#define AUTOBIND_TIME (80 * 1000L * 1000L)
+
+static void do_radio_waiting()
+{
+    uint32_t micros_now = get_micros();
+    // Waiting for a signal from the tx
+    // here we should check for received packet, etc.
+    if (! radio_state.got_signal_ever) {
+        // Automatically enter bind mode after a while.
+        if (micros_now > AUTOBIND_TIME) {
+            enter_bind_mode();
+            return;
+        }
+    }
+    if (rx_packet(false)) {
+        radio_state.got_signal_ever = 1;
+        if (process_sticks_packet()) {
+            diag_println("gotsticks");
+            hop_next_channel();
+            radio_state.state = RADIO_STATE_HOPPING;
+        } else { 
+           restart_rx();
+        }
+    }
+}
+
+static uint32_t timediffs[NR_HOP_CHANNELS];
+static uint32_t timelast;
+
+static void do_radio_hopping()
+{
+    uint32_t now = get_micros();
+    if (rx_packet(false)) {
+        radio_state.got_signal_ever = 1;
+        bool good = process_sticks_packet(false);
+        // hop channel, if needed, then restart the rx 
+        if (good) {
+            hop_next_channel();
+        } else {
+            // start the rx again even if the received packet was bad.
+            restart_rx();
+        }
+        if (good) {
+            // diagnostic stuff
+            uint8_t i = radio_state.hop_index;
+            if (i == 0) {
+                diag_puts("\r\n");
+                diag_print("tdiff=%ld", timediffs[0]);
+            }
+            diag_puts("+");
+            timediffs[i] = (now - timelast);
+            timelast = now;
+            // uint32_t endnow = get_micros();
+            // diag_println("proctime=%ld", endnow - now);
+        }
+    }
+    // TODO: handle missed packet.
+}
+
+static void do_successful_bind(uint8_t *tx_id, uint8_t *hop_channels)
+{
+    diag_println("SUCCESSFUL BIND! SAVING TX ID!");
+    diag_print("WINNER TX ID: "); print_packet(tx_id, 4);
+    memcpy(radio_state.tx_id, tx_id, 4);
+    memcpy(radio_state.hop_channels, hop_channels, NR_HOP_CHANNELS);
+    diag_print("HOP CHANNELS: "); print_packet(radio_state.hop_channels, NR_HOP_CHANNELS);
+    nvconfig_save();
+    enter_waiting_mode();
 }
 
 
@@ -264,13 +354,53 @@ static void do_radio_bind()
     if ((now - radio_state.flash_time) > 0x10000) {
         set_led((now / 0x10000) % 2);  
     }
-    if (rx_packet()) {
+    if (rx_packet(true)) {
         // Switch to next channel
         radio_state.packet_counter += 1;
-        uint8_t newchan = (radio_state.packet_counter & 1) ? 0x0c : 0x8b;
-        set_rx_channel(newchan);        
-        diag_print("bind: got packet ");
-        print_packet(radio_state.packet, RADIO_PACKET_LEN);
+        // Flip between two channels every few packets received. This is not the same
+        // As what the tx does, but it means we will possibly receive more if there is
+        // interference or something.
+        uint8_t newchan = (radio_state.packet_counter & 0x4) ? 0x0c : 0x8b;
+        start_rx(newchan);
+        // Check if it's interesting
+        // Check for packet type bb - BIND1.
+        if (radio_state.packet[0] == 0xbb) {
+            radio_state.got_signal_ever = 1;
+            uint8_t * bind_tx_id = (radio_state.packet + 1); 
+            uint8_t * bind_hop_channels = (radio_state.packet + 11); 
+            diag_print("bind: got tx id=");
+            print_packet(bind_tx_id, 4);
+            // find the correct slot in possible_tx_list
+            uint8_t tx_index=42; // magic value
+            for (uint8_t i=0; i< POSSIBLE_TX_COUNT; i+= 1) {
+                if (memcmp(bind_tx_id, radio_state.possible_tx_list[i].tx_id, 4) == 0) {
+                    // Correct id found.
+                    tx_index = i;
+                    break;
+                }
+                if (is_all_zeros(radio_state.possible_tx_list[i].tx_id, 4)) {
+                    // Empty slot found.
+                    tx_index = i;
+                    memcpy(radio_state.possible_tx_list[i].tx_id, bind_tx_id, 4);
+                    break;
+                }
+            }
+            if (tx_index != 42) {
+                uint16_t counter = radio_state.possible_tx_list[tx_index].count;
+                counter += 1;
+                radio_state.possible_tx_list[tx_index].count = counter;
+                diag_println(" slot=%d c=%03d", (int) tx_index, (int) counter );
+                // If we received enough packets for *this* transmitter, then it's the
+                // winner.
+                if (counter >= 30)
+                {
+                    do_successful_bind(bind_tx_id, bind_hop_channels);
+                    return;
+                }
+            } else {
+                // No free slots. Junk received?
+            }
+        }
     }
 }
 
@@ -289,7 +419,7 @@ void radio_loop()
             do_radio_waiting();
             break;
         case RADIO_STATE_HOPPING:
-            // TODO
+            do_radio_hopping();
             break;
 
     }

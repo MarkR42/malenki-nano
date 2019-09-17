@@ -1,3 +1,13 @@
+CLOCK SHENANIGANS
+-----------------
+
+We need a higher clock speed because the default is too slow
+
+The time taken to process a packet, must be significantly less than
+the time between packets; otherwise we miss the next one.
+
+-----------
+
 Pin and peripheral hardware assignments / usage
 Peripherals of the attiny1614 MCU
 

@@ -60,6 +60,13 @@ static void pulse_clock()
     _NOP();
     SCK_PORT->OUTCLR = 1 << SCK_PIN;
 }
+static uint8_t pulse_clock_read_bit()
+{
+    SCK_PORT->OUTSET = 1 << SCK_PIN;
+    uint8_t res = (SDIO_PORT->IN & (1 << SDIO_PIN));
+    SCK_PORT->OUTCLR = 1 << SCK_PIN;
+    return res;
+}
 
 static void send_byte(uint8_t data)
 {
@@ -117,6 +124,23 @@ void spi_strobe(uint8_t cmd)
     scs_high();
 }
 
+// Two strobe commands without deasserting scs
+void spi_strobe2(uint8_t cmd, uint8_t cmd2)
+{
+    scs_low();
+    send_byte(cmd);
+    send_byte(cmd2);
+    scs_high();
+}
+void spi_strobe3(uint8_t cmd, uint8_t cmd2, uint8_t cmd3)
+{
+    scs_low();
+    send_byte(cmd);
+    send_byte(cmd2);
+    send_byte(cmd3);
+    scs_high();
+}
+
 uint8_t spi_read_byte(uint8_t addr) {
     // Read a single byte
     //
@@ -126,8 +150,7 @@ uint8_t spi_read_byte(uint8_t addr) {
     send_byte(firstbyte);
     for (uint8_t n=0; n<8; n++) {
         data = data << 1;
-        pulse_clock();
-        if (SDIO_PORT->IN & (1 << SDIO_PIN)) {
+        if (pulse_clock_read_bit()) {
             data = data | 1; // High = 1 bit.
         }
     }
@@ -144,8 +167,7 @@ void spi_read_block(uint8_t addr, uint8_t *buf, uint8_t datalen) {
         uint8_t data = 0;
         for (uint8_t n=0; n<8; n++) {
             data = data << 1;
-            pulse_clock();
-            if (SDIO_PORT->IN & (1 << SDIO_PIN)) {
+            if (pulse_clock_read_bit()) {
                 data = data | 1; // High = 1 bit.
             }
         }
