@@ -127,6 +127,16 @@ static void __attribute__ ((unused)) test_get_micros()
     diag_println("ok");
 }
 
+void trigger_reset()
+{
+    // Pull the reset line.
+    cli();
+    while (1) {
+        _PROTECTED_WRITE(RSTCTRL.SWRR, 1);
+    }
+}
+
+
 int main(void)
 {
     init_clock();
@@ -135,7 +145,7 @@ int main(void)
     diag_println("Malenki-nano receiver starting up");
     init_timer();
     sei(); // interrupts on
-    test_get_micros();
+    // test_get_micros();
     spi_init();
     motors_init();
     nvconfig_load();

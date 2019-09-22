@@ -132,6 +132,13 @@ void radio_init()
     for (int i=0; i<4; i++) {
         diag_println("id_readback[%d]=%02x", i, id_readback[i]);
     }
+    if (memcmp(id_readback, radio_id,4) != 0) {
+        diag_println("ERROR: Wrong ID readback");
+        diag_println("Possible hardware fault. Error not recoverable.");
+        diag_println("FAIL FAIL FAIL!");
+        _delay_ms(250);
+        trigger_reset(); // Reset the whole device.
+    }
     diag_println("End radio_init");
     enter_waiting_mode();
 }
@@ -217,6 +224,10 @@ static void enter_bind_mode()
     radio_state.flash_time = get_micros();
 }
 
+#define PACKET_CMD_STICKS 0x58
+#define PACKET_CMD_BIND1 0xbb
+#define PACKET_CMD_BIND2 0xbc
+
 static bool process_sticks_packet()
 {
     // Returns true iff it is a sticks packet from our tx
@@ -227,7 +238,7 @@ static bool process_sticks_packet()
         return false;
     }
     uint8_t cmd = radio_state.packet[0];
-    if (cmd != 0x58) {
+    if (cmd != PACKET_CMD_STICKS) {
         // Not a sticks packet.
         // diag_puts("odd:");
         // print_packet(radio_state.packet, 10);
@@ -264,11 +275,15 @@ static bool rx_packet(bool restart_always)
     return ret;
 }
 
+// Number of hops to hop, per hop
+// Use this to slow down the rate to get more chance to process.
+#define HOP_COUNT 3
+
 static void hop_next_channel()
 {
-    radio_state.hop_index += 1;
+    radio_state.hop_index += HOP_COUNT;
     if (radio_state.hop_index >= NR_HOP_CHANNELS)  {
-        radio_state.hop_index = 0;
+        radio_state.hop_index -= NR_HOP_CHANNELS;
     }
     uint8_t nextchan = radio_state.hop_channels[radio_state.hop_index];
     start_rx(nextchan - 1); // subtract 1 because reasons.
@@ -311,11 +326,9 @@ static void do_radio_waiting()
     }
 }
 
-static uint32_t timediffs[NR_HOP_CHANNELS];
-static uint32_t timelast;
-
 // Packets are normally sent every 3.8 ms
-#define MISSED_PACKET_MICROS 3900
+// Multiply this by hop count.
+#define MISSED_PACKET_MICROS (3900 * HOP_COUNT)
 
 // If we miss so many packets, something is wrong
 // and we will need to resynchronise.
@@ -339,11 +352,8 @@ static void do_radio_hopping()
             uint8_t i = radio_state.hop_index;
             if (i == 0) {
                 diag_puts("\r\n");
-                // diag_print("tdiff=%ld", timediffs[0]);
             }
             diag_puts("+");
-            // uint32_t endnow = get_micros();
-            // diag_println("proctime=%ld", endnow - now);
             radio_state.last_packet_micros = now;
             radio_state.missed_packet_count = 0;
         }
@@ -352,7 +362,7 @@ static void do_radio_hopping()
         uint32_t age = (now - radio_state.last_packet_micros);
         if (age > MISSED_PACKET_MICROS) {
             hop_next_channel();
-            if (age > 10000) {
+            if (age > 15000) {
                 diag_println("age=%lu", age);
                 diag_println("now=%lu last=%lu", now, radio_state.last_packet_micros);
             }
@@ -391,20 +401,29 @@ static void do_radio_bind()
 {
     uint32_t now = get_micros();
     // Blink led quickly.
-    if ((now - radio_state.flash_time) > 0x10000) {
+    uint32_t flash_delta = (now - radio_state.flash_time);
+    if (flash_delta > 0x10000) {
         set_led((now / 0x10000) % 2);  
     }
+    // Work out which channel we should receive?
+    // Flip between two channels every few packets received. This is not the same
+    // As what the tx does, but it means we will possibly receive more if there is
+    // interference or something.
+    uint32_t ticks = (flash_delta / 32768) & 0xf; // counts 0..15 dec
+    // Binding channels
+    uint8_t nextchan = ( ticks & 0x4 ) ? 0x0c : 0x8b;
+    // Also sometimes check the tx sticks channel (tx chan -1)
+    if (ticks < 4) nextchan = radio_state.hop_channels[0] - 1;
+    
     if (rx_packet(true)) {
         // Switch to next channel
         radio_state.packet_counter += 1;
-        // Flip between two channels every few packets received. This is not the same
-        // As what the tx does, but it means we will possibly receive more if there is
-        // interference or something.
-        uint8_t newchan = (radio_state.packet_counter & 0x4) ? 0x0c : 0x8b;
-        start_rx(newchan);
+        radio_state.last_packet_micros = now;
+        start_rx(nextchan);
         // Check if it's interesting
         // Check for packet type bb - BIND1.
-        if (radio_state.packet[0] == 0xbb) {
+        uint8_t cmd = radio_state.packet[0];
+        if ((cmd == PACKET_CMD_BIND1) || (cmd == PACKET_CMD_BIND2)) {
             radio_state.got_signal_ever = 1;
             uint8_t * bind_tx_id = (radio_state.packet + 1); 
             uint8_t * bind_hop_channels = (radio_state.packet + 11); 
@@ -441,7 +460,32 @@ static void do_radio_bind()
                 // No free slots. Junk received?
             }
         }
+        // Check for a sticks packet, from our already bound tx.
+        if (cmd == PACKET_CMD_STICKS) {
+            uint8_t * bind_tx_id = (radio_state.packet + 1); 
+            if (memcmp(bind_tx_id, radio_state.tx_id, 4) == 0) {
+                // Got a sticks packet while in bind mode?
+                // we are re-binding the same tx, so let's do that.
+                diag_println("OLD TX: GOT STICKS PACKET when in bind mode");
+                diag_println("Bind not needed: exiting bind mode");
+                radio_state.got_signal_ever = 1;
+                enter_waiting_mode();
+            }
+        }
+    } else {
+        // Hey if we didn't receive anything for a while, switch channel anyway.
+        uint32_t age = (now - radio_state.last_packet_micros);
+        if (age > 20000) {
+            start_rx(nextchan);
+            // remember that we changed channel now
+            radio_state.last_packet_micros = now;
+            // diag_println("bchan %02x", (int) nextchan);
+        }
     }
+    // If we didn't receive anything, or have a timeout, stay on the same channel and
+    // wait; it might be currently receiving something. Changing the channel or settings
+    // too often might be counter-productive, as it will destroy a packet which is
+    // in transit.
 }
 
 // BIND MODE: uses channels
