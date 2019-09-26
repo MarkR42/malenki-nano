@@ -15,6 +15,7 @@
 #include "state.h"
 #include "motors.h"
 #include "nvconfig.h"
+#include "mixing.h"
 
 volatile master_state_t master_state;
 
@@ -37,7 +38,7 @@ static void init_serial()
     PORTA.OUTSET = 1 << 1;
     PORTA.DIRSET = 1 << 1;
     
-    uint32_t want_baud_hz = 115200; // Baud rate
+    uint32_t want_baud_hz = 230400; // Baud rate (was 115200)
     uint32_t clk_per_hz = F_CPU; // CLK_PER after prescaler in hz
     uint16_t baud_param = (64 * clk_per_hz) / (16 * want_baud_hz);
     USART0.BAUD = baud_param;
@@ -148,6 +149,7 @@ int main(void)
     // test_get_micros();
     spi_init();
     motors_init();
+    mixing_init();
     nvconfig_load();
     radio_init();
     

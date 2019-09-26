@@ -8,6 +8,8 @@
 #include "radio.h"
 #include "state.h"
 #include "nvconfig.h"
+#include "motors.h"
+#include "mixing.h"
 
 #define F_CPU 10000000
 #include <util/delay.h>
@@ -18,6 +20,14 @@
 PORT_t * const GIO1_PORT = &PORTA;
 const uint8_t GIO1_PIN = 2;
 const uint8_t GIO1_bm = 1 << GIO1_PIN;
+
+/*
+ * Blinking LED goes on this GPIO pin.
+ * Note: on attiny1614, this pin does not exist, but it's ok.
+ * We will blink it on a chip where it does exist.
+ */
+PORT_t * const BLINKY_PORT = &PORTB;
+const uint8_t BLINKY_bm = 1 << 4;
 
 static void register_dump()
 {
@@ -76,9 +86,13 @@ static const uint8_t radio_id[] = {
 
 static void enter_waiting_mode();
 static void enter_bind_mode();
+static void init_led();
+static void reset_sticks();
 
 void radio_init()
 {
+    reset_sticks();
+    init_led();
     // Assume spi is initialised.
     diag_println("Begin radio_init");
     diag_println("Resetting the a7105");
@@ -151,6 +165,12 @@ static void print_packet(const uint8_t *buf, uint8_t len)
     diag_println(" ");
 }
 
+static void init_led()
+{
+    // Set the blinky LED gpio to output.
+    BLINKY_PORT->DIRSET = BLINKY_bm;
+}
+
 static void set_led(bool on)
 {
     // Use GIO2 to light the led.
@@ -158,8 +178,10 @@ static void set_led(bool on)
     const uint8_t gio2_function_bm = 0x30; // 0x30=inhibited
     if (on) {
         spi_write_byte(gio2_reg, gio2_function_bm | 0x1 | 0x02 ); // Enable, invert
+        BLINKY_PORT->OUTSET = BLINKY_bm;
     } else {
         spi_write_byte(gio2_reg, gio2_function_bm | 0x1 ); // Enable only
+        BLINKY_PORT->OUTCLR = BLINKY_bm;
     }
 }
 
@@ -199,6 +221,7 @@ static void restart_rx()
 
 static void enter_waiting_mode()
 {
+    motors_all_off(); // Failsafe.
     diag_println("Entering waiting mode; waiting for sticks data signal");
     radio_state.state = RADIO_STATE_WAITING;
     set_led(0);
@@ -245,10 +268,22 @@ static bool process_sticks_packet()
         return false;
     } else {
         // got a good sticks packet.
-        // todo: store sticks data.
-        // print_packet(radio_state.packet, RADIO_PACKET_LEN);
+        // store sticks data.
+        // assumption: cpu is little-endian.
+        const uint8_t sticks_offset = 9; // Bytes offset 
+        for (uint8_t n=0; n< NUM_CONTROL_CHANNELS; n++) {
+            uint16_t *stick = (uint16_t *) (radio_state.packet + sticks_offset + (2*n));
+            radio_state.sticks[n] = *stick;
+        }
         return true;
     } 
+}
+
+static void reset_sticks()
+{
+    for (uint8_t n=0; n< NUM_CONTROL_CHANNELS; n++) {
+        radio_state.sticks[n] = 1500; // Central value.
+    }
 }
 
 static bool rx_packet(bool restart_always)
@@ -277,7 +312,7 @@ static bool rx_packet(bool restart_always)
 
 // Number of hops to hop, per hop
 // Use this to slow down the rate to get more chance to process.
-#define HOP_COUNT 3
+#define HOP_COUNT 1
 
 static void hop_next_channel()
 {
@@ -304,9 +339,9 @@ static void enter_hopping_mode()
 
 static void do_radio_waiting()
 {
-    uint32_t micros_now = get_micros();
+   uint32_t micros_now = get_micros();
     // Waiting for a signal from the tx
-    // here we should check for received packet, etc.
+    // here we check for received packet, etc.
     if (! radio_state.got_signal_ever) {
         // Automatically enter bind mode after a while.
         if (micros_now > AUTOBIND_TIME) {
@@ -343,6 +378,13 @@ static void do_radio_hopping()
         // hop channel, if needed, then restart the rx 
         if (good) {
             hop_next_channel();
+            // Drive the motors!
+            mixing_drive_motors(
+                ((int16_t) radio_state.sticks[2]) - 1500, // throttle
+                ((int16_t) radio_state.sticks[0]) - 1500, // steering
+                ((int16_t) radio_state.sticks[1]) - 1500, // weapon
+                false); // invert flag
+            
         } else {
             // start the rx again even if the received packet was bad.
             restart_rx();
@@ -351,7 +393,7 @@ static void do_radio_hopping()
             // diagnostic stuff
             uint8_t i = radio_state.hop_index;
             if (i == 0) {
-                diag_puts("\r\n");
+                // diag_puts("\r\n");
             }
             diag_puts("+");
             radio_state.last_packet_micros = now;
@@ -374,7 +416,7 @@ static void do_radio_hopping()
             // Make a nice pattern.
             diag_puts("-");
             if (radio_state.hop_index == 0) {
-                diag_puts("\r\n");
+                // diag_puts("\r\n");
             }
             if (radio_state.missed_packet_count > MISSED_PACKET_MAX ) {
                 diag_print("Lost too many packets.");

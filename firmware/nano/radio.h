@@ -12,6 +12,10 @@ typedef struct {
 
 #define POSSIBLE_TX_COUNT 4
 
+// This is the number of channels that we care about.
+// The transmitter will send more, but we ignore those.
+#define NUM_CONTROL_CHANNELS 6
+
 #define RADIO_PACKET_LEN 37
 typedef struct {
     // Saved binding info from the transmitter:
@@ -28,6 +32,7 @@ typedef struct {
     uint32_t packet_counter;
     possible_tx possible_tx_list[POSSIBLE_TX_COUNT];
     uint8_t got_signal_ever; // Set this to 1 after we got anything, to suppress autobind.
+    uint16_t sticks[NUM_CONTROL_CHANNELS];
 } radio_state_t;
 
 extern radio_state_t radio_state;
