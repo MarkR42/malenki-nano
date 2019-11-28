@@ -26,7 +26,7 @@ link: $(OBJECTS) $(HEADERS)
 	avr-objdump -j .bss -j .data -t $(ELF) | grep 00 |sort > $(OBJDIR)/ram.txt # show ram usage
 	avr-objcopy -j .text -j .data -j .rodata -O ihex $(ELF) $(HEX)
 
-CFLAGS=-mmcu=$(MCU) -D__AVR_DEV_LIB_NAME__=tn1614 -Os -Wall
+CFLAGS=-mmcu=$(MCU)  -Os -Wall
 $(OBJDIR)/%.o: %.c Makefile $(HEADERS)
 	@mkdir -p $(OBJDIR)
 	avr-gcc -c $(CFLAGS) -o $@ $<

@@ -7,8 +7,11 @@ Required to compile
 To compile these, you need a avr-gcc compiler configured for the
 attiny1614.
 
-Instructions are here:
+Old instructions are here:
 https://github.com/vladbelous/tinyAVR_gcc_setup
+
+A newer script I've written is here:
+https://github.com/MarkR42/robotbits/tree/master/avr_toolchain
 
 To flash the firmware, you need a suitable flashing utility.
 

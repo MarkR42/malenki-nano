@@ -19,7 +19,13 @@ void nvconfig_save();
 // Do nothing between 0-25%
 // retract normally.
 #define WEAPON_MODE_FLIPHARD 1
-#define WEAPON_MODE_MAX 1
+// Axe weapon-mode.
+// Retract normally.
+// When >25%, enter a loop automatically firing and retracting the axe
+#define WEAPON_MODE_AXE1 2
+
+
+#define WEAPON_MODE_MAX 2
 
 typedef struct {
     uint32_t boot_count;
