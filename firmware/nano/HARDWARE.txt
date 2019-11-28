@@ -49,7 +49,7 @@ HCMP0 - WO3 - Motor1F
 HCMP1 - WO4 - Motor3R
 HCMP2 - WO5 - Motor3F
 
-TCB0 - 
+TCB0 - Can be used to implement radio timeouts.
 TCB1 - 16-bit timer running at max clock speed, interrupts cpu every 10ms.
 
 TCD0 - unused
