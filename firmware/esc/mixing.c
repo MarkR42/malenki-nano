@@ -6,6 +6,8 @@
 #include "diag.h"
 #include "nvconfig.h"
 
+mixing_state_t mixing_state;
+
 static int signedclamp(int n, int maxval)
 {
     if (n > maxval) return maxval;
@@ -33,6 +35,60 @@ static void squaring(int *channel, int maxval)
     *channel = (int) c32;
 }
 
+// Time to repeat (centiseconds)
+#define AUTO_FIRE_INTERVAL 120
+
+static uint16_t axe_process(bool automatic)
+{
+    uint32_t now = get_tickcount();
+    uint32_t interval = now - mixing_state.fire_time;
+    if ((interval >= AUTO_FIRE_INTERVAL) || mixing_state.fire_ready) {
+        // New shot
+        mixing_state.fire_time = now;
+        interval = 0;
+        mixing_state.fire_ready = false;
+    }
+    // This is the sequence of events for the axe.
+    if (interval < 25) {
+        // Maximum forward! Fire!
+        return 200;
+    }
+    if (interval < 30) {
+        // Wait a little
+        return 0;
+    }
+    if (interval < 55) {
+        // Retract
+        return -50;
+    }
+    if (interval < 100) {
+        // Retract more gently
+        return -25;
+    }
+    return 0; // Finished
+}
+
+
+static uint16_t apply_weapon_rules_axe(int16_t throttle, int16_t steering, int16_t weapon)
+{
+    // weapon is now in range (-200 .. 200)
+    // handle retraction normally.
+    if (weapon < -20) {
+        return signedclamp(weapon,200);
+    }
+    if (weapon > 50) {
+        // Single shot fire
+        return axe_process(true);
+    } else if (weapon > 150) {
+        // Full automatic!
+        return axe_process(false);
+    } else {
+        // Null, reset the state for single shot.
+        mixing_state.fire_ready = true;
+        return 0;
+    }
+}
+
 static uint16_t apply_weapon_rules(int16_t throttle, int16_t steering, int16_t weapon)
 {
     // Fix up weapon to correct range 
@@ -54,6 +110,8 @@ static uint16_t apply_weapon_rules(int16_t throttle, int16_t steering, int16_t w
                 weapon = -40;
             }
         }
+    } else if (mode == WEAPON_MODE_AXE1) {
+        weapon = apply_weapon_rules_axe(throttle, steering, weapon);
     } else {
         // Default weapon mode
         weapon = deadzone(weapon, 20);
@@ -136,4 +194,17 @@ void mixing_drive_motors(int16_t throttle, int16_t steering, int16_t weapon, boo
     } else {
         --diag_count;
     }
+}
+
+
+void mixing_init()
+{
+     // Called at startup.
+     mixing_reset();
+ }
+ 
+void mixing_reset()
+{
+    mixing_state.fire_ready = true;
+    mixing_state.fire_time = 0;
 }
