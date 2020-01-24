@@ -5,6 +5,7 @@
 #include "motors.h"
 #include "diag.h"
 #include "nvconfig.h"
+#include "state.h"
 
 mixing_state_t mixing_state;
 
@@ -36,7 +37,7 @@ static void squaring(int *channel, int maxval)
 }
 
 // Time to repeat (centiseconds)
-#define AUTO_FIRE_INTERVAL 120
+#define AUTO_FIRE_INTERVAL 50
 
 static uint16_t axe_process(bool automatic)
 {
@@ -49,17 +50,17 @@ static uint16_t axe_process(bool automatic)
         mixing_state.fire_ready = false;
     }
     // This is the sequence of events for the axe.
-    if (interval < 25) {
+    if (interval < 15) {
         // Maximum forward! Fire!
         return 200;
     }
-    if (interval < 30) {
+    if (interval < 20) {
         // Wait a little
         return 0;
     }
-    if (interval < 55) {
+    if (interval < 50) {
         // Retract
-        return -50;
+        return -120;
     }
     if (interval < 100) {
         // Retract more gently
