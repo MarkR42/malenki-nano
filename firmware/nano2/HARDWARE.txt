@@ -1,0 +1,118 @@
+CLOCK SHENANIGANS
+-----------------
+
+We need a higher clock speed because the default is too slow
+
+The time taken to process a packet, must be significantly less than
+the time between packets; otherwise we miss the next one.
+
+-----------
+
+Pin and peripheral hardware assignments / usage
+Peripherals of the attiny3217 MCU
+
+PA0 - RESET / UPDI - default - not used by code. Used for programming
+	firmware
+PA1 - UART0 TxD - used for diagnostic serial output.
+    Also connected to a red LED (active high) for general usage.
+    Maybe we keep this led on most of the time,
+    as the serial will be mostly high.
+
+PA2 - GIO1 gpio pin from A7105 radio
+
+PA3 - Motor1F (Weapon) - WO3
+PA4 - Motor3R (Right) - WO4
+PA5 - Motor3F (Right) - WO5
+
+PA6 - SPI_SDIO - connected to the A7105 radio
+PA7 - SPI_SCK - connected to the A7105
+
+PB0 - Motor1R (Weapon) - WO0
+PB1 - Motor2R (Left) - WO1
+PB2 - Motor2F (Left) - WO2
+
+PB3 - SPI_SCS - chip select - connected to A7105
+PB4 - WEAPON2 (optional) - this is an output, it should send pulses
+    1000-2000us
+
+Peripheral usage
+
+USART0 - transmitter - for debug messages
+	receiver - to receive digial data from rx
+
+TCA0 - timer generates 6x PWM pulses on motors
+	use in "split mode"
+
+I think the CMP mappings are probably:
+LCMP0 - WO0 - Motor1R
+LCMP1 - WO1 - Motor2R
+LCMP2 - WO2 - Motor2F
+HCMP0 - WO3 - Motor1F
+HCMP1 - WO4 - Motor3R
+HCMP2 - WO5 - Motor3F
+
+TCB0 - should be used in oneshot to implement timeouts.
+TCB1 - 16-bit timer running at max clock speed, interrupts cpu every 10ms.
+
+TCD0 - unused
+
+Note that the SPI peripheral is not used for spi communication;
+    it's not necessary for our usage. SPI can be bit-banged efficiently.
+
+In principle it is possible with this hardware setup, to use gio1 to 
+receive data from the a7105 in direct mode using the USART0 peripheral. 
+This is complicated and probably not required.
+
+A7105 pin connections:
+
+GIO1 - connected to mcu PA2 pin
+GIO2 - connected to a blue LED,
+    active high.
+
+SPI pins also connected to respective lines as above.
+
+Note that the a7105 breakout module we use does not break out the 
+voltage sense of the a7105 to be used; it is a shame because we could
+use it to detect the battery voltage.
+
+----
+HOW TO RUN RADIO:
+
+1. Init routine runs, with no interrupts happening (yet).
+
+2. When init is finished, we will run the radio 100% from interrupts,
+    we never do any SPI commands except inside irq.
+
+- TCB0 - we set this up to generate periodic interrupts at the timeout
+    period.
+- Interrupt for rx packet - A7105 GIO1 pin will go LOW when there is a new
+    packet. (GIO1 is high when the rx is waiting / pending, low otherwise)
+    We want to interrupt on the falling edge.
+    
+    When GIO1 goes low, we won't always get a valid packet,
+    if the packet is:
+    * From a different transmitter
+    * Junk
+    * Invalid in some way
+    * Not the correct type
+    
+    Then we won't do any hopping, we just restart the rx on the current
+    channel, and hope for the best.
+    
+    We will always need to send the rx strobe command.
+    
+    If the packet is good, then we will reset the timer,
+    and hop to the next channel, then restart the rx.
+    We should also copy the good packet into the buffer.
+    
+- RX Timeout:
+    Rx timeout will happen at various times:
+    * No transmitter
+    * At startup
+    * If a packet is lost
+    
+    We will need to hop to the next channel and restart the rx.
+    If sync is lost, we need to go to the first channel.
+    
+    If in bind mode, then we need to use the bind channel
+    
