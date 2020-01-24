@@ -1,0 +1,549 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<export version="D">
+  <design>
+    <source>/home/mark/personal/malenki-esc/hardware/malenki-nano2/malenki-nano2.sch</source>
+    <date>Fri 17 Jan 2020 11:23:21 GMT</date>
+    <tool>Eeschema 5.99.0-unknown-e6346c7~100~ubuntu18.04.1</tool>
+    <sheet number="1" name="/" tstamps="/">
+      <title_block>
+        <title>Malenki-Nano2</title>
+        <company>Mark Robson</company>
+        <rev/>
+        <date>2019-11-07</date>
+        <source>malenki-nano2.sch</source>
+        <comment number="1" value=""/>
+        <comment number="2" value=""/>
+        <comment number="3" value=""/>
+        <comment number="4" value=""/>
+        <comment number="5" value=""/>
+        <comment number="6" value=""/>
+        <comment number="7" value=""/>
+        <comment number="8" value=""/>
+        <comment number="9" value=""/>
+      </title_block>
+    </sheet>
+  </design>
+  <components>
+    <comp ref="C2">
+      <value>10uF</value>
+      <footprint>Capacitor_SMD:C_0603_1608Metric</footprint>
+      <datasheet>~</datasheet>
+      <libsource lib="malenki-nano-rescue" part="C-Device" description=""/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamp>5CDC3232</tstamp>
+    </comp>
+    <comp ref="C3">
+      <value>10uF</value>
+      <footprint>Capacitor_SMD:C_0603_1608Metric</footprint>
+      <datasheet>~</datasheet>
+      <libsource lib="malenki-nano-rescue" part="C-Device" description=""/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamp>5CDC3533</tstamp>
+    </comp>
+    <comp ref="J1">
+      <value>Conn_01x02_Male</value>
+      <footprint>malenki-nano:PinHeader_1x02_P2.54mm_BIG1</footprint>
+      <datasheet>~</datasheet>
+      <libsource lib="malenki-nano-rescue" part="Conn_01x02_Male-Connector" description=""/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamp>5CDC3C93</tstamp>
+    </comp>
+    <comp ref="U1">
+      <value>A7105-MODULE</value>
+      <footprint>malenki-nano:A7105-module</footprint>
+      <libsource lib="mal_nano" part="A7105-MODULE" description=""/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamp>5CDC9C70</tstamp>
+    </comp>
+    <comp ref="C1">
+      <value>0.1uF</value>
+      <footprint>Capacitor_SMD:C_0603_1608Metric</footprint>
+      <datasheet>~</datasheet>
+      <libsource lib="malenki-nano-rescue" part="C-Device" description=""/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamp>5CDCC5F2</tstamp>
+    </comp>
+    <comp ref="J2">
+      <value>Conn_01x04_Male</value>
+      <footprint>Connector_PinHeader_2.00mm:PinHeader_1x04_P2.00mm_Vertical</footprint>
+      <datasheet>~</datasheet>
+      <libsource lib="malenki-nano-rescue" part="Conn_01x04_Male-Connector" description=""/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamp>5CDCE93F</tstamp>
+    </comp>
+    <comp ref="R1">
+      <value>220R</value>
+      <footprint>Resistor_SMD:R_0603_1608Metric</footprint>
+      <datasheet>~</datasheet>
+      <libsource lib="malenki-nano-rescue" part="R-Device" description=""/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamp>5CDD24A6</tstamp>
+    </comp>
+    <comp ref="D1">
+      <value>LED Blue</value>
+      <footprint>LED_SMD:LED_1206_3216Metric_Castellated</footprint>
+      <datasheet>~</datasheet>
+      <libsource lib="malenki-nano-rescue" part="LED-Device" description=""/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamp>5CDD2ED4</tstamp>
+    </comp>
+    <comp ref="C5">
+      <value>10uF</value>
+      <footprint>Capacitor_SMD:C_0603_1608Metric</footprint>
+      <datasheet>~</datasheet>
+      <libsource lib="malenki-nano-rescue" part="C-Device" description=""/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamp>5CDD5C99</tstamp>
+    </comp>
+    <comp ref="J5">
+      <value>Conn_01x02_Male</value>
+      <footprint>malenki-nano:PinHeader_1x02_P2.54mm_BIG1</footprint>
+      <datasheet>~</datasheet>
+      <libsource lib="malenki-nano-rescue" part="Conn_01x02_Male-Connector" description=""/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamp>5CDD8946</tstamp>
+    </comp>
+    <comp ref="C6">
+      <value>10uF</value>
+      <footprint>Capacitor_SMD:C_0603_1608Metric</footprint>
+      <datasheet>~</datasheet>
+      <libsource lib="malenki-nano-rescue" part="C-Device" description=""/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamp>5CDDD929</tstamp>
+    </comp>
+    <comp ref="J6">
+      <value>Conn_01x02_Male</value>
+      <footprint>malenki-nano:PinHeader_1x02_P2.54mm_BIG1</footprint>
+      <datasheet>~</datasheet>
+      <libsource lib="malenki-nano-rescue" part="Conn_01x02_Male-Connector" description=""/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamp>5CDDD942</tstamp>
+    </comp>
+    <comp ref="C7">
+      <value>10uF</value>
+      <footprint>Capacitor_SMD:C_0603_1608Metric</footprint>
+      <datasheet>~</datasheet>
+      <libsource lib="malenki-nano-rescue" part="C-Device" description=""/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamp>5CDDF092</tstamp>
+    </comp>
+    <comp ref="J7">
+      <value>Conn_01x02_Male</value>
+      <footprint>malenki-nano:PinHeader_1x02_P2.54mm_BIG1</footprint>
+      <datasheet>~</datasheet>
+      <libsource lib="malenki-nano-rescue" part="Conn_01x02_Male-Connector" description=""/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamp>5CDDF0AB</tstamp>
+    </comp>
+    <comp ref="R2">
+      <value>220R</value>
+      <footprint>Resistor_SMD:R_0603_1608Metric</footprint>
+      <datasheet>~</datasheet>
+      <libsource lib="malenki-nano-rescue" part="R-Device" description=""/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamp>5D6AB858</tstamp>
+    </comp>
+    <comp ref="D2">
+      <value>LED Red</value>
+      <footprint>LED_SMD:LED_1206_3216Metric_Castellated</footprint>
+      <datasheet>~</datasheet>
+      <libsource lib="malenki-nano-rescue" part="LED-Device" description=""/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamp>5D6AB864</tstamp>
+    </comp>
+    <comp ref="U5">
+      <value>MX113L</value>
+      <footprint>Package_TO_SOT_SMD:SOT-23-6</footprint>
+      <libsource lib="mal_nano" part="MX113L" description=""/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamp>5DC4CAF8</tstamp>
+    </comp>
+    <comp ref="U6">
+      <value>MX113L</value>
+      <footprint>Package_TO_SOT_SMD:SOT-23-6</footprint>
+      <libsource lib="mal_nano" part="MX113L" description=""/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamp>5DC52CCB</tstamp>
+    </comp>
+    <comp ref="U7">
+      <value>MX113L</value>
+      <footprint>Package_TO_SOT_SMD:SOT-23-6</footprint>
+      <libsource lib="mal_nano" part="MX113L" description=""/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamp>5DC616A1</tstamp>
+    </comp>
+    <comp ref="U3">
+      <value>ATtiny3217-M</value>
+      <footprint>malenki-nano:qfn24-hand1</footprint>
+      <datasheet>http://ww1.microchip.com/downloads/en/DeviceDoc/ATtiny3217_1617-Data-Sheet-40001999B.pdf</datasheet>
+      <libsource lib="MCU_Microchip_ATtiny" part="ATtiny3217-M" description="20MHz, 32kB Flash, 2kB SRAM, 256B EEPROM, VQFN-24"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamp>5DC45560</tstamp>
+    </comp>
+    <comp ref="C4">
+      <value>0.1uF</value>
+      <footprint>Capacitor_SMD:C_0603_1608Metric</footprint>
+      <datasheet>~</datasheet>
+      <libsource lib="malenki-nano-rescue" part="C-Device" description=""/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamp>5CDC5AD8</tstamp>
+    </comp>
+    <comp ref="U2">
+      <value>HT7233</value>
+      <footprint>Package_TO_SOT_SMD:SOT-23</footprint>
+      <datasheet>https://datasheet.lcsc.com/szlcsc/1809191917_Holtek-Semicon-HT7233_C47970.pdf</datasheet>
+      <libsource lib="mal_nano" part="HT7233" description="Holtek HT7233 Voltage Regulator"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamp>5DCB118A</tstamp>
+    </comp>
+  </components>
+  <libparts>
+    <libpart lib="MCU_Microchip_ATtiny" part="ATtiny807-M">
+      <aliases>
+        <alias>ATtiny1607-M</alias>
+        <alias>ATtiny417-M</alias>
+        <alias>ATtiny817-M</alias>
+        <alias>ATtiny1617-M</alias>
+        <alias>ATtiny3217-M</alias>
+      </aliases>
+      <description>20MHz, 8kB Flash, 512B SRAM, 128B EEPROM, VQFN-24</description>
+      <docs>http://ww1.microchip.com/downloads/en/DeviceDoc/ATtiny807_1607-Data-Sheet-40002030A.pdf</docs>
+      <footprints>
+        <fp>QFN*1EP*4x4mm*P0.5mm*</fp>
+      </footprints>
+      <fields>
+        <field name="Reference">U</field>
+        <field name="Value">ATtiny807-M</field>
+        <field name="Footprint">Package_DFN_QFN:QFN-24-1EP_4x4mm_P0.5mm_EP2.6x2.6mm</field>
+      </fields>
+      <pins>
+        <pin num="1" name="PA2" type="BiDi"/>
+        <pin num="2" name="PA3" type="BiDi"/>
+        <pin num="3" name="GND" type="power_in"/>
+        <pin num="4" name="VCC" type="power_in"/>
+        <pin num="5" name="PA4" type="BiDi"/>
+        <pin num="6" name="PA5" type="BiDi"/>
+        <pin num="7" name="PA6" type="BiDi"/>
+        <pin num="8" name="PA7" type="BiDi"/>
+        <pin num="9" name="PB7" type="BiDi"/>
+        <pin num="10" name="PB6" type="BiDi"/>
+        <pin num="11" name="PB5" type="BiDi"/>
+        <pin num="12" name="PB4" type="BiDi"/>
+        <pin num="13" name="PB3" type="BiDi"/>
+        <pin num="14" name="PB2" type="BiDi"/>
+        <pin num="15" name="PB1" type="BiDi"/>
+        <pin num="16" name="PB0" type="BiDi"/>
+        <pin num="17" name="PC0" type="BiDi"/>
+        <pin num="18" name="PC1" type="BiDi"/>
+        <pin num="19" name="PC2" type="BiDi"/>
+        <pin num="20" name="PC3" type="BiDi"/>
+        <pin num="21" name="PC4" type="BiDi"/>
+        <pin num="22" name="PC5" type="BiDi"/>
+        <pin num="23" name="~RESET~/PA0" type="BiDi"/>
+        <pin num="24" name="PA1" type="BiDi"/>
+        <pin num="25" name="GND" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="mal_nano" part="A7105-MODULE">
+      <fields>
+        <field name="Reference">U</field>
+        <field name="Value">A7105-MODULE</field>
+      </fields>
+      <pins>
+        <pin num="1" name="NC" type="NotConnected"/>
+        <pin num="2" name="GIO1" type="BiDi"/>
+        <pin num="3" name="NC" type="NotConnected"/>
+        <pin num="4" name="GIO2" type="BiDi"/>
+        <pin num="5" name="NC" type="NotConnected"/>
+        <pin num="6" name="NC" type="NotConnected"/>
+        <pin num="7" name="GND" type="power_in"/>
+        <pin num="8" name="NC" type="NotConnected"/>
+        <pin num="9" name="VDD" type="power_in"/>
+        <pin num="10" name="GND" type="power_in"/>
+        <pin num="11" name="NC" type="NotConnected"/>
+        <pin num="12" name="SCS" type="input"/>
+        <pin num="13" name="SCK" type="input"/>
+        <pin num="14" name="SDIO" type="BiDi"/>
+      </pins>
+    </libpart>
+    <libpart lib="mal_nano" part="HT7233">
+      <description>Holtek HT7233 Voltage Regulator</description>
+      <docs>https://datasheet.lcsc.com/szlcsc/1809191917_Holtek-Semicon-HT7233_C47970.pdf</docs>
+      <fields>
+        <field name="Reference">U</field>
+        <field name="Value">HT7233</field>
+        <field name="Footprint">Package_TO_SOT_SMD:SOT-23</field>
+        <field name="Datasheet">https://datasheet.lcsc.com/szlcsc/1809191917_Holtek-Semicon-HT7233_C47970.pdf</field>
+      </fields>
+      <pins>
+        <pin num="1" name="GND" type="power_in"/>
+        <pin num="2" name="VO" type="power_out"/>
+        <pin num="3" name="VI" type="power_in"/>
+      </pins>
+    </libpart>
+    <libpart lib="mal_nano" part="MX113L">
+      <fields>
+        <field name="Reference">U</field>
+        <field name="Value">MX113L</field>
+      </fields>
+      <pins>
+        <pin num="1" name="OUT2" type="output"/>
+        <pin num="2" name="GND" type="power_in"/>
+        <pin num="3" name="OUT1" type="output"/>
+        <pin num="4" name="VCC" type="power_in"/>
+        <pin num="5" name="IN1" type="input"/>
+        <pin num="6" name="IN2" type="input"/>
+      </pins>
+    </libpart>
+    <libpart lib="malenki-nano-rescue" part="C-Device">
+      <footprints>
+        <fp>C_*</fp>
+      </footprints>
+      <fields>
+        <field name="Reference">C</field>
+        <field name="Value">C-Device</field>
+      </fields>
+      <pins>
+        <pin num="1" name="~" type="passive"/>
+        <pin num="2" name="~" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="malenki-nano-rescue" part="Conn_01x02_Male-Connector">
+      <footprints>
+        <fp>Connector*:*_1x??_*</fp>
+      </footprints>
+      <fields>
+        <field name="Reference">J</field>
+        <field name="Value">Conn_01x02_Male-Connector</field>
+      </fields>
+      <pins>
+        <pin num="1" name="Pin_1" type="passive"/>
+        <pin num="2" name="Pin_2" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="malenki-nano-rescue" part="Conn_01x04_Male-Connector">
+      <footprints>
+        <fp>Connector*:*_1x??_*</fp>
+      </footprints>
+      <fields>
+        <field name="Reference">J</field>
+        <field name="Value">Conn_01x04_Male-Connector</field>
+      </fields>
+      <pins>
+        <pin num="1" name="Pin_1" type="passive"/>
+        <pin num="2" name="Pin_2" type="passive"/>
+        <pin num="3" name="Pin_3" type="passive"/>
+        <pin num="4" name="Pin_4" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="malenki-nano-rescue" part="LED-Device">
+      <footprints>
+        <fp>LED*</fp>
+        <fp>LED_SMD:*</fp>
+        <fp>LED_THT:*</fp>
+      </footprints>
+      <fields>
+        <field name="Reference">D</field>
+        <field name="Value">LED-Device</field>
+      </fields>
+      <pins>
+        <pin num="1" name="K" type="passive"/>
+        <pin num="2" name="A" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="malenki-nano-rescue" part="R-Device">
+      <footprints>
+        <fp>R_*</fp>
+      </footprints>
+      <fields>
+        <field name="Reference">R</field>
+        <field name="Value">R-Device</field>
+      </fields>
+      <pins>
+        <pin num="1" name="~" type="passive"/>
+        <pin num="2" name="~" type="passive"/>
+      </pins>
+    </libpart>
+  </libparts>
+  <libraries>
+    <library logical="MCU_Microchip_ATtiny">
+      <uri>/usr/lib/kicad-nightly/share/kicad/library/MCU_Microchip_ATtiny.lib</uri>
+    </library>
+    <library logical="mal_nano">
+      <uri>/home/mark/personal/malenki-esc/hardware/malenki-nano2/mal_nano.lib</uri>
+    </library>
+    <library logical="malenki-nano-rescue">
+      <uri>/home/mark/personal/malenki-esc/hardware/malenki-nano2/malenki-nano-rescue.lib</uri>
+    </library>
+  </libraries>
+  <nets>
+    <net code="1" name="GND">
+      <node ref="U3" pin="21"/>
+      <node ref="U3" pin="22"/>
+      <node ref="U3" pin="20"/>
+      <node ref="C3" pin="2"/>
+      <node ref="U2" pin="1"/>
+      <node ref="C2" pin="2"/>
+      <node ref="J1" pin="2"/>
+      <node ref="U3" pin="3"/>
+      <node ref="U3" pin="25"/>
+      <node ref="U7" pin="2"/>
+      <node ref="C7" pin="2"/>
+      <node ref="C6" pin="2"/>
+      <node ref="U6" pin="2"/>
+      <node ref="C4" pin="2"/>
+      <node ref="C5" pin="2"/>
+      <node ref="U5" pin="2"/>
+      <node ref="R2" pin="2"/>
+      <node ref="U1" pin="10"/>
+      <node ref="U1" pin="7"/>
+      <node ref="R1" pin="2"/>
+      <node ref="J2" pin="1"/>
+      <node ref="C1" pin="2"/>
+    </net>
+    <net code="2" name="Net-(U3-Pad12)">
+      <node ref="U3" pin="12"/>
+    </net>
+    <net code="3" name="/VLOGIC">
+      <node ref="U2" pin="2"/>
+      <node ref="C3" pin="1"/>
+      <node ref="C4" pin="1"/>
+      <node ref="U3" pin="4"/>
+      <node ref="J2" pin="2"/>
+      <node ref="C1" pin="1"/>
+      <node ref="U1" pin="9"/>
+    </net>
+    <net code="4" name="Net-(U3-Pad19)">
+      <node ref="U3" pin="19"/>
+    </net>
+    <net code="5" name="Net-(U3-Pad17)">
+      <node ref="U3" pin="17"/>
+    </net>
+    <net code="6" name="Net-(U3-Pad9)">
+      <node ref="U3" pin="9"/>
+    </net>
+    <net code="7" name="Net-(U3-Pad10)">
+      <node ref="U3" pin="10"/>
+    </net>
+    <net code="8" name="Net-(U3-Pad11)">
+      <node ref="U3" pin="11"/>
+    </net>
+    <net code="9" name="TXDEBUG">
+      <node ref="U3" pin="24"/>
+      <node ref="D2" pin="2"/>
+      <node ref="J2" pin="3"/>
+    </net>
+    <net code="10" name="MOTOR3R">
+      <node ref="U3" pin="5"/>
+      <node ref="U7" pin="5"/>
+    </net>
+    <net code="11" name="SPI_SCK">
+      <node ref="U3" pin="8"/>
+      <node ref="U1" pin="13"/>
+    </net>
+    <net code="12" name="SPI_SCS">
+      <node ref="U3" pin="13"/>
+      <node ref="U1" pin="12"/>
+    </net>
+    <net code="13" name="MOTOR1R">
+      <node ref="U3" pin="16"/>
+      <node ref="U5" pin="5"/>
+    </net>
+    <net code="14" name="Net-(U3-Pad18)">
+      <node ref="U3" pin="18"/>
+    </net>
+    <net code="15" name="MOTOR2R">
+      <node ref="U3" pin="15"/>
+      <node ref="U6" pin="5"/>
+    </net>
+    <net code="16" name="MOTOR2F">
+      <node ref="U3" pin="14"/>
+      <node ref="U6" pin="6"/>
+    </net>
+    <net code="17" name="MOTOR1F">
+      <node ref="U3" pin="1"/>
+      <node ref="U5" pin="6"/>
+    </net>
+    <net code="18" name="GIO1">
+      <node ref="U3" pin="2"/>
+      <node ref="U1" pin="2"/>
+    </net>
+    <net code="19" name="Net-(J6-Pad1)">
+      <node ref="J6" pin="1"/>
+      <node ref="U6" pin="1"/>
+    </net>
+    <net code="20" name="VBAT">
+      <node ref="C6" pin="1"/>
+      <node ref="U6" pin="4"/>
+      <node ref="U2" pin="3"/>
+      <node ref="C2" pin="1"/>
+      <node ref="J1" pin="1"/>
+      <node ref="C5" pin="1"/>
+      <node ref="U5" pin="4"/>
+      <node ref="U7" pin="4"/>
+      <node ref="C7" pin="1"/>
+    </net>
+    <net code="21" name="Net-(J6-Pad2)">
+      <node ref="U6" pin="3"/>
+      <node ref="J6" pin="2"/>
+    </net>
+    <net code="22" name="Net-(J5-Pad2)">
+      <node ref="J5" pin="2"/>
+      <node ref="U5" pin="3"/>
+    </net>
+    <net code="23" name="MOTOR3F">
+      <node ref="U3" pin="6"/>
+      <node ref="U7" pin="6"/>
+    </net>
+    <net code="24" name="Net-(J5-Pad1)">
+      <node ref="U5" pin="1"/>
+      <node ref="J5" pin="1"/>
+    </net>
+    <net code="25" name="SPI_SDIO">
+      <node ref="U3" pin="7"/>
+      <node ref="U1" pin="14"/>
+    </net>
+    <net code="26" name="UPDI">
+      <node ref="U3" pin="23"/>
+      <node ref="J2" pin="4"/>
+    </net>
+    <net code="27" name="Net-(J7-Pad2)">
+      <node ref="J7" pin="2"/>
+      <node ref="U7" pin="3"/>
+    </net>
+    <net code="28" name="Net-(J7-Pad1)">
+      <node ref="U7" pin="1"/>
+      <node ref="J7" pin="1"/>
+    </net>
+    <net code="29" name="BLINKY">
+      <node ref="D1" pin="2"/>
+      <node ref="U1" pin="4"/>
+    </net>
+    <net code="30" name="Net-(D1-Pad1)">
+      <node ref="D1" pin="1"/>
+      <node ref="R1" pin="1"/>
+    </net>
+    <net code="31" name="Net-(D2-Pad1)">
+      <node ref="D2" pin="1"/>
+      <node ref="R2" pin="1"/>
+    </net>
+    <net code="32" name="Net-(U1-Pad8)">
+      <node ref="U1" pin="8"/>
+    </net>
+    <net code="33" name="Net-(U1-Pad6)">
+      <node ref="U1" pin="6"/>
+    </net>
+    <net code="34" name="Net-(U1-Pad5)">
+      <node ref="U1" pin="5"/>
+    </net>
+    <net code="35" name="Net-(U1-Pad3)">
+      <node ref="U1" pin="3"/>
+    </net>
+    <net code="36" name="Net-(U1-Pad11)">
+      <node ref="U1" pin="11"/>
+    </net>
+    <net code="37" name="Net-(U1-Pad1)">
+      <node ref="U1" pin="1"/>
+    </net>
+  </nets>
+</export>

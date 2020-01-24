@@ -156,34 +156,8 @@ Text GLabel 5600 4400 2    50   Input ~ 0
 MOTOR2R
 Text GLabel 5600 3400 2    50   Input ~ 0
 UPDI
-$Comp
-L malenki-nano-rescue:Conn_01x04_Male-Connector J2
-U 1 1 5CDCE93F
-P 4900 1800
-F 0 "J2" H 5008 2081 50  0000 C CNN
-F 1 "Conn_01x04_Male" H 5008 1990 50  0000 C CNN
-F 2 "Connector_PinHeader_2.00mm:PinHeader_1x04_P2.00mm_Vertical" H 4900 1800 50  0001 C CNN
-F 3 "~" H 4900 1800 50  0001 C CNN
-	1    4900 1800
-	1    0    0    -1  
-$EndComp
 Text Notes 4700 1450 0    50   ~ 0
 Programming / diagnostic
-$Comp
-L malenki-nano-rescue:GND-power #PWR07
-U 1 1 5CDD00E2
-P 6200 2100
-F 0 "#PWR07" H 6200 1850 50  0001 C CNN
-F 1 "GND" H 6205 1927 50  0000 C CNN
-F 2 "" H 6200 2100 50  0001 C CNN
-F 3 "" H 6200 2100 50  0001 C CNN
-	1    6200 2100
-	1    0    0    -1  
-$EndComp
-Wire Wire Line
-	5100 1700 6200 1700
-Wire Wire Line
-	6200 1700 6200 2100
 Wire Wire Line
 	5100 1800 5900 1800
 Text Label 5300 1800 0    50   ~ 0
@@ -192,8 +166,6 @@ Text GLabel 5100 1900 2    50   Input ~ 0
 TXDEBUG
 Text GLabel 5100 2000 2    50   Input ~ 0
 UPDI
-Text GLabel 1500 5550 0    50   Input ~ 0
-BLINKY
 Text GLabel 5150 6000 1    50   Input ~ 0
 BLINKY
 $Comp
@@ -229,8 +201,6 @@ F 3 "~" H 5150 6150 50  0001 C CNN
 	1    5150 6150
 	0    -1   -1   0   
 $EndComp
-Text Notes 1150 6700 0    50   ~ 0
-Note: we drive BLINKY with the GIO pin on the \nradio module, because there are no spare pins\non the MCU
 $Comp
 L malenki-nano-rescue:C-Device C5
 U 1 1 5CDD5C99
@@ -625,16 +595,12 @@ Text GLabel 5600 3500 2    50   Input ~ 0
 TXDEBUG
 Text GLabel 5600 3600 2    50   Input ~ 0
 MOTOR1F
-NoConn ~ 5600 4700
 NoConn ~ 5600 4800
 NoConn ~ 5600 4900
 NoConn ~ 5600 5000
 NoConn ~ 4400 4300
 NoConn ~ 4400 4400
 NoConn ~ 4400 4500
-NoConn ~ 4400 4600
-NoConn ~ 4400 4700
-NoConn ~ 4400 4800
 $Comp
 L mal_nano:HT7233 U2
 U 1 1 5DCB118A
@@ -651,4 +617,74 @@ Wire Wire Line
 Connection ~ 3100 2200
 Wire Wire Line
 	3100 2200 3650 2200
+$Comp
+L malenki-nano-rescue:GND-power #PWR0101
+U 1 1 5DC6F674
+P 3600 4800
+F 0 "#PWR0101" H 3600 4550 50  0001 C CNN
+F 1 "GND" H 3605 4627 50  0000 C CNN
+F 2 "" H 3600 4800 50  0001 C CNN
+F 3 "" H 3600 4800 50  0001 C CNN
+	1    3600 4800
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	4400 4700 3600 4700
+Wire Wire Line
+	3600 4700 3600 4800
+Text Notes 3200 4550 0    50   ~ 0
+These GPIOs are unused but\nwe tie them to GND for layout
+$Comp
+L Connector_Generic:Conn_01x03 J2
+U 1 1 5E297C26
+P 4900 1900
+F 0 "J2" H 4818 2217 50  0000 C CNN
+F 1 "Conn_01x03" H 4818 2126 50  0000 C CNN
+F 2 "Connector_PinHeader_2.00mm:PinHeader_1x03_P2.00mm_Vertical" H 4900 1900 50  0001 C CNN
+F 3 "~" H 4900 1900 50  0001 C CNN
+	1    4900 1900
+	-1   0    0    -1  
+$EndComp
+$Comp
+L Connector_Generic:Conn_01x02 J3
+U 1 1 5E29E95E
+P 6850 1950
+F 0 "J3" H 6930 1942 50  0000 L CNN
+F 1 "Conn_01x02" H 6930 1851 50  0000 L CNN
+F 2 "malenki-nano:wirepad_2" H 6850 1950 50  0001 C CNN
+F 3 "~" H 6850 1950 50  0001 C CNN
+	1    6850 1950
+	1    0    0    -1  
+$EndComp
+Text Notes 6450 1750 0    50   ~ 0
+Servo weapon (Weapon2)
+$Comp
+L malenki-nano-rescue:GND-power #PWR0102
+U 1 1 5E2A31C0
+P 6400 2100
+F 0 "#PWR0102" H 6400 1850 50  0001 C CNN
+F 1 "GND" H 6405 1927 50  0000 C CNN
+F 2 "" H 6400 2100 50  0001 C CNN
+F 3 "" H 6400 2100 50  0001 C CNN
+	1    6400 2100
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	6650 2050 6400 2050
+Wire Wire Line
+	6400 2050 6400 2100
+Text GLabel 6650 1950 0    50   Input ~ 0
+WEAPON2
+Text GLabel 5600 4700 2    50   Input ~ 0
+WEAPON2
+NoConn ~ 1500 5550
+Text GLabel 4400 4800 0    50   Input ~ 0
+BLINKY
+Wire Wire Line
+	3600 4600 3600 4700
+Wire Wire Line
+	3600 4600 4400 4600
+Connection ~ 3600 4700
+Text Notes 500  5650 0    50   ~ 0
+GIO2 was\npreviously connected to\nBLINKY
 $EndSCHEMATC
