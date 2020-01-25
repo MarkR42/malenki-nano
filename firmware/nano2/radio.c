@@ -23,6 +23,11 @@ const uint8_t GIO1_PIN = 2;
 const uint8_t GIO1_bm = 1 << GIO1_PIN;
 
 radio_state_t radio_state;
+static struct {
+    uint16_t rx; // rx packets
+    uint16_t missed; // missed
+    uint32_t last_report_time;
+} radio_counters;
 
 /*
  * Blinking LED goes on this GPIO pin.
@@ -85,6 +90,7 @@ static void init_interrupts()
     // So 5mhz.
     
     diag_println("Initialising interrupts");
+    memset(&radio_counters, 0, sizeof(radio_counters));
     uint16_t compare_value = 3900 * 5 ; // Must not overflow 16-bit int.
     TCB0.CCMP = compare_value;
     TCB0.INTCTRL = TCB_CAPT_bm; // Turn on irq
@@ -171,9 +177,21 @@ void radio_init()
     for (int i=0; i<4; i++) {
         diag_println("id_readback[%d]=%02x", i, id_readback[i]);
     }
+    bool hardware_ok = true;
+    
     if (memcmp(id_readback, radio_id,4) != 0) {
         diag_println("ERROR: Wrong ID readback");
         diag_println("Possible hardware fault. Error not recoverable.");
+        hardware_ok = false;
+    }
+    // Check channel is reading back.
+    uint8_t b = spi_read_byte(0x0f);
+    if (b != 0xa0) {
+        diag_println("Fail to read channel back, value %02x should be a0",
+            b);
+        hardware_ok = false;
+    }
+    if (! hardware_ok) {
         diag_println("FAIL FAIL FAIL!");
         _delay_ms(250);
         trigger_reset(); // Reset the whole device.
@@ -209,6 +227,11 @@ void radio_loop()
 
     }
     */
+    uint32_t now = get_tickcount();
+    if ((now - radio_counters.last_report_time) > 50) {
+        radio_counters.last_report_time = now;
+        diag_println("rx: %05u missed: %05u", radio_counters.rx, radio_counters.missed);
+    }
 }
 
 ISR(TCB0_INT_vect)
@@ -218,6 +241,7 @@ ISR(TCB0_INT_vect)
     // The timer should have its CNT reset to 0 every time we get a
     // real packet, to suppress the timeout
     TCB0.INTFLAGS |= TCB_CAPT_bm; //clear the interrupt flag(to reset TCB0.CNT)
+    radio_counters.missed += 1;
 }
 
 ISR(PORTA_PORT_vect)

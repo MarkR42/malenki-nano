@@ -1,0 +1,62 @@
+How long do we have?
+--------------
+
+
+RX PACKET
+---------
+
+If we receive a sticks packet, we need to process it *in the irq* soon
+enough that we don't miss the next sticks packet.
+
+This is important to stay in sync with channel hopping.
+
+1. What speed can we clock SPI? Chip has max 10mhz, but it will be
+    much slower because we are using bit-bang SPI.
+    Maybe we are doing about ~ 1mhz,
+    say 10 bits per byte,
+    
+    that means send_byte take 10us at least.
+    spi_write_byte takes at least 20us
+    
+    
+-- before
+    
+000001c6 <send_byte>:
+     1c6:   90 e4           ldi r25, 0x40   ; 64
+     1c8:   90 93 01 04     sts 0x0401, r25 ; 0x800401 <__TEXT_REGION_LENGTH__+0x700401>
+     1cc:   98 e0           ldi r25, 0x08   ; 8
+     1ce:   30 e4           ldi r19, 0x40   ; 64
+     1d0:   20 e8           ldi r18, 0x80   ; 128
+     1d2:   87 ff           sbrs    r24, 7
+     1d4:   0e c0           rjmp    .+28        ; 0x1f2 <send_byte+0x2c>
+     1d6:   30 93 05 04     sts 0x0405, r19 ; 0x800405 <__TEXT_REGION_LENGTH__+0x700405>
+     1da:   88 0f           add r24, r24
+     1dc:   20 93 05 04     sts 0x0405, r18 ; 0x800405 <__TEXT_REGION_LENGTH__+0x700405>
+     1e0:   00 00           nop
+     1e2:   20 93 06 04     sts 0x0406, r18 ; 0x800406 <__TEXT_REGION_LENGTH__+0x700406>
+     1e6:   91 50           subi    r25, 0x01   ; 1
+     1e8:   a1 f7           brne    .-24        ; 0x1d2 <send_byte+0xc>
+     1ea:   80 e4           ldi r24, 0x40   ; 64
+     1ec:   80 93 02 04     sts 0x0402, r24 ; 0x800402 <__TEXT_REGION_LENGTH__+0x700402>
+     1f0:   08 95           ret
+     1f2:   30 93 06 04     sts 0x0406, r19 ; 0x800406 <__TEXT_REGION_LENGTH__+0x700406>
+     1f6:   f1 cf           rjmp    .-30        ; 0x1da <send_byte+0x14>
+-- after
+
+000001c6 <send_byte>:
+     1c6:   06 9a           sbi 0x00, 6 ; 0
+     1c8:   98 e0           ldi r25, 0x08   ; 8
+     1ca:   87 ff           sbrs    r24, 7
+     1cc:   09 c0           rjmp    .+18        ; 0x1e0 <send_byte+0x1a>
+     1ce:   0e 9a           sbi 0x01, 6 ; 1
+     1d0:   88 0f           add r24, r24
+     1d2:   0f 9a           sbi 0x01, 7 ; 1
+     1d4:   00 00           nop
+     1d6:   0f 98           cbi 0x01, 7 ; 1
+     1d8:   91 50           subi    r25, 0x01   ; 1
+     1da:   b9 f7           brne    .-18        ; 0x1ca <send_byte+0x4>
+     1dc:   06 98           cbi 0x00, 6 ; 0
+     1de:   08 95           ret
+     1e0:   0e 98           cbi 0x01, 6 ; 1
+     1e2:   f6 cf           rjmp    .-20        ; 0x1d0 <send_byte+0xa>
+

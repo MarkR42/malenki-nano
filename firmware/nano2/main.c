@@ -80,6 +80,15 @@ void trigger_reset()
     }
 }
 
+uint32_t get_tickcount()
+{
+    uint32_t tc;
+    cli(); // disable irq
+    tc = master_state.tickcount;
+    sei(); // enable irq
+    return tc;
+}
+
 int main(void)
 {
     init_clock();

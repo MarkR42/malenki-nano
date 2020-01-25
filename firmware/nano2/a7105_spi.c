@@ -9,9 +9,11 @@
  *
  */
 
-PORT_t * const SCS_PORT = &PORTB;
-PORT_t * const SCK_PORT = &PORTA;
-PORT_t * const SDIO_PORT = &PORTA;
+// We use the VPORTs for more efficient operations, because the vport
+// locations can use optimised instructions
+VPORT_t * const SDIO_VPORT = &VPORTA;
+VPORT_t * const SCK_VPORT = &VPORTA;
+VPORT_t * const SCS_VPORT = &VPORTB;
 
 const uint8_t SCS_PIN = 3; // PB3
 const uint8_t SCK_PIN = 7; // PA7
@@ -47,24 +49,24 @@ const uint8_t SDIO_PIN = 6; // PA6
 // Set scs low, i.e. active.
 static void scs_low()
 {
-    SCS_PORT->OUTCLR = 1 << SCS_PIN;
+    SCS_VPORT->OUT &= ~(1 << SCS_PIN);
 }
 // SCS high / inactive.
 static void scs_high()
 {
-    SCS_PORT->OUTSET = 1 << SCS_PIN;
+    SCS_VPORT->OUT |= 1 << SCS_PIN;
 }
 static void pulse_clock()
 {
-    SCK_PORT->OUTSET = 1 << SCK_PIN;
+    SCK_VPORT->OUT |= 1 << SCK_PIN;
     _NOP();
-    SCK_PORT->OUTCLR = 1 << SCK_PIN;
+    SCK_VPORT->OUT &= ~(1 << SCK_PIN);
 }
 static uint8_t pulse_clock_read_bit()
 {
-    SCK_PORT->OUTSET = 1 << SCK_PIN;
-    uint8_t res = (SDIO_PORT->IN & (1 << SDIO_PIN));
-    SCK_PORT->OUTCLR = 1 << SCK_PIN;
+    SCK_VPORT->OUT |= 1 << SCK_PIN;
+    uint8_t res = (SDIO_VPORT->IN & (1 << SDIO_PIN));
+    SCK_VPORT->OUT &= ~(1 << SCK_PIN);
     return res;
 }
 
@@ -72,28 +74,28 @@ static void send_byte(uint8_t data)
 {
     // Send a single byte of stuff.
     // Does not touch SCS
-    SDIO_PORT->DIRSET = 1 << SDIO_PIN ; // set the pin for write.
+    SDIO_VPORT->DIR |= 1 << SDIO_PIN ; // set the pin for write.
     for (uint8_t n=0; n <8; n++) {
         if (data & 0x80) {
-            SDIO_PORT->OUTSET = 1 << SDIO_PIN ;
+            SDIO_VPORT->OUT |= 1 << SDIO_PIN ;
         } else {
-            SDIO_PORT->OUTCLR = 1 << SDIO_PIN ;
+            SDIO_VPORT->OUT &= ~(1 << SDIO_PIN) ;
         }
         // Move the data left
         data = data << 1;
         pulse_clock();
     }
-    SDIO_PORT->DIRCLR = 1 << SDIO_PIN ; // clear to allow to read.
+    SDIO_VPORT->DIR &= ~(1 << SDIO_PIN) ; // clear to allow to read.
 }
 
 void spi_init() {
     // SCS must be set as an output and initially high
-    SCS_PORT->DIRSET = 1 << SCS_PIN;
-    SCS_PORT->OUTSET = 1 << SCS_PIN;
+    SCS_VPORT->DIR |= 1 << SCS_PIN;
+    SCS_VPORT->OUT |= 1 << SCS_PIN;
     // SCK must be set as an output and initially low
-    SCK_PORT->DIRSET = 1 << SCK_PIN;
+    SCK_VPORT->DIR |= 1 << SCK_PIN;
     // SDIO must be set as an input
-    SDIO_PORT->DIRCLR = 1 << SDIO_PIN;
+    SDIO_VPORT->DIR &= ~(1 << SDIO_PIN);
 }
 
 void spi_write_byte(uint8_t addr, uint8_t data)
@@ -121,6 +123,17 @@ void spi_strobe(uint8_t cmd)
     uint8_t firstbyte = cmd; // must have top bit set.
     scs_low();
     send_byte(firstbyte);
+    scs_high();
+}
+
+// Optimised: write a byte then send strobe command.
+void spi_write_byte_then_strobe(uint8_t addr, uint8_t data, uint8_t cmd)
+{
+    uint8_t firstbyte = addr & 0x3f;
+    scs_low();
+    send_byte(firstbyte);
+    send_byte(data);
+    send_byte(cmd);
     scs_high();
 }
 
