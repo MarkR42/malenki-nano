@@ -9,6 +9,12 @@
  *
  */
 
+/*
+ * NOTE: We use some micro-optimisations in here, because it really
+ * matters if we want to talk to the radio quickly.
+ * 
+ * Inlining functions and using VPORTS.
+ */
 // We use the VPORTs for more efficient operations, because the vport
 // locations can use optimised instructions
 VPORT_t * const SDIO_VPORT = &VPORTA;
@@ -47,16 +53,16 @@ const uint8_t SDIO_PIN = 6; // PA6
  */
 
 // Set scs low, i.e. active.
-static void scs_low()
+__attribute__((always_inline)) inline static void scs_low()
 {
     SCS_VPORT->OUT &= ~(1 << SCS_PIN);
 }
 // SCS high / inactive.
-static void scs_high()
+__attribute__((always_inline)) inline static void scs_high()
 {
     SCS_VPORT->OUT |= 1 << SCS_PIN;
 }
-static void pulse_clock()
+__attribute__((always_inline)) inline static void pulse_clock()
 {
     SCK_VPORT->OUT |= 1 << SCK_PIN;
     _NOP();
