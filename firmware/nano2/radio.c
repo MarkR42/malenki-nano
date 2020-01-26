@@ -29,6 +29,8 @@ static struct {
     uint32_t last_report_time;
 } radio_counters;
 
+static void init_bind_mode();
+
 /*
  * Blinking LED goes on this GPIO pin.
  * Note: on attiny1614, this pin does not exist, but it's ok.
@@ -197,6 +199,7 @@ void radio_init()
         trigger_reset(); // Reset the whole device.
     }
     init_interrupts();
+    init_bind_mode();
     diag_println("End radio_init");
     /*
      * Note: we will not start the rx here,
@@ -205,6 +208,45 @@ void radio_init()
      */
 }
 
+static void enable_rx(uint8_t channel)
+{
+    uint8_t chanminus1 = channel - 1 ;
+    spi_write_byte_then_strobe(0x0f, chanminus1, STROBE_RX);
+}
+
+static uint8_t test1_channel = 0x8c;// bind channel 0x0d or 0x8c
+
+__attribute__ ((unused)) static void radio_test1()
+{
+    diag_println("radio_test1: this must not run with interrupts doing rx");
+    enable_rx(test1_channel); 
+    diag_println("Waiting for packet on chan %02x", (int) test1_channel);
+    uint32_t timeout = get_tickcount() + 100;
+    while (GIO1_PORT->IN & GIO1_bm) {
+        // Wait for GIO1 to go low.
+        if (get_tickcount() > timeout) {
+            diag_println("No packet received, timeout");
+            return;
+        }
+    }
+    diag_println("got packet");
+    // Load pack into buf
+    uint8_t buf[RADIO_PACKET_LEN];
+    spi_strobe_then_read_block(STROBE_READ_PTR_RESET,
+        0x5, // address to read packet data.
+        buf, RADIO_PACKET_LEN);
+    // dump
+    for (uint8_t i=0; i< RADIO_PACKET_LEN; i++) {
+        diag_print("%02x ", (int) buf[i]);
+    }
+    diag_puts("\r\n");
+    
+    if (buf[0] == 0xbb) {
+        // Bind packet
+        test1_channel = buf[11]; // Hopping channel from bind
+    }
+    diag_println("radio_test1 finished");
+}
 
 // BIND MODE: uses channels
 // 0c and 8b
@@ -227,21 +269,112 @@ void radio_loop()
 
     }
     */
+    if (radio_state.packet_is_valid) {
+        diag_println("rx type: %02x", radio_state.packet[0]);
+        radio_state.packet_is_valid = false;
+    }
     uint32_t now = get_tickcount();
     if ((now - radio_counters.last_report_time) > 50) {
         radio_counters.last_report_time = now;
         diag_println("rx: %05u missed: %05u", radio_counters.rx, radio_counters.missed);
+        // radio_test1();
     }
+}
+
+static void init_bind_mode()
+{
+    diag_println("initialising bind mode");
+    radio_state.state = RADIO_STATE_BIND;
+    // Set up the hop-table with the bind channels.
+    for (uint8_t i=0; i< NR_HOP_CHANNELS; i++) {
+        radio_state.hop_channels[i] = (i & 2) ? 0x0d : 0x8c;
+    }
+}
+
+/***************************************************
+ * IRQ CODE BELOW HERE!
+ * Here be dragons, woof woof
+ **********************/
+ 
+static void restart_rx(uint8_t channel_increment)
+{
+    radio_state.hop_index = (radio_state.hop_index + channel_increment) & 0xf;
+    uint8_t chan = radio_state.hop_channels[radio_state.hop_index];
+    enable_rx(chan);
 }
 
 ISR(TCB0_INT_vect)
 {
     // Periodic interrupt:
-    // TODO: Handle rx timeout channel hopping.
+    // Handle rx timeout channel hopping.
     // The timer should have its CNT reset to 0 every time we get a
     // real packet, to suppress the timeout
-    TCB0.INTFLAGS |= TCB_CAPT_bm; //clear the interrupt flag(to reset TCB0.CNT)
-    radio_counters.missed += 1;
+    // Check the INTFLAGS, because it might have been cancelled after
+    // the irq was generated (if do_rx was in progress during timeout)
+    if (TCB0.INTFLAGS & TCB_CAPT_bm) {
+        TCB0.INTFLAGS |= TCB_CAPT_bm; //clear the interrupt flag(to reset TCB0.CNT)
+        radio_counters.missed += 1;
+        restart_rx(1);
+        radio_state.missed_packet_count += 1; // successive missed packets.
+    }
+}
+
+static void reset_timeout()
+{
+    // Reset the counter AND clear the irq flag
+    // So that a pending interrupt won't trigger until the timeout
+    // expires again
+    TCB0.CNT = 0;
+    TCB0.INTFLAGS |= TCB_CAPT_bm;
+}
+
+
+static void do_rx()
+{
+    // We received something, check what it is,
+    // is it a packet we care about?
+    uint8_t buf[RADIO_PACKET_LEN];
+    spi_strobe_then_read_block(STROBE_READ_PTR_RESET,
+        0x5, // address to read packet data.
+        buf, RADIO_PACKET_LEN);
+    // Check packet type.
+    uint8_t packet_type = buf[0];
+    uint8_t state = radio_state.state;
+    bool ok = false;
+    if (state == RADIO_STATE_BIND) {
+        if ((packet_type == 0xbb) || (packet_type == 0xbc)) {
+            // Bind packet.
+            ok = true;
+        }
+    }
+    if (state == RADIO_STATE_HOPPING) {
+        if (packet_type == 0x58) {
+            // Sticks packet.
+            // Check tx id.
+            if (memcmp(& (buf[1]), radio_state.tx_id, 4) == 0) {
+                ok = true;
+            }
+        }
+    }
+    
+    if (ok) {
+        // GOOD packet.
+        restart_rx(1);
+        radio_counters.rx += 1;
+        reset_timeout(); 
+        // If radio_state.packet does not already contain a packet,
+        // then copy the packet there, otherwise, drop packet.
+        if (! radio_state.packet_is_valid) {
+            // Copy packet into buffer for the main loop.
+            memcpy(radio_state.packet, buf, RADIO_PACKET_LEN);
+            radio_state.packet_is_valid = true;
+        } else {
+            // Drop the packet contents, but still hop to next channel
+        }
+    } else {
+        // BAD packet; stay on the same channel, do not reset timer.
+        restart_rx(0);
+    }
 }
 
 ISR(PORTA_PORT_vect)
@@ -253,7 +386,7 @@ ISR(PORTA_PORT_vect)
     // too late and we missed it.
     uint8_t bit = PORTA.IN & GIO1_bm;
     if (! bit) {
-        // check rx packet.
+        do_rx();
     }
     // clear the irq
     PORTA.INTFLAGS = GIO1_bm;

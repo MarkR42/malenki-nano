@@ -177,10 +177,10 @@ uint8_t spi_read_byte(uint8_t addr) {
     return data;
 }
 
-void spi_read_block(uint8_t addr, uint8_t *buf, uint8_t datalen) {
+static void read_block1(uint8_t addr, uint8_t *buf, uint8_t datalen) {
+    // Read block with scs low.
     // Read more than 1 byte
     uint8_t firstbyte = (addr & 0x3f) | 0x40; // Set read flag.
-    scs_low();
     send_byte(firstbyte);
     for (uint8_t i=0; i< datalen; i++) {
         uint8_t data = 0;
@@ -192,5 +192,23 @@ void spi_read_block(uint8_t addr, uint8_t *buf, uint8_t datalen) {
         }
         buf[i] = data;
     }
+}
+
+void spi_read_block(uint8_t addr, uint8_t *buf, uint8_t datalen) {
+    scs_low();
+    read_block1(addr, buf, datalen);
+    scs_high();
+}
+
+/*
+ * This is typically used to read packet data, by sending a strobe
+ * command to reset the read pointer, then read.
+ */
+void spi_strobe_then_read_block(uint8_t cmd,
+    uint8_t addr, uint8_t *buf, uint8_t datalen) 
+{
+    scs_low();
+    send_byte(cmd);
+    read_block1(addr, buf, datalen);
     scs_high();
 }

@@ -25,10 +25,9 @@ typedef struct {
     // Other info - not saved between boots
     uint8_t state;
     uint8_t hop_index;
-    uint32_t last_packet_micros; // so we can detect late etc
     uint16_t missed_packet_count; 
-    uint32_t flash_time; // for blinking the lamp 
     uint8_t packet[RADIO_PACKET_LEN];
+    bool packet_is_valid; // set to true if the packet is waiting to be processed, set false after.
     uint32_t packet_counter;
     possible_tx possible_tx_list[POSSIBLE_TX_COUNT];
     uint8_t got_signal_ever; // Set this to 1 after we got anything, to suppress autobind.
@@ -38,8 +37,6 @@ typedef struct {
 extern radio_state_t radio_state;
 // Bind mode
 #define RADIO_STATE_BIND 0
-// Waiting for a signal
-#define RADIO_STATE_WAITING 1
 // hopping along happily.
 #define RADIO_STATE_HOPPING 2
 
