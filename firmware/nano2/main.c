@@ -68,7 +68,7 @@ static void init_timer()
 ISR(TCB1_INT_vect)
 {
     master_state.tickcount++;
-    TCB1.INTFLAGS |= TCB_CAPT_bm; //clear the interrupt flag(to reset TCB0.CNT)
+    TCB1.INTFLAGS |= TCB_CAPT_bm; //clear the interrupt flag
 }
 
 void trigger_reset()

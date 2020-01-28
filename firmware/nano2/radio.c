@@ -17,6 +17,9 @@
 
 #include <string.h>
 
+// Number of hops we do each time.
+#define HOP_COUNT 2
+
 // GIO port is on this pin
 PORT_t * const GIO1_PORT = &PORTA;
 const uint8_t GIO1_PIN = 2;
@@ -36,8 +39,8 @@ static void init_bind_mode();
  * Note: on attiny1614, this pin does not exist, but it's ok.
  * We will blink it on a chip where it does exist.
  */
-PORT_t * const BLINKY_PORT = &PORTB;
-const uint8_t BLINKY_bm = 1 << 4;
+PORT_t * const BLINKY_PORT = &PORTC;
+const uint8_t BLINKY_bm = 5 << 4;
 
 static void register_dump()
 {
@@ -198,8 +201,8 @@ void radio_init()
         _delay_ms(250);
         trigger_reset(); // Reset the whole device.
     }
-    init_interrupts();
     init_bind_mode();
+    init_interrupts();
     diag_println("End radio_init");
     /*
      * Note: we will not start the rx here,
@@ -212,6 +215,7 @@ static void enable_rx(uint8_t channel)
 {
     uint8_t chanminus1 = channel - 1 ;
     spi_write_byte_then_strobe(0x0f, chanminus1, STROBE_RX);
+    radio_state.current_channel = channel;
 }
 
 static uint8_t test1_channel = 0x8c;// bind channel 0x0d or 0x8c
@@ -248,35 +252,78 @@ __attribute__ ((unused)) static void radio_test1()
     diag_println("radio_test1 finished");
 }
 
+static void handle_packet_sticks()
+{
+    // packet is in radio_state.packet.
+    // diag_println("stixchan: %02x", (int) radio_state.packet_channel);
+}
+
+static void dump_buf(uint8_t *buf, uint8_t len)
+{
+    for (uint8_t i=0; i<len; i++) {
+        diag_print("%02x ", (int) buf[i]);
+    }
+    diag_puts("\r\n");
+}
+
+static void handle_bind_complete()
+{
+    diag_println("Bind completed.");
+    diag_print("tx id: ");
+    dump_buf(radio_state.tx_id, 4);
+    // copy the list of hopping channels.
+    memcpy(radio_state.hop_channels, radio_state.packet + 11,
+        NR_HOP_CHANNELS);
+    diag_print("hop: ");
+    dump_buf(radio_state.hop_channels, NR_HOP_CHANNELS);
+    radio_state.hop_index = 0;
+    radio_state.state = RADIO_STATE_HOPPING;
+}
+
+static void handle_packet_bind()
+{
+    // packet is in radio_state.packet.
+    uint8_t *bind_tx_id = radio_state.packet + 1;
+    // Check if a lot of repeated bind packets appear.
+    if (memcmp(bind_tx_id, radio_state.tx_id, 4) == 0) {
+        // Repeated bind packet.
+        radio_state.bind_packet_count += 1;
+        if (radio_state.bind_packet_count >= 100) {
+            // Excellent, done.
+            handle_bind_complete();
+        }
+    } else {
+        // New bind packet
+        diag_println("New tx detected");
+        radio_state.bind_packet_count = 0;
+        memcpy(radio_state.tx_id, bind_tx_id, 4); // store id.
+    }
+}
+
 // BIND MODE: uses channels
 // 0c and 8b
 // Transmitter transmits one channel number higher?
 // So we need to subtract one from every channel no?
 void radio_loop()
 {
-    // called each time
-    /*
-    switch (radio_state.state) {
-        case RADIO_STATE_BIND:
-            do_radio_bind();
-            break;
-        case RADIO_STATE_WAITING:
-            do_radio_waiting();
-            break;
-        case RADIO_STATE_HOPPING:
-            do_radio_hopping();
-            break;
-
-    }
-    */
     if (radio_state.packet_is_valid) {
-        diag_println("rx type: %02x", radio_state.packet[0]);
+        if (radio_state.state == RADIO_STATE_BIND) {
+            handle_packet_bind();
+        } else {
+            handle_packet_sticks();
+        }
         radio_state.packet_is_valid = false;
     }
     uint32_t now = get_tickcount();
     if ((now - radio_counters.last_report_time) > 50) {
         radio_counters.last_report_time = now;
-        diag_println("rx: %05u missed: %05u", radio_counters.rx, radio_counters.missed);
+        cli();
+        uint16_t rx = radio_counters.rx;
+        uint16_t missed = radio_counters.missed;
+        radio_counters.rx = 0;
+        radio_counters.missed = 0;
+        sei();
+        diag_println("rx: %05u missed: %05u", rx, missed);
         // radio_test1();
     }
 }
@@ -296,12 +343,19 @@ static void init_bind_mode()
  * Here be dragons, woof woof
  **********************/
  
+ static void diag_putc(char c)
+ {
+     USART0.TXDATAL = c;
+ }
+ 
 static void restart_rx(uint8_t channel_increment)
 {
     radio_state.hop_index = (radio_state.hop_index + channel_increment) & 0xf;
     uint8_t chan = radio_state.hop_channels[radio_state.hop_index];
     enable_rx(chan);
 }
+
+static uint8_t timeout_irq_count;
 
 ISR(TCB0_INT_vect)
 {
@@ -313,9 +367,21 @@ ISR(TCB0_INT_vect)
     // the irq was generated (if do_rx was in progress during timeout)
     if (TCB0.INTFLAGS & TCB_CAPT_bm) {
         TCB0.INTFLAGS |= TCB_CAPT_bm; //clear the interrupt flag(to reset TCB0.CNT)
-        radio_counters.missed += 1;
-        restart_rx(1);
-        radio_state.missed_packet_count += 1; // successive missed packets.
+        timeout_irq_count += 1;
+        if (timeout_irq_count == HOP_COUNT) {
+            radio_counters.missed += 1;
+            radio_state.missed_packet_count += 1; // successive missed packets.
+            if (radio_state.missed_packet_count < 5) {
+                // Try to hop to catch up.
+                restart_rx(HOP_COUNT);
+            } else {
+                // Too out of sync, stay on same channel and wait for
+                // it to come around again.
+                restart_rx(0);
+            }
+            diag_putc('.');
+            timeout_irq_count = 0;
+        }
     }
 }
 
@@ -326,6 +392,7 @@ static void reset_timeout()
     // expires again
     TCB0.CNT = 0;
     TCB0.INTFLAGS |= TCB_CAPT_bm;
+    timeout_irq_count = 0;
 }
 
 
@@ -334,22 +401,28 @@ static void do_rx()
     // We received something, check what it is,
     // is it a packet we care about?
     uint8_t buf[RADIO_PACKET_LEN];
-    spi_strobe_then_read_block(STROBE_READ_PTR_RESET,
-        0x5, // address to read packet data.
-        buf, RADIO_PACKET_LEN);
+    // Get the flags
+    uint8_t modeflags = spi_read_byte(0);
+    // I think flag 0x01 (bit 0) is the "read data ready" flag, active low,doc is not clear about this.
+    // bits 5 and 6 are read error flags.
+    uint8_t errflags = (1 << 6) | (1 << 5);
+
     // Check packet type.
     uint8_t packet_type = buf[0];
     uint8_t state = radio_state.state;
     bool ok = false;
-    if (state == RADIO_STATE_BIND) {
-        if ((packet_type == 0xbb) || (packet_type == 0xbc)) {
-            // Bind packet.
-            ok = true;
+    if (! (modeflags & errflags)) {
+        spi_strobe_then_read_block(STROBE_READ_PTR_RESET,
+            0x5, // address to read packet data.
+            buf, RADIO_PACKET_LEN);
+        if (state == RADIO_STATE_BIND) {
+            if ((packet_type == 0xbb) || (packet_type == 0xbc)) {
+                // Bind packet.
+                ok = true;
+            }
         }
-    }
-    if (state == RADIO_STATE_HOPPING) {
-        if (packet_type == 0x58) {
-            // Sticks packet.
+        if (state == RADIO_STATE_HOPPING) {
+            // sticks, settings, failsafe? or something else.
             // Check tx id.
             if (memcmp(& (buf[1]), radio_state.tx_id, 4) == 0) {
                 ok = true;
@@ -359,7 +432,7 @@ static void do_rx()
     
     if (ok) {
         // GOOD packet.
-        restart_rx(1);
+        restart_rx(HOP_COUNT);
         radio_counters.rx += 1;
         reset_timeout(); 
         // If radio_state.packet does not already contain a packet,
@@ -368,12 +441,16 @@ static void do_rx()
             // Copy packet into buffer for the main loop.
             memcpy(radio_state.packet, buf, RADIO_PACKET_LEN);
             radio_state.packet_is_valid = true;
+            radio_state.packet_channel = radio_state.current_channel;
         } else {
             // Drop the packet contents, but still hop to next channel
         }
+        radio_state.missed_packet_count = 0; // successive missed packets.
+        diag_putc('1');
     } else {
         // BAD packet; stay on the same channel, do not reset timer.
         restart_rx(0);
+        diag_putc('0');
     }
 }
 

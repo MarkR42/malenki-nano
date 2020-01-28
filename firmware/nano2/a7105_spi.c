@@ -76,7 +76,7 @@ static uint8_t pulse_clock_read_bit()
     return res;
 }
 
-static void send_byte(uint8_t data)
+__attribute__((always_inline)) inline static void send_byte(uint8_t data)
 {
     // Send a single byte of stuff.
     // Does not touch SCS

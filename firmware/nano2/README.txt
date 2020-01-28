@@ -55,6 +55,9 @@ Example sticks packet:
 
 -- Other packets:
 
+0x56 = Failsafe
+0xaa = Settings
+
 Packet seen when turning tx off:
 56 c4 1b b4 c4 25 f3 98 41 ff 0f ff 0f ff 0f ff 0f ff 0f ff 0f ff 0f ff 0f ff 0f ff 0f ff 0f ff 0f ff 0f ff 0f
 

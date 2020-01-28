@@ -34,6 +34,11 @@ PB2 - Motor2F (Left) - WO2
 PB3 - SPI_SCS - chip select - connected to A7105
 PB4 - WEAPON2 (optional) - this is an output, it should send pulses
     1000-2000us
+    We will need a way of using hardware pwm on this, might be tricky.
+PC2 - VSENSE - analogue input, potential divider on battery,
+        approx 10/43 of bat. voltage.
+PC5 - BLINKY - flashing light.
+
 
 Peripheral usage
 
@@ -51,7 +56,7 @@ HCMP0 - WO3 - Motor1F
 HCMP1 - WO4 - Motor3R
 HCMP2 - WO5 - Motor3F
 
-TCB0 - should be used in oneshot to implement timeouts.
+TCB0 - Radio timeout. Controlled by radio.c
 TCB1 - 16-bit timer running at max clock speed, interrupts cpu every 10ms.
 
 TCD0 - unused
