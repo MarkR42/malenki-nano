@@ -600,7 +600,6 @@ NoConn ~ 5600 4900
 NoConn ~ 5600 5000
 NoConn ~ 4400 4300
 NoConn ~ 4400 4400
-NoConn ~ 4400 4500
 $Comp
 L mal_nano:HT7233 U2
 U 1 1 5DCB118A
@@ -632,8 +631,6 @@ Wire Wire Line
 	4400 4700 3600 4700
 Wire Wire Line
 	3600 4700 3600 4800
-Text Notes 3200 4550 0    50   ~ 0
-These GPIOs are unused but\nwe tie them to GND for layout
 $Comp
 L Connector_Generic:Conn_01x03 J2
 U 1 1 5E297C26
@@ -658,22 +655,7 @@ F 3 "~" H 6850 1950 50  0001 C CNN
 $EndComp
 Text Notes 6450 1750 0    50   ~ 0
 Servo weapon (Weapon2)
-$Comp
-L malenki-nano-rescue:GND-power #PWR0102
-U 1 1 5E2A31C0
-P 6400 2100
-F 0 "#PWR0102" H 6400 1850 50  0001 C CNN
-F 1 "GND" H 6405 1927 50  0000 C CNN
-F 2 "" H 6400 2100 50  0001 C CNN
-F 3 "" H 6400 2100 50  0001 C CNN
-	1    6400 2100
-	1    0    0    -1  
-$EndComp
-Wire Wire Line
-	6650 2050 6400 2050
-Wire Wire Line
-	6400 2050 6400 2100
-Text GLabel 6650 1950 0    50   Input ~ 0
+Text GLabel 6500 1950 0    50   Input ~ 0
 WEAPON2
 Text GLabel 5600 4700 2    50   Input ~ 0
 WEAPON2
@@ -687,4 +669,57 @@ Wire Wire Line
 Connection ~ 3600 4700
 Text Notes 500  5650 0    50   ~ 0
 GIO2 was\npreviously connected to\nBLINKY
+Wire Wire Line
+	6650 1950 6550 1950
+Wire Wire Line
+	6650 2050 6550 2050
+Wire Wire Line
+	6550 2050 6550 1950
+Connection ~ 6550 1950
+Wire Wire Line
+	6550 1950 6500 1950
+Text GLabel 4400 4500 0    50   Input ~ 0
+VSENSE
+Text GLabel 4500 6150 2    50   Input ~ 0
+VSENSE
+$Comp
+L malenki-nano-rescue:R-Device R3
+U 1 1 5E302ABB
+P 4200 6000
+F 0 "R3" H 4270 6046 50  0000 L CNN
+F 1 "33k" H 4270 5955 50  0000 L CNN
+F 2 "Resistor_SMD:R_0603_1608Metric" V 4130 6000 50  0001 C CNN
+F 3 "~" H 4200 6000 50  0001 C CNN
+	1    4200 6000
+	1    0    0    -1  
+$EndComp
+$Comp
+L malenki-nano-rescue:R-Device R4
+U 1 1 5E305615
+P 4200 6300
+F 0 "R4" H 4270 6346 50  0000 L CNN
+F 1 "10k" H 4270 6255 50  0000 L CNN
+F 2 "Resistor_SMD:R_0603_1608Metric" V 4130 6300 50  0001 C CNN
+F 3 "~" H 4200 6300 50  0001 C CNN
+	1    4200 6300
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	4500 6150 4200 6150
+Connection ~ 4200 6150
+$Comp
+L malenki-nano-rescue:GND-power #PWR07
+U 1 1 5E309C5A
+P 4200 6450
+F 0 "#PWR07" H 4200 6200 50  0001 C CNN
+F 1 "GND" H 4205 6277 50  0000 C CNN
+F 2 "" H 4200 6450 50  0001 C CNN
+F 3 "" H 4200 6450 50  0001 C CNN
+	1    4200 6450
+	1    0    0    -1  
+$EndComp
+Text GLabel 4200 5850 1    50   Input ~ 0
+VBAT
+Text Notes 4050 5950 3    50   ~ 0
+Voltage sense
 $EndSCHEMATC
