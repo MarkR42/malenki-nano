@@ -41,11 +41,11 @@ X Pin_3 3 -200 -100 150 R 50 50 1 1 P
 ENDDRAW
 ENDDEF
 #
-# MCU_Microchip_ATtiny_ATtiny3217-M
+# MCU_Microchip_ATtiny_ATtiny1617-M
 #
-DEF MCU_Microchip_ATtiny_ATtiny3217-M U 0 20 Y Y 1 F N
+DEF MCU_Microchip_ATtiny_ATtiny1617-M U 0 20 Y Y 1 F N
 F0 "U" -500 1050 50 H V L BNN
-F1 "MCU_Microchip_ATtiny_ATtiny3217-M" 100 -1050 50 H V L TNN
+F1 "MCU_Microchip_ATtiny_ATtiny1617-M" 100 -1050 50 H V L TNN
 F2 "Package_DFN_QFN:QFN-24-1EP_4x4mm_P0.5mm_EP2.6x2.6mm" 0 0 50 H I C CIN
 F3 "" 0 0 50 H I C CNN
 ALIAS ATtiny1607-M ATtiny417-M ATtiny817-M ATtiny1617-M ATtiny3217-M
