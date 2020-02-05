@@ -1,0 +1,485 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<export version="D">
+  <design>
+    <source>C:\shared\malenki-nano\hardware\malenki-nano\malenki-nano.sch</source>
+    <date>13/06/2019 00:35:55</date>
+    <tool>Eeschema (5.1.0)-1</tool>
+    <sheet number="1" name="/" tstamps="/">
+      <title_block>
+        <title>Malenki-Nano</title>
+        <company>Mark Robson</company>
+        <rev/>
+        <date>2019-05-15</date>
+        <source>malenki-nano.sch</source>
+        <comment number="1" value=""/>
+        <comment number="2" value=""/>
+        <comment number="3" value=""/>
+        <comment number="4" value=""/>
+      </title_block>
+    </sheet>
+  </design>
+  <components>
+    <comp ref="U2">
+      <value>generic-ldo</value>
+      <footprint>Package_TO_SOT_SMD:SOT-89-3</footprint>
+      <libsource lib="mal_nano" part="generic-ldo" description=""/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamp>5CDC3072</tstamp>
+    </comp>
+    <comp ref="C2">
+      <value>10uF</value>
+      <footprint>Capacitor_SMD:C_0805_2012Metric</footprint>
+      <datasheet>~</datasheet>
+      <libsource lib="Device" part="C" description="Unpolarized capacitor"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamp>5CDC3232</tstamp>
+    </comp>
+    <comp ref="C3">
+      <value>10uF</value>
+      <footprint>Capacitor_SMD:C_0805_2012Metric</footprint>
+      <datasheet>~</datasheet>
+      <libsource lib="Device" part="C" description="Unpolarized capacitor"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamp>5CDC3533</tstamp>
+    </comp>
+    <comp ref="J1">
+      <value>Conn_01x02_Male</value>
+      <footprint>malenki-nano:PinHeader_1x02_P2.54mm_BIG1</footprint>
+      <datasheet>~</datasheet>
+      <libsource lib="Connector" part="Conn_01x02_Male" description="Generic connector, single row, 01x02, script generated (kicad-library-utils/schlib/autogen/connector/)"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamp>5CDC3C93</tstamp>
+    </comp>
+    <comp ref="U3">
+      <value>ATtiny1614</value>
+      <footprint>Package_SO:SOIC-14_3.9x8.7mm_P1.27mm</footprint>
+      <libsource lib="mal_nano" part="ATtiny1614" description=""/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamp>5CDC52F1</tstamp>
+    </comp>
+    <comp ref="C4">
+      <value>0.1uF</value>
+      <footprint>Capacitor_SMD:C_0805_2012Metric</footprint>
+      <datasheet>~</datasheet>
+      <libsource lib="Device" part="C" description="Unpolarized capacitor"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamp>5CDC5AD8</tstamp>
+    </comp>
+    <comp ref="U1">
+      <value>A7105-MODULE</value>
+      <footprint>malenki-nano:A7105-module</footprint>
+      <libsource lib="mal_nano" part="A7105-MODULE" description=""/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamp>5CDC9C70</tstamp>
+    </comp>
+    <comp ref="C1">
+      <value>0.1uF</value>
+      <footprint>Capacitor_SMD:C_0805_2012Metric</footprint>
+      <datasheet>~</datasheet>
+      <libsource lib="Device" part="C" description="Unpolarized capacitor"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamp>5CDCC5F2</tstamp>
+    </comp>
+    <comp ref="J2">
+      <value>Conn_01x04_Male</value>
+      <footprint>malenki-nano:PinHeader_1x04_P2.54mm_BIG1</footprint>
+      <datasheet>~</datasheet>
+      <libsource lib="Connector" part="Conn_01x04_Male" description="Generic connector, single row, 01x04, script generated (kicad-library-utils/schlib/autogen/connector/)"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamp>5CDCE93F</tstamp>
+    </comp>
+    <comp ref="R1">
+      <value>220R</value>
+      <footprint>Resistor_SMD:R_0805_2012Metric</footprint>
+      <datasheet>~</datasheet>
+      <libsource lib="Device" part="R" description="Resistor"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamp>5CDD24A6</tstamp>
+    </comp>
+    <comp ref="D1">
+      <value>LED Blue</value>
+      <footprint>LED_SMD:LED_1206_3216Metric_Castellated</footprint>
+      <datasheet>~</datasheet>
+      <libsource lib="Device" part="LED" description="Light emitting diode"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamp>5CDD2ED4</tstamp>
+    </comp>
+    <comp ref="U5">
+      <value>RZ7899</value>
+      <footprint>Package_SO:SOIC-8_3.9x4.9mm_P1.27mm</footprint>
+      <libsource lib="mal_nano" part="RZ7899" description=""/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamp>5CDD4D34</tstamp>
+    </comp>
+    <comp ref="C5">
+      <value>22uF</value>
+      <footprint>Capacitor_SMD:C_1206_3216Metric</footprint>
+      <datasheet>~</datasheet>
+      <libsource lib="Device" part="C" description="Unpolarized capacitor"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamp>5CDD5C99</tstamp>
+    </comp>
+    <comp ref="J5">
+      <value>Conn_01x02_Male</value>
+      <footprint>malenki-nano:PinHeader_1x02_P2.54mm_BIG1</footprint>
+      <datasheet>~</datasheet>
+      <libsource lib="Connector" part="Conn_01x02_Male" description="Generic connector, single row, 01x02, script generated (kicad-library-utils/schlib/autogen/connector/)"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamp>5CDD8946</tstamp>
+    </comp>
+    <comp ref="U6">
+      <value>RZ7899</value>
+      <footprint>Package_SO:SOIC-8_3.9x4.9mm_P1.27mm</footprint>
+      <libsource lib="mal_nano" part="RZ7899" description=""/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamp>5CDDD923</tstamp>
+    </comp>
+    <comp ref="C6">
+      <value>22uF</value>
+      <footprint>Capacitor_SMD:C_1206_3216Metric</footprint>
+      <datasheet>~</datasheet>
+      <libsource lib="Device" part="C" description="Unpolarized capacitor"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamp>5CDDD929</tstamp>
+    </comp>
+    <comp ref="J6">
+      <value>Conn_01x02_Male</value>
+      <footprint>malenki-nano:PinHeader_1x02_P2.54mm_BIG1</footprint>
+      <datasheet>~</datasheet>
+      <libsource lib="Connector" part="Conn_01x02_Male" description="Generic connector, single row, 01x02, script generated (kicad-library-utils/schlib/autogen/connector/)"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamp>5CDDD942</tstamp>
+    </comp>
+    <comp ref="U7">
+      <value>RZ7899</value>
+      <footprint>Package_SO:SOIC-8_3.9x4.9mm_P1.27mm</footprint>
+      <libsource lib="mal_nano" part="RZ7899" description=""/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamp>5CDDF08C</tstamp>
+    </comp>
+    <comp ref="C7">
+      <value>22uF</value>
+      <footprint>Capacitor_SMD:C_1206_3216Metric</footprint>
+      <datasheet>~</datasheet>
+      <libsource lib="Device" part="C" description="Unpolarized capacitor"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamp>5CDDF092</tstamp>
+    </comp>
+    <comp ref="J7">
+      <value>Conn_01x02_Male</value>
+      <footprint>malenki-nano:PinHeader_1x02_P2.54mm_BIG1</footprint>
+      <datasheet>~</datasheet>
+      <libsource lib="Connector" part="Conn_01x02_Male" description="Generic connector, single row, 01x02, script generated (kicad-library-utils/schlib/autogen/connector/)"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamp>5CDDF0AB</tstamp>
+    </comp>
+  </components>
+  <libparts>
+    <libpart lib="Connector" part="Conn_01x02_Male">
+      <description>Generic connector, single row, 01x02, script generated (kicad-library-utils/schlib/autogen/connector/)</description>
+      <docs>~</docs>
+      <footprints>
+        <fp>Connector*:*_1x??_*</fp>
+      </footprints>
+      <fields>
+        <field name="Reference">J</field>
+        <field name="Value">Conn_01x02_Male</field>
+      </fields>
+      <pins>
+        <pin num="1" name="Pin_1" type="passive"/>
+        <pin num="2" name="Pin_2" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="Connector" part="Conn_01x04_Male">
+      <description>Generic connector, single row, 01x04, script generated (kicad-library-utils/schlib/autogen/connector/)</description>
+      <docs>~</docs>
+      <footprints>
+        <fp>Connector*:*_1x??_*</fp>
+      </footprints>
+      <fields>
+        <field name="Reference">J</field>
+        <field name="Value">Conn_01x04_Male</field>
+      </fields>
+      <pins>
+        <pin num="1" name="Pin_1" type="passive"/>
+        <pin num="2" name="Pin_2" type="passive"/>
+        <pin num="3" name="Pin_3" type="passive"/>
+        <pin num="4" name="Pin_4" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="Device" part="C">
+      <description>Unpolarized capacitor</description>
+      <docs>~</docs>
+      <footprints>
+        <fp>C_*</fp>
+      </footprints>
+      <fields>
+        <field name="Reference">C</field>
+        <field name="Value">C</field>
+      </fields>
+      <pins>
+        <pin num="1" name="~" type="passive"/>
+        <pin num="2" name="~" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="Device" part="LED">
+      <description>Light emitting diode</description>
+      <docs>~</docs>
+      <footprints>
+        <fp>LED*</fp>
+        <fp>LED_SMD:*</fp>
+        <fp>LED_THT:*</fp>
+      </footprints>
+      <fields>
+        <field name="Reference">D</field>
+        <field name="Value">LED</field>
+      </fields>
+      <pins>
+        <pin num="1" name="K" type="passive"/>
+        <pin num="2" name="A" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="Device" part="R">
+      <description>Resistor</description>
+      <docs>~</docs>
+      <footprints>
+        <fp>R_*</fp>
+      </footprints>
+      <fields>
+        <field name="Reference">R</field>
+        <field name="Value">R</field>
+      </fields>
+      <pins>
+        <pin num="1" name="~" type="passive"/>
+        <pin num="2" name="~" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="mal_nano" part="A7105-MODULE">
+      <fields>
+        <field name="Reference">U</field>
+        <field name="Value">A7105-MODULE</field>
+      </fields>
+      <pins>
+        <pin num="1" name="NC" type="NotConnected"/>
+        <pin num="2" name="GIO1" type="BiDi"/>
+        <pin num="3" name="NC" type="NotConnected"/>
+        <pin num="4" name="GIO2" type="BiDi"/>
+        <pin num="5" name="NC" type="NotConnected"/>
+        <pin num="6" name="NC" type="NotConnected"/>
+        <pin num="7" name="GND" type="power_in"/>
+        <pin num="8" name="NC" type="NotConnected"/>
+        <pin num="9" name="VDD" type="power_in"/>
+        <pin num="10" name="GND" type="power_in"/>
+        <pin num="11" name="NC" type="NotConnected"/>
+        <pin num="12" name="SCS" type="input"/>
+        <pin num="13" name="SCK" type="input"/>
+        <pin num="14" name="SDIO" type="BiDi"/>
+      </pins>
+    </libpart>
+    <libpart lib="mal_nano" part="ATtiny1614">
+      <fields>
+        <field name="Reference">U</field>
+        <field name="Value">ATtiny1614</field>
+      </fields>
+      <pins>
+        <pin num="1" name="VCC" type="power_in"/>
+        <pin num="2" name="PA4" type="BiDi"/>
+        <pin num="3" name="PA5" type="BiDi"/>
+        <pin num="4" name="PA6" type="BiDi"/>
+        <pin num="5" name="PA7" type="BiDi"/>
+        <pin num="6" name="TOSC1/PB3" type="BiDi"/>
+        <pin num="7" name="TOSC2/PB2" type="BiDi"/>
+        <pin num="8" name="PB1" type="BiDi"/>
+        <pin num="9" name="PB0" type="BiDi"/>
+        <pin num="10" name="PA0/RESET/UPDI" type="BiDi"/>
+        <pin num="11" name="PA1" type="BiDi"/>
+        <pin num="12" name="PA2" type="BiDi"/>
+        <pin num="13" name="PA3/EXTCLK" type="BiDi"/>
+        <pin num="14" name="GND" type="power_in"/>
+      </pins>
+    </libpart>
+    <libpart lib="mal_nano" part="RZ7899">
+      <fields>
+        <field name="Reference">U</field>
+        <field name="Value">RZ7899</field>
+      </fields>
+      <pins>
+        <pin num="1" name="INR" type="input"/>
+        <pin num="2" name="INF" type="input"/>
+        <pin num="3" name="GND" type="power_in"/>
+        <pin num="4" name="VCC" type="power_in"/>
+        <pin num="5" name="OUTF" type="output"/>
+        <pin num="6" name="OUTF" type="passive"/>
+        <pin num="7" name="OUTR" type="output"/>
+        <pin num="8" name="OUTR" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="mal_nano" part="generic-ldo">
+      <fields>
+        <field name="Reference">U</field>
+        <field name="Value">generic-ldo</field>
+      </fields>
+      <pins>
+        <pin num="1" name="GND" type="power_in"/>
+        <pin num="2" name="VI" type="power_in"/>
+        <pin num="3" name="VO" type="power_out"/>
+      </pins>
+    </libpart>
+  </libparts>
+  <libraries>
+    <library logical="Connector">
+      <uri>C:\Program Files\KiCad\share\kicad\library/Connector.lib</uri>
+    </library>
+    <library logical="Device">
+      <uri>C:\Program Files\KiCad\share\kicad\library/Device.lib</uri>
+    </library>
+    <library logical="mal_nano">
+      <uri>C:\shared\malenki-nano\hardware\malenki-nano/mal_nano.lib</uri>
+    </library>
+  </libraries>
+  <nets>
+    <net code="1" name="GND">
+      <node ref="C7" pin="2"/>
+      <node ref="U1" pin="10"/>
+      <node ref="C4" pin="2"/>
+      <node ref="U3" pin="14"/>
+      <node ref="U7" pin="3"/>
+      <node ref="J2" pin="1"/>
+      <node ref="U2" pin="1"/>
+      <node ref="C1" pin="2"/>
+      <node ref="U1" pin="7"/>
+      <node ref="U5" pin="3"/>
+      <node ref="R1" pin="2"/>
+      <node ref="U6" pin="3"/>
+      <node ref="J1" pin="2"/>
+      <node ref="C3" pin="2"/>
+      <node ref="C2" pin="2"/>
+      <node ref="C5" pin="2"/>
+      <node ref="C6" pin="2"/>
+    </net>
+    <net code="2" name="Net-(J6-Pad1)">
+      <node ref="U6" pin="5"/>
+      <node ref="U6" pin="6"/>
+      <node ref="J6" pin="1"/>
+    </net>
+    <net code="3" name="Net-(J6-Pad2)">
+      <node ref="U6" pin="7"/>
+      <node ref="U6" pin="8"/>
+      <node ref="J6" pin="2"/>
+    </net>
+    <net code="4" name="MOTOR2F">
+      <node ref="U6" pin="2"/>
+      <node ref="U3" pin="7"/>
+    </net>
+    <net code="5" name="Net-(J5-Pad2)">
+      <node ref="J5" pin="2"/>
+      <node ref="U5" pin="8"/>
+      <node ref="U5" pin="7"/>
+    </net>
+    <net code="6" name="Net-(J5-Pad1)">
+      <node ref="U5" pin="5"/>
+      <node ref="U5" pin="6"/>
+      <node ref="J5" pin="1"/>
+    </net>
+    <net code="7" name="MOTOR2R">
+      <node ref="U6" pin="1"/>
+      <node ref="U3" pin="8"/>
+    </net>
+    <net code="8" name="VBAT">
+      <node ref="C5" pin="1"/>
+      <node ref="U7" pin="4"/>
+      <node ref="U2" pin="2"/>
+      <node ref="C2" pin="1"/>
+      <node ref="J1" pin="1"/>
+      <node ref="U6" pin="4"/>
+      <node ref="C7" pin="1"/>
+      <node ref="U5" pin="4"/>
+      <node ref="C6" pin="1"/>
+    </net>
+    <net code="9" name="MOTOR3R">
+      <node ref="U7" pin="1"/>
+      <node ref="U3" pin="2"/>
+    </net>
+    <net code="10" name="MOTOR3F">
+      <node ref="U3" pin="3"/>
+      <node ref="U7" pin="2"/>
+    </net>
+    <net code="11" name="Net-(J7-Pad2)">
+      <node ref="U7" pin="8"/>
+      <node ref="U7" pin="7"/>
+      <node ref="J7" pin="2"/>
+    </net>
+    <net code="12" name="Net-(J7-Pad1)">
+      <node ref="U7" pin="6"/>
+      <node ref="U7" pin="5"/>
+      <node ref="J7" pin="1"/>
+    </net>
+    <net code="13" name="I2S_SDIO">
+      <node ref="U1" pin="14"/>
+      <node ref="U3" pin="4"/>
+    </net>
+    <net code="14" name="I2S_SCK">
+      <node ref="U1" pin="13"/>
+      <node ref="U3" pin="5"/>
+    </net>
+    <net code="15" name="I2S_SCS">
+      <node ref="U3" pin="6"/>
+      <node ref="U1" pin="12"/>
+    </net>
+    <net code="16" name="GIO1">
+      <node ref="U1" pin="2"/>
+      <node ref="U3" pin="12"/>
+    </net>
+    <net code="17" name="/VLOGIC">
+      <node ref="C1" pin="1"/>
+      <node ref="U1" pin="9"/>
+      <node ref="C4" pin="1"/>
+      <node ref="C3" pin="1"/>
+      <node ref="J2" pin="2"/>
+      <node ref="U2" pin="3"/>
+      <node ref="U3" pin="1"/>
+    </net>
+    <net code="18" name="Net-(U1-Pad1)">
+      <node ref="U1" pin="1"/>
+    </net>
+    <net code="19" name="Net-(U1-Pad11)">
+      <node ref="U1" pin="11"/>
+    </net>
+    <net code="20" name="Net-(U1-Pad3)">
+      <node ref="U1" pin="3"/>
+    </net>
+    <net code="21" name="BLINKY">
+      <node ref="U1" pin="4"/>
+      <node ref="D1" pin="2"/>
+    </net>
+    <net code="22" name="TXDEBUG">
+      <node ref="J2" pin="3"/>
+      <node ref="U3" pin="11"/>
+    </net>
+    <net code="23" name="UPDI">
+      <node ref="J2" pin="4"/>
+      <node ref="U3" pin="10"/>
+    </net>
+    <net code="24" name="Net-(D1-Pad1)">
+      <node ref="R1" pin="1"/>
+      <node ref="D1" pin="1"/>
+    </net>
+    <net code="25" name="MOTOR1R">
+      <node ref="U3" pin="9"/>
+      <node ref="U5" pin="1"/>
+    </net>
+    <net code="26" name="MOTOR1F">
+      <node ref="U5" pin="2"/>
+      <node ref="U3" pin="13"/>
+    </net>
+    <net code="27" name="Net-(U1-Pad5)">
+      <node ref="U1" pin="5"/>
+    </net>
+    <net code="28" name="Net-(U1-Pad6)">
+      <node ref="U1" pin="6"/>
+    </net>
+    <net code="29" name="Net-(U1-Pad8)">
+      <node ref="U1" pin="8"/>
+    </net>
+  </nets>
+</export>
