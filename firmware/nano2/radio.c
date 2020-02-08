@@ -33,6 +33,7 @@ static struct {
 } radio_counters;
 
 static void init_bind_mode();
+static void dump_buf(uint8_t *buf, uint8_t len);
 
 /*
  * Blinking LED goes on this GPIO pin.
@@ -110,10 +111,8 @@ static void init_interrupts()
      * GIO1 pin
      * assume GIO1_PORT = PORTA.
      */
-    PORTA.PIN2CTRL = PORT_ISC_FALLING_gc;
-    
+    PORTA.PIN2CTRL = PORT_ISC_FALLING_gc;    
 }
-
 
 // Strobe commands - should have bit A7 set (0x80)
 #define STROBE_STANDBY 0xa0 
@@ -127,10 +126,9 @@ static const uint8_t radio_id[] = {
     0x54, 0x75, 0xc5, 0x2a
     };
 
-void radio_init()
+static void init_a7105_hardware()
 {
     // Assume spi is initialised.
-    diag_println("Begin radio_init");
     diag_println("Resetting the a7105");
     _delay_ms(25); // Wait for it to be ready, in case we just powered on.
     spi_write_byte(0, 0x00); // Zero - reset register.
@@ -182,26 +180,44 @@ void radio_init()
     for (int i=0; i<4; i++) {
         diag_println("id_readback[%d]=%02x", i, id_readback[i]);
     }
-    bool hardware_ok = true;
     
     if (memcmp(id_readback, radio_id,4) != 0) {
-        diag_println("ERROR: Wrong ID readback");
-        diag_println("Possible hardware fault. Error not recoverable.");
-        hardware_ok = false;
+        epic_fail("ERROR: Wrong ID readback");
     }
     // Check channel is reading back.
     uint8_t b = spi_read_byte(0x0f);
     if (b != 0xa0) {
-        diag_println("Fail to read channel back, value %02x should be a0",
+        diag_println("channel value %02x should be a0",
             b);
-        hardware_ok = false;
+        epic_fail("Fail to read channel back");
     }
-    if (! hardware_ok) {
-        diag_println("FAIL FAIL FAIL!");
-        _delay_ms(250);
-        trigger_reset(); // Reset the whole device.
+}
+
+static bool is_all_zeros(const uint8_t *buf, uint8_t len)
+{
+    uint8_t acc = 0;
+    for (uint8_t i=0; i<len; i++) {
+        acc |= buf[i];
     }
-    init_bind_mode();
+    return (acc == 0);
+}
+
+void radio_init()
+{
+    diag_println("Begin radio_init");
+    init_a7105_hardware();
+
+    /* Determine whether we have any tx info loaded from nvram.
+     */
+    // If there are no data loaded, tx_id will be all zeros
+    if (is_all_zeros(radio_state.tx_id, sizeof(radio_state.tx_id))) {
+        init_bind_mode();
+    } else {
+        diag_println("initialising from saved tx id: ");
+        dump_buf(radio_state.tx_id, 4);
+        radio_state.state = RADIO_STATE_HOPPING;
+    }
+    
     init_interrupts();
     diag_println("End radio_init");
     /*
@@ -252,10 +268,30 @@ __attribute__ ((unused)) static void radio_test1()
     diag_println("radio_test1 finished");
 }
 
+#define PACKET_TYPE_STICKS 0x58
+
 static void handle_packet_sticks()
 {
+    uint8_t type = radio_state.packet[0];
+    if (type != PACKET_TYPE_STICKS) {
+        // Ignore
+        return;
+    }
     // packet is in radio_state.packet.
     // diag_println("stixchan: %02x", (int) radio_state.packet_channel);
+    const uint8_t sticks_offset = 9; // Bytes offset
+    uint16_t sticks[NUM_CONTROL_CHANNELS]; 
+    for (uint8_t n=0; n< NUM_CONTROL_CHANNELS; n++) {
+        uint16_t *stick = (uint16_t *) (radio_state.packet + sticks_offset + (2*n));
+        sticks[n] = *stick;
+    }
+    // Centre is *always* 1500.
+    // Convert to signed.
+    uint16_t rel_steering = (int16_t) sticks[CHANNEL_INDEX_STEERING] - 1500;
+    uint16_t rel_throttle = (int16_t) sticks[CHANNEL_INDEX_THROTTLE] - 1500;
+    uint16_t rel_weapon = (int16_t) sticks[CHANNEL_INDEX_WEAPON] - 1500;
+    bool invert = false; // TODO
+    mixing_drive_motors(rel_throttle, rel_steering, rel_weapon, invert);
 }
 
 static void dump_buf(uint8_t *buf, uint8_t len)
@@ -278,6 +314,8 @@ static void handle_bind_complete()
     dump_buf(radio_state.hop_channels, NR_HOP_CHANNELS);
     radio_state.hop_index = 0;
     radio_state.state = RADIO_STATE_HOPPING;
+    // Save the transmitter id, etc, in nvram.
+    nvconfig_save();
 }
 
 static void handle_packet_bind()
@@ -306,15 +344,25 @@ static void handle_packet_bind()
 // So we need to subtract one from every channel no?
 void radio_loop()
 {
+    uint32_t now = get_tickcount();
     if (radio_state.packet_is_valid) {
         if (radio_state.state == RADIO_STATE_BIND) {
             handle_packet_bind();
         } else {
             handle_packet_sticks();
+            radio_state.last_sticks_packet = now;
+            radio_state.got_signal_ever = true;
         }
         radio_state.packet_is_valid = false;
+    } else {
+        uint32_t age = now - radio_state.last_sticks_packet;
+        if (age > 25) { // centiseconds
+            // Lost signal.
+            diag_println("No signal");
+            motors_all_off();
+            radio_state.last_sticks_packet = now; // avoid spamming debug port
+        }
     }
-    uint32_t now = get_tickcount();
     if ((now - radio_counters.last_report_time) > 50) {
         radio_counters.last_report_time = now;
         cli();
@@ -324,7 +372,6 @@ void radio_loop()
         radio_counters.missed = 0;
         sei();
         diag_println("rx: %05u missed: %05u", rx, missed);
-        // radio_test1();
     }
 }
 
@@ -411,10 +458,12 @@ static void do_rx()
     uint8_t packet_type = buf[0];
     uint8_t state = radio_state.state;
     bool ok = false;
-    if (! (modeflags & errflags)) {
+    if ((modeflags & errflags)) {
+        diag_putc('e');
+    } else {
         spi_strobe_then_read_block(STROBE_READ_PTR_RESET,
             0x5, // address to read packet data.
-            buf, RADIO_PACKET_LEN);
+            buf, RADIO_PACKET_SIGNIFICANT_LEN);
         if (state == RADIO_STATE_BIND) {
             if ((packet_type == 0xbb) || (packet_type == 0xbc)) {
                 // Bind packet.
@@ -428,6 +477,7 @@ static void do_rx()
                 ok = true;
             }
         }
+        if (!ok) diag_putc('0');
     }
     
     if (ok) {
@@ -439,7 +489,7 @@ static void do_rx()
         // then copy the packet there, otherwise, drop packet.
         if (! radio_state.packet_is_valid) {
             // Copy packet into buffer for the main loop.
-            memcpy(radio_state.packet, buf, RADIO_PACKET_LEN);
+            memcpy(radio_state.packet, buf, RADIO_PACKET_SIGNIFICANT_LEN);
             radio_state.packet_is_valid = true;
             radio_state.packet_channel = radio_state.current_channel;
         } else {
@@ -450,7 +500,6 @@ static void do_rx()
     } else {
         // BAD packet; stay on the same channel, do not reset timer.
         restart_rx(0);
-        diag_putc('0');
     }
 }
 

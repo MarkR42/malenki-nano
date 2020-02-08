@@ -3,7 +3,7 @@
 #
 OBJDIR=obj
 
-OBJ_FILES=main.o diag.o a7105_spi.o radio.o motors.o nvconfig.o mixing.o
+OBJ_FILES=main.o diag.o a7105_spi.o radio.o motors.o nvconfig.o mixing.o zlast.o
 OBJECTS=$(addprefix $(OBJDIR)/,$(OBJ_FILES))
 HEADERS=radio.h nvconfig.h state.h motors.h diag.h a7105_spi.h mixing.h
 
@@ -22,6 +22,7 @@ link: $(OBJECTS) $(HEADERS)
 	avr-objdump -S $(ELF) > $(OBJDIR)/main.asm
 	avr-objdump -t $(ELF) > $(OBJDIR)/main.sym
 	avr-objcopy -j .text -j .data -j .rodata -O ihex $(ELF) $(HEX)
+	avr-objcopy -j .text -j .data -j .rodata -O binary $(ELF) obj/main.bin
 
 CFLAGS=-mmcu=$(MCU) -Os -Wall
 $(OBJDIR)/%.o: %.c Makefile

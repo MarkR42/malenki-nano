@@ -18,6 +18,7 @@
 #include "mixing.h"
 
 volatile master_state_t master_state;
+extern const char * end_marker;
 
 static void init_clock()
 {
@@ -46,6 +47,12 @@ static void init_serial()
         USART_TXEN_bm | USART_RXEN_bm; // Start Transmitter and receiver
     // Enable interrupts from the usart rx
     // USART0.CTRLA |= USART_RXCIE_bm;
+}
+
+static void uninit_serial()
+{
+    USART0.CTRLB = 0; //disable rx and tx
+    PORTA.DIRCLR = 1 << 1; // set as input.
 }
 
 static void init_timer()
@@ -89,12 +96,37 @@ uint32_t get_tickcount()
     return tc;
 }
 
+void epic_fail(const char * reason)
+{
+    diag_puts(reason);
+    diag_puts("\r\nFAIL FAIL FAIL!\r\n\n\n");
+    uninit_serial();
+    _delay_ms(250);
+    trigger_reset(); // Reset the whole device to try again.
+}
+
+static void integrity_check()
+{
+    /*
+     * Check some data at the end of the flash image, to see if
+     * they are present and correct. This probably means that
+     * the flash was successful.
+     */
+    // Check end_marker
+    int l = strlen(end_marker);
+    if ((l != 8) || (end_marker[0] != 'S')) {
+        epic_fail("Integrity check failed");
+    }
+    diag_println("Integrity check ok");
+}
+
 int main(void)
 {
     init_clock();
     init_serial();
     // Write the greeting message as soon as possible.
-    diag_println("Malenki-nano2 receiver starting up");
+    diag_println("\r\nMalenki-nano2 receiver starting up");
+    integrity_check();
     init_timer();
     sei(); // interrupts on
     // test_get_micros();

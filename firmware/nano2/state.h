@@ -11,6 +11,7 @@ typedef struct {
 // Accessor function which disables interrupts
 uint32_t get_tickcount();
 void trigger_reset();
+void epic_fail(const char * reason);
 
 extern volatile master_state_t master_state;
 
