@@ -43,7 +43,7 @@ PC5 - BLINKY - flashing light.
 Peripheral usage
 
 USART0 - transmitter - for debug messages
-	receiver - to receive digial data from rx
+	receiver - unused
 
 TCA0 - timer generates 6x PWM pulses on motors
 	use in "split mode"

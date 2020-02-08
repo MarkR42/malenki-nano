@@ -139,7 +139,7 @@ void mixing_drive_motors(int16_t throttle, int16_t steering, int16_t weapon, boo
 
     if (diag_count == 0) {
         diag_count = 16;
-        diag_println("L: %03d R: %03d W: %03d", left, right, weapon);
+        // diag_println("L: %03d R: %03d W: %03d", left, right, weapon);
     } else {
         --diag_count;
     }

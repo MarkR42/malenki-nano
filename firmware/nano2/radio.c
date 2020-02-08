@@ -18,7 +18,7 @@
 #include <string.h>
 
 // Number of hops we do each time.
-#define HOP_COUNT 2
+#define HOP_COUNT 1
 
 // GIO port is on this pin
 PORT_t * const GIO1_PORT = &PORTA;
@@ -90,7 +90,8 @@ static void init_interrupts()
 {
     // TCB0 - we set this up to generate periodic interrupts at the timeout
     // period.
-    // Timeout period should be 3900 microseconds
+    // Messages are sent about every 3800 microseconds
+    // Timeout period should be slightly more.
     
     // Timer will run at CLK_PER (10mhz) / 2
     // So 5mhz.
@@ -364,14 +365,16 @@ void radio_loop()
         }
     }
     if ((now - radio_counters.last_report_time) > 50) {
-        radio_counters.last_report_time = now;
-        cli();
-        uint16_t rx = radio_counters.rx;
-        uint16_t missed = radio_counters.missed;
-        radio_counters.rx = 0;
-        radio_counters.missed = 0;
-        sei();
-        diag_println("rx: %05u missed: %05u", rx, missed);
+        if (radio_state.hop_index == 0) {
+            radio_counters.last_report_time = now;
+            cli();
+            uint16_t rx = radio_counters.rx;
+            uint16_t missed = radio_counters.missed;
+            radio_counters.rx = 0;
+            radio_counters.missed = 0;
+            sei();
+            diag_println("rx: %05u missed: %05u", rx, missed);
+        }
     }
 }
 
@@ -390,10 +393,13 @@ static void init_bind_mode()
  * Here be dragons, woof woof
  **********************/
  
- static void diag_putc(char c)
- {
-     USART0.TXDATAL = c;
- }
+static void maybe_diag_putc(char c)
+{
+    // Write character to tx for diag, only if enabled.
+#if 0
+    USART0.TXDATAL = c;
+#endif
+}
  
 static void restart_rx(uint8_t channel_increment)
 {
@@ -417,16 +423,16 @@ ISR(TCB0_INT_vect)
         timeout_irq_count += 1;
         if (timeout_irq_count == HOP_COUNT) {
             radio_counters.missed += 1;
-            radio_state.missed_packet_count += 1; // successive missed packets.
             if (radio_state.missed_packet_count < 5) {
                 // Try to hop to catch up.
                 restart_rx(HOP_COUNT);
+                radio_state.missed_packet_count += 1; // successive missed packets.
             } else {
                 // Too out of sync, stay on same channel and wait for
                 // it to come around again.
                 restart_rx(0);
             }
-            diag_putc('.');
+            maybe_diag_putc('.');
             timeout_irq_count = 0;
         }
     }
@@ -458,8 +464,10 @@ static void do_rx()
     uint8_t packet_type = buf[0];
     uint8_t state = radio_state.state;
     bool ok = false;
+    bool do_hop = false;
     if ((modeflags & errflags)) {
-        diag_putc('e');
+        maybe_diag_putc('e');
+        do_hop = true; // Assume that the error packet was for us.
     } else {
         spi_strobe_then_read_block(STROBE_READ_PTR_RESET,
             0x5, // address to read packet data.
@@ -468,6 +476,7 @@ static void do_rx()
             if ((packet_type == 0xbb) || (packet_type == 0xbc)) {
                 // Bind packet.
                 ok = true;
+                do_hop = true;
             }
         }
         if (state == RADIO_STATE_HOPPING) {
@@ -475,16 +484,22 @@ static void do_rx()
             // Check tx id.
             if (memcmp(& (buf[1]), radio_state.tx_id, 4) == 0) {
                 ok = true;
+                do_hop = true;
             }
         }
-        if (!ok) diag_putc('0');
+        if (!ok) maybe_diag_putc('0');
     }
-    
-    if (ok) {
+    if (do_hop) {
         // GOOD packet.
         restart_rx(HOP_COUNT);
         radio_counters.rx += 1;
-        reset_timeout(); 
+        reset_timeout();         
+    } else {
+        // BAD packet; stay on the same channel, do not reset timer.
+        restart_rx(0);
+    }
+    
+    if (ok) {
         // If radio_state.packet does not already contain a packet,
         // then copy the packet there, otherwise, drop packet.
         if (! radio_state.packet_is_valid) {
@@ -496,10 +511,7 @@ static void do_rx()
             // Drop the packet contents, but still hop to next channel
         }
         radio_state.missed_packet_count = 0; // successive missed packets.
-        diag_putc('1');
-    } else {
-        // BAD packet; stay on the same channel, do not reset timer.
-        restart_rx(0);
+        maybe_diag_putc('1');
     }
 }
 
