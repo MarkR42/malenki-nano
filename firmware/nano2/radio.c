@@ -20,10 +20,18 @@
 // Number of hops we do each time.
 #define HOP_COUNT 1
 
+// Auto bind time in centiseconds.
+#define AUTO_BIND_TIME (60 * 100)
+
 // GIO port is on this pin
 PORT_t * const GIO1_PORT = &PORTA;
 const uint8_t GIO1_PIN = 2;
 const uint8_t GIO1_bm = 1 << GIO1_PIN;
+
+// Where is the LED?
+VPORT_t * const LED_VPORT = &VPORTC;
+const uint8_t LED_PIN = 1;
+const uint8_t LED_PIN_bm = 1 << LED_PIN;
 
 radio_state_t radio_state;
 static struct {
@@ -218,6 +226,8 @@ void radio_init()
         dump_buf(radio_state.tx_id, 4);
         radio_state.state = RADIO_STATE_HOPPING;
     }
+    // Init led BLINKY gpio - set it as output.
+    LED_VPORT->DIR |= LED_PIN_bm;
     
     init_interrupts();
     diag_println("End radio_init");
@@ -228,13 +238,7 @@ void radio_init()
      */
 }
 
-static void enable_rx(uint8_t channel)
-{
-    uint8_t chanminus1 = channel - 1 ;
-    spi_write_byte_then_strobe(0x0f, chanminus1, STROBE_RX);
-    radio_state.current_channel = channel;
-}
-
+static void enable_rx(uint8_t channel);
 static uint8_t test1_channel = 0x8c;// bind channel 0x0d or 0x8c
 
 __attribute__ ((unused)) static void radio_test1()
@@ -293,6 +297,8 @@ static void handle_packet_sticks()
     uint16_t rel_weapon = (int16_t) sticks[CHANNEL_INDEX_WEAPON] - 1500;
     bool invert = false; // TODO
     mixing_drive_motors(rel_throttle, rel_steering, rel_weapon, invert);
+    // Turn on the LED so the driver can see it's connected.
+    radio_state.led_on = true;
 }
 
 static void dump_buf(uint8_t *buf, uint8_t len)
@@ -352,16 +358,26 @@ void radio_loop()
         } else {
             handle_packet_sticks();
             radio_state.last_sticks_packet = now;
-            radio_state.got_signal_ever = true;
         }
+        radio_state.got_signal_ever = true;
         radio_state.packet_is_valid = false;
     } else {
-        uint32_t age = now - radio_state.last_sticks_packet;
-        if (age > 25) { // centiseconds
-            // Lost signal.
-            diag_println("No signal");
-            motors_all_off();
-            radio_state.last_sticks_packet = now; // avoid spamming debug port
+        if (radio_state.state != RADIO_STATE_BIND) {
+            uint32_t age = now - radio_state.last_sticks_packet;
+            if (age > 25) { // centiseconds
+                // Lost signal.
+                diag_println("No signal");
+                motors_all_off();
+                radio_state.led_on = false;
+                radio_state.last_sticks_packet = now; // avoid spamming debug port
+                // Auto-rebind:
+                // if we have got no signal since power on, then
+                // automatically enter bind mode after some time.
+                if ((! radio_state.got_signal_ever) && (now > AUTO_BIND_TIME)) {
+                    diag_println("Auto-bind mode");
+                    init_bind_mode();
+                }
+            }
         }
     }
     if ((now - radio_counters.last_report_time) > 50) {
@@ -374,6 +390,10 @@ void radio_loop()
             radio_counters.missed = 0;
             sei();
             diag_println("rx: %05u missed: %05u", rx, missed);
+        }
+        if (radio_state.state == RADIO_STATE_BIND) {
+            // Blink led in bind mode.
+            radio_state.led_on = (now & 0x20);
         }
     }
 }
@@ -400,6 +420,13 @@ static void maybe_diag_putc(char c)
     USART0.TXDATAL = c;
 #endif
 }
+
+static void enable_rx(uint8_t channel)
+{
+    uint8_t chanminus1 = channel - 1 ;
+    spi_write_byte_then_strobe(0x0f, chanminus1, STROBE_RX);
+    radio_state.current_channel = channel;
+}
  
 static void restart_rx(uint8_t channel_increment)
 {
@@ -407,6 +434,23 @@ static void restart_rx(uint8_t channel_increment)
     uint8_t chan = radio_state.hop_channels[radio_state.hop_index];
     enable_rx(chan);
 }
+
+static void update_led()
+{
+    // Called in interrupts, update the "BLINKY" led with the state of
+    // led_on
+    uint8_t gio_control =
+        ((0x0c) << 2 )  // GIO2 pin control: "Inhibited"
+        | 1; // Enable
+    if (radio_state.led_on) {
+        gio_control |= 0x2; // Invert signal bit for gio
+        LED_VPORT->OUT |= LED_PIN_bm; // turn on microcontroller gpio
+    } else {
+        LED_VPORT->OUT &= ~LED_PIN_bm; // turn off micro gpio
+    }
+    const uint8_t gio2_register = 0xc; 
+    spi_write_byte(gio2_register, gio_control);
+} 
 
 static uint8_t timeout_irq_count;
 
@@ -434,6 +478,7 @@ ISR(TCB0_INT_vect)
             }
             maybe_diag_putc('.');
             timeout_irq_count = 0;
+            update_led();
         }
     }
 }
@@ -513,6 +558,7 @@ static void do_rx()
         radio_state.missed_packet_count = 0; // successive missed packets.
         maybe_diag_putc('1');
     }
+    update_led();
 }
 
 ISR(PORTA_PORT_vect)
