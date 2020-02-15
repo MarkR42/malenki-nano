@@ -225,6 +225,12 @@ void radio_init()
         diag_println("initialising from saved tx id: ");
         dump_buf(radio_state.tx_id, 4);
         radio_state.state = RADIO_STATE_HOPPING;
+        // Save the hopping channels in case we need them later.
+        memcpy(radio_state.hop_channels_saved, radio_state.hop_channels,
+            sizeof(radio_state.hop_channels_saved));
+        // Save previous tx id.
+        memcpy(radio_state.tx_id_saved, radio_state.tx_id,
+            sizeof(radio_state.tx_id_saved));
     }
     // Init led BLINKY gpio - set it as output.
     LED_VPORT->DIR |= LED_PIN_bm;
@@ -329,6 +335,18 @@ static void handle_packet_bind()
 {
     // packet is in radio_state.packet.
     uint8_t *bind_tx_id = radio_state.packet + 1;
+    // Check for a packet from our *old* saved transmitter, 
+    // This is a normal situation and we should immediately resume operation.
+    if (memcmp(bind_tx_id, radio_state.tx_id_saved, 4) == 0) {
+        // Old transmitter came back!
+        diag_println("Old transmitter reappeared, will use old settings");
+        memcpy(radio_state.tx_id, radio_state.tx_id_saved, 
+            sizeof(radio_state.tx_id));
+        memcpy(radio_state.hop_channels, radio_state.hop_channels_saved, 
+            sizeof(radio_state.hop_channels));
+        radio_state.hop_index = 0;
+        radio_state.state = RADIO_STATE_HOPPING;
+    }
     // Check if a lot of repeated bind packets appear.
     if (memcmp(bind_tx_id, radio_state.tx_id, 4) == 0) {
         // Repeated bind packet.
@@ -404,7 +422,14 @@ static void init_bind_mode()
     radio_state.state = RADIO_STATE_BIND;
     // Set up the hop-table with the bind channels.
     for (uint8_t i=0; i< NR_HOP_CHANNELS; i++) {
-        radio_state.hop_channels[i] = (i & 2) ? 0x0d : 0x8c;
+        radio_state.hop_channels[i] = (i & 1) ? 0x0d : 0x8c;
+    }
+    // Also check the first channel from our saved rx,
+    if (! is_all_zeros(radio_state.hop_channels_saved, sizeof(radio_state.hop_channels_saved))) {
+        uint8_t firstchan = radio_state.hop_channels_saved[0];
+        for (uint8_t i=(NR_HOP_CHANNELS - 4); i < NR_HOP_CHANNELS; i++) {
+            radio_state.hop_channels[i] = firstchan;
+        }
     }
 }
 
@@ -517,17 +542,18 @@ static void do_rx()
         spi_strobe_then_read_block(STROBE_READ_PTR_RESET,
             0x5, // address to read packet data.
             buf, RADIO_PACKET_SIGNIFICANT_LEN);
+        // If it has our tx_id, it's always important.
+        // Packet type is checked in main receive function
+        if (memcmp(& (buf[1]), radio_state.tx_id, 4) == 0) {
+            ok = true;
+            do_hop = true;
+        }
+        
+        // If we are in bind mode, bind packets are important, ignore
+        // anything else 
         if (state == RADIO_STATE_BIND) {
             if ((packet_type == 0xbb) || (packet_type == 0xbc)) {
                 // Bind packet.
-                ok = true;
-                do_hop = true;
-            }
-        }
-        if (state == RADIO_STATE_HOPPING) {
-            // sticks, settings, failsafe? or something else.
-            // Check tx id.
-            if (memcmp(& (buf[1]), radio_state.tx_id, 4) == 0) {
                 ok = true;
                 do_hop = true;
             }

@@ -28,6 +28,10 @@ typedef struct {
     // saved into nvrame:
     uint8_t tx_id[4]; // Transmitter ID
     uint8_t hop_channels[NR_HOP_CHANNELS]; // List of hopping channels.
+    // Hopping channels saved from nvram, in case we decide to change hopping
+    // channels going into bind mode, then want to restore them back.
+    uint8_t hop_channels_saved[NR_HOP_CHANNELS];
+    uint8_t tx_id_saved[4]; // Saved previous transmitter ID
     // Other info - not saved between boots
     uint8_t state;
     uint8_t hop_index;
