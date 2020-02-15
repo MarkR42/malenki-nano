@@ -393,7 +393,7 @@ void radio_loop()
         }
         if (radio_state.state == RADIO_STATE_BIND) {
             // Blink led in bind mode.
-            radio_state.led_on = (now & 0x20);
+            radio_state.led_on = (now & 0x10);
         }
     }
 }
