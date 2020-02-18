@@ -1,4 +1,4 @@
-16936212849419600
+16939382099956600
 Battery
 BatteryHolder_Bulgin_BX0036_1xC
 Bulgin{space}Battery{space}Holder,{space}BX0036,{space}Battery{space}Type{space}C{space}(https://www.bulgin.com/products/pub/media/bulgin/data/Battery_holders.pdf)
@@ -75271,6 +75271,13 @@ A7105-module
 10
 10
 malenki-nano
+A7105_QFN-20
+
+
+0
+38
+21
+malenki-nano
 PinHeader_1x02_P2.54mm_BIG1
 Through{space}hole{space}straight{space}pin{space}header,{space}1x02,{space}2.54mm{space}pitch,{space}single{space}row
 Through{space}hole{space}pin{space}header{space}THT{space}1x02{space}2.54mm{space}single{space}row
@@ -75284,6 +75291,13 @@ Through{space}hole{space}pin{space}header{space}THT{space}1x04{space}2.54mm{spac
 0
 4
 4
+malenki-nano
+Rainsun_AN9520
+
+
+0
+2
+2
 malenki-nano
 WSON-8-1EP_2x2mm_P0.5mm_HAND1
 8-Lead{space}Plastic{space}WSON,{space}2x2mm{space}Body,{space}0.5mm{space}Pitch,{space}WSON-8,{space}http://www.ti.com/lit/ds/symlink/lm27761.pdf

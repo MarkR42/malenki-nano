@@ -1,6 +1,6 @@
 EESchema Schematic File Version 4
 LIBS:malenki-nano-cache
-EELAYER 29 0
+EELAYER 30 0
 EELAYER END
 $Descr A4 11693 8268
 encoding utf-8
@@ -26,7 +26,7 @@ F 3 "" H 3100 1750 50  0001 C CNN
 	1    0    0    -1  
 $EndComp
 $Comp
-L Device:C C2
+L malenki-nano-rescue:C-Device C2
 U 1 1 5CDC3232
 P 2500 2050
 F 0 "C2" H 2615 2096 50  0000 L CNN
@@ -37,7 +37,7 @@ F 3 "~" H 2500 2050 50  0001 C CNN
 	1    0    0    -1  
 $EndComp
 $Comp
-L Device:C C3
+L malenki-nano-rescue:C-Device C3
 U 1 1 5CDC3533
 P 3650 2050
 F 0 "C3" H 3765 2096 50  0000 L CNN
@@ -48,7 +48,7 @@ F 3 "~" H 3650 2050 50  0001 C CNN
 	1    0    0    -1  
 $EndComp
 $Comp
-L Connector:Conn_01x02_Male J1
+L malenki-nano-rescue:Conn_01x02_Male-Connector J1
 U 1 1 5CDC3C93
 P 1300 1900
 F 0 "J1" H 1408 2081 50  0000 C CNN
@@ -79,7 +79,7 @@ Wire Wire Line
 	4100 1900 3650 1900
 Connection ~ 3650 1900
 $Comp
-L power:GND #PWR02
+L malenki-nano-rescue:GND-power #PWR02
 U 1 1 5CDC503D
 P 1800 2200
 F 0 "#PWR02" H 1800 1950 50  0001 C CNN
@@ -106,7 +106,7 @@ F 3 "" H 5150 4100 50  0001 C CNN
 	1    0    0    -1  
 $EndComp
 $Comp
-L Device:C C4
+L malenki-nano-rescue:C-Device C4
 U 1 1 5CDC5AD8
 P 4450 3300
 F 0 "C4" H 4565 3346 50  0000 L CNN
@@ -121,7 +121,7 @@ Wire Wire Line
 Wire Wire Line
 	5150 3150 5150 3350
 $Comp
-L power:GND #PWR04
+L malenki-nano-rescue:GND-power #PWR04
 U 1 1 5CDC6687
 P 4450 3450
 F 0 "#PWR04" H 4450 3200 50  0001 C CNN
@@ -134,7 +134,7 @@ $EndComp
 Text Label 4900 3150 0    50   ~ 0
 VLOGIC
 $Comp
-L power:GND #PWR05
+L malenki-nano-rescue:GND-power #PWR05
 U 1 1 5CDC6D64
 P 5150 5100
 F 0 "#PWR05" H 5150 4850 50  0001 C CNN
@@ -162,7 +162,7 @@ Radio Receiver module
 Text Notes 5400 3100 0    50   ~ 0
 MCU\n
 $Comp
-L power:GND #PWR03
+L malenki-nano-rescue:GND-power #PWR03
 U 1 1 5CDCA41E
 P 2100 6250
 F 0 "#PWR03" H 2100 6000 50  0001 C CNN
@@ -173,7 +173,7 @@ F 3 "" H 2100 6250 50  0001 C CNN
 	1    0    0    -1  
 $EndComp
 $Comp
-L Device:C C1
+L malenki-nano-rescue:C-Device C1
 U 1 1 5CDCC5F2
 P 1400 4800
 F 0 "C1" H 1515 4846 50  0000 L CNN
@@ -184,7 +184,7 @@ F 3 "~" H 1400 4800 50  0001 C CNN
 	1    0    0    -1  
 $EndComp
 $Comp
-L power:GND #PWR01
+L malenki-nano-rescue:GND-power #PWR01
 U 1 1 5CDCCAD0
 P 1400 4950
 F 0 "#PWR01" H 1400 4700 50  0001 C CNN
@@ -225,7 +225,7 @@ TXDEBUG
 Text GLabel 5950 4150 2    50   Input ~ 0
 UPDI
 $Comp
-L Connector:Conn_01x04_Male J2
+L malenki-nano-rescue:Conn_01x04_Male-Connector J2
 U 1 1 5CDCE93F
 P 4900 1800
 F 0 "J2" H 5008 2081 50  0000 C CNN
@@ -238,7 +238,7 @@ $EndComp
 Text Notes 4700 1450 0    50   ~ 0
 Programming / diagnostic
 $Comp
-L power:GND #PWR07
+L malenki-nano-rescue:GND-power #PWR07
 U 1 1 5CDD00E2
 P 6200 2100
 F 0 "#PWR07" H 6200 1850 50  0001 C CNN
@@ -273,7 +273,7 @@ GIO1
 Text GLabel 5150 6000 1    50   Input ~ 0
 BLINKY
 $Comp
-L Device:R R1
+L malenki-nano-rescue:R-Device R1
 U 1 1 5CDD24A6
 P 5150 6450
 F 0 "R1" H 5220 6496 50  0000 L CNN
@@ -284,7 +284,7 @@ F 3 "~" H 5150 6450 50  0001 C CNN
 	1    0    0    -1  
 $EndComp
 $Comp
-L power:GND #PWR06
+L malenki-nano-rescue:GND-power #PWR06
 U 1 1 5CDD286C
 P 5150 6600
 F 0 "#PWR06" H 5150 6350 50  0001 C CNN
@@ -295,7 +295,7 @@ F 3 "" H 5150 6600 50  0001 C CNN
 	1    0    0    -1  
 $EndComp
 $Comp
-L Device:LED D1
+L malenki-nano-rescue:LED-Device D1
 U 1 1 5CDD2ED4
 P 5150 6150
 F 0 "D1" V 5189 6033 50  0000 R CNN
@@ -319,7 +319,7 @@ F 3 "" H 9450 1400 50  0001 C CNN
 	1    0    0    -1  
 $EndComp
 $Comp
-L Device:C C5
+L malenki-nano-rescue:C-Device C5
 U 1 1 5CDD5C99
 P 8650 1850
 F 0 "C5" H 8765 1896 50  0000 L CNN
@@ -340,7 +340,7 @@ Wire Wire Line
 Wire Wire Line
 	8050 2150 8650 2150
 $Comp
-L power:GND #PWR08
+L malenki-nano-rescue:GND-power #PWR08
 U 1 1 5CDD746F
 P 8650 2150
 F 0 "#PWR08" H 8650 1900 50  0001 C CNN
@@ -366,7 +366,7 @@ Wire Notes Line
 Text Notes 9050 800  0    50   ~ 0
 Motor1 - Weapon
 $Comp
-L Connector:Conn_01x02_Male J5
+L malenki-nano-rescue:Conn_01x02_Male-Connector J5
 U 1 1 5CDD8946
 P 10600 1600
 F 0 "J5" H 10572 1482 50  0000 R CNN
@@ -406,7 +406,7 @@ F 3 "" H 9450 3400 50  0001 C CNN
 	1    0    0    -1  
 $EndComp
 $Comp
-L Device:C C6
+L malenki-nano-rescue:C-Device C6
 U 1 1 5CDDD929
 P 8650 3850
 F 0 "C6" H 8765 3896 50  0000 L CNN
@@ -427,7 +427,7 @@ Wire Wire Line
 Wire Wire Line
 	8050 4150 8650 4150
 $Comp
-L power:GND #PWR09
+L malenki-nano-rescue:GND-power #PWR09
 U 1 1 5CDDD934
 P 8650 4150
 F 0 "#PWR09" H 8650 3900 50  0001 C CNN
@@ -453,7 +453,7 @@ Wire Notes Line
 Text Notes 9050 2800 0    50   ~ 0
 Motor2 - Left
 $Comp
-L Connector:Conn_01x02_Male J6
+L malenki-nano-rescue:Conn_01x02_Male-Connector J6
 U 1 1 5CDDD942
 P 10600 3600
 F 0 "J6" H 10572 3482 50  0000 R CNN
@@ -493,7 +493,7 @@ F 3 "" H 9450 5400 50  0001 C CNN
 	1    0    0    -1  
 $EndComp
 $Comp
-L Device:C C7
+L malenki-nano-rescue:C-Device C7
 U 1 1 5CDDF092
 P 8650 5850
 F 0 "C7" H 8765 5896 50  0000 L CNN
@@ -514,7 +514,7 @@ Wire Wire Line
 Wire Wire Line
 	8000 6150 8650 6150
 $Comp
-L power:GND #PWR010
+L malenki-nano-rescue:GND-power #PWR010
 U 1 1 5CDDF09D
 P 8650 6250
 F 0 "#PWR010" H 8650 6000 50  0001 C CNN
@@ -540,7 +540,7 @@ Wire Notes Line
 Text Notes 9050 4800 0    50   ~ 0
 Motor3 - Right
 $Comp
-L Connector:Conn_01x02_Male J7
+L malenki-nano-rescue:Conn_01x02_Male-Connector J7
 U 1 1 5CDDF0AB
 P 10600 5600
 F 0 "J7" H 10572 5482 50  0000 R CNN
@@ -584,7 +584,7 @@ Wire Wire Line
 	8650 5700 8400 5700
 Connection ~ 8650 5700
 $Comp
-L power:PWR_FLAG #FLG0101
+L malenki-nano-rescue:PWR_FLAG-power #FLG0101
 U 1 1 5CDF9B16
 P 2250 1900
 F 0 "#FLG0101" H 2250 1975 50  0001 C CNN
@@ -609,7 +609,7 @@ Wire Wire Line
 Wire Wire Line
 	1800 2200 2250 2200
 $Comp
-L power:PWR_FLAG #FLG0102
+L malenki-nano-rescue:PWR_FLAG-power #FLG0102
 U 1 1 5CDCEDF5
 P 2250 2200
 F 0 "#FLG0102" H 2250 2275 50  0001 C CNN
@@ -627,7 +627,7 @@ Wire Wire Line
 Text GLabel 5750 6000 1    50   Input ~ 0
 TXDEBUG
 $Comp
-L Device:R R2
+L malenki-nano-rescue:R-Device R2
 U 1 1 5D6AB858
 P 5750 6450
 F 0 "R2" H 5820 6496 50  0000 L CNN
@@ -638,7 +638,7 @@ F 3 "~" H 5750 6450 50  0001 C CNN
 	1    0    0    -1  
 $EndComp
 $Comp
-L power:GND #PWR011
+L malenki-nano-rescue:GND-power #PWR011
 U 1 1 5D6AB85E
 P 5750 6600
 F 0 "#PWR011" H 5750 6350 50  0001 C CNN
@@ -649,7 +649,7 @@ F 3 "" H 5750 6600 50  0001 C CNN
 	1    0    0    -1  
 $EndComp
 $Comp
-L Device:LED D2
+L malenki-nano-rescue:LED-Device D2
 U 1 1 5D6AB864
 P 5750 6150
 F 0 "D2" V 5789 6033 50  0000 R CNN
