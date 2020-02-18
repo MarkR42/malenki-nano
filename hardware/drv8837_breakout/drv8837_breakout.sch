@@ -1,0 +1,201 @@
+EESchema Schematic File Version 5
+EELAYER 30 0
+EELAYER END
+$Descr A4 11693 8268
+encoding utf-8
+Sheet 1 1
+Title ""
+Date "2020-02-06"
+Rev ""
+Comp ""
+Comment1 ""
+Comment2 ""
+Comment3 ""
+Comment4 ""
+Comment5 ""
+Comment6 ""
+Comment7 ""
+Comment8 ""
+Comment9 ""
+$EndDescr
+$Comp
+L Driver_Motor:DRV8837 U1
+U 1 1 5E3C9579
+P 6000 3550
+F 0 "U1" H 6000 2961 50  0000 C CNN
+F 1 "DRV8837" H 6000 2870 50  0000 C CNN
+F 2 "drv8837_breakout:WSON-8-1EP_2x2mm_P0.5mm_HAND1" H 6000 2700 50  0001 C CNN
+F 3 "http://www.ti.com/lit/ds/symlink/drv8837.pdf" H 6000 3550 50  0001 C CNN
+	1    6000 3550
+	1    0    0    -1  
+$EndComp
+$Comp
+L Connector:Conn_01x04_Male J1
+U 1 1 5E3CA6A8
+P 4250 3450
+F 0 "J1" H 4358 3731 50  0000 C CNN
+F 1 "Conn_01x04_Male" H 4358 3640 50  0000 C CNN
+F 2 "Connector_PinHeader_2.54mm:PinHeader_1x04_P2.54mm_Vertical" H 4250 3450 50  0001 C CNN
+F 3 "~" H 4250 3450 50  0001 C CNN
+	1    4250 3450
+	1    0    0    -1  
+$EndComp
+$Comp
+L Connector:Conn_01x04_Male J2
+U 1 1 5E3CB5F3
+P 7600 3550
+F 0 "J2" H 7708 3739 50  0000 C CNN
+F 1 "Conn_01x04_Male" H 7708 3830 50  0000 C CNN
+F 2 "Connector_PinHeader_2.54mm:PinHeader_1x04_P2.54mm_Vertical" H 7600 3550 50  0001 C CNN
+F 3 "~" H 7600 3550 50  0001 C CNN
+	1    7600 3550
+	-1   0    0    1   
+$EndComp
+Wire Wire Line
+	7450 3650 7400 3650
+Wire Wire Line
+	6850 3650 6850 2650
+Wire Wire Line
+	6850 2650 6000 2650
+Wire Wire Line
+	6000 2650 6000 3050
+Connection ~ 7400 3650
+Wire Wire Line
+	7400 3650 6850 3650
+Wire Wire Line
+	7400 3550 6700 3550
+Wire Wire Line
+	6700 3550 6700 3250
+Wire Wire Line
+	6700 3250 6400 3250
+Wire Wire Line
+	7400 3450 6500 3450
+Wire Wire Line
+	6500 3450 6500 3850
+Wire Wire Line
+	6500 3850 6400 3850
+Wire Wire Line
+	7400 3350 7100 3350
+Wire Wire Line
+	7100 3350 7100 4050
+$Comp
+L power:GND #PWR02
+U 1 1 5E3CD4AB
+P 7100 4050
+F 0 "#PWR02" H 7100 3800 50  0001 C CNN
+F 1 "GND" H 7105 3877 50  0000 C CNN
+F 2 "" H 7100 4050 50  0001 C CNN
+F 3 "" H 7100 4050 50  0001 C CNN
+	1    7100 4050
+	1    0    0    -1  
+$EndComp
+$Comp
+L power:GND #PWR01
+U 1 1 5E3CD7E7
+P 6000 4050
+F 0 "#PWR01" H 6000 3800 50  0001 C CNN
+F 1 "GND" H 6005 3877 50  0000 C CNN
+F 2 "" H 6000 4050 50  0001 C CNN
+F 3 "" H 6000 4050 50  0001 C CNN
+	1    6000 4050
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	5600 3650 5350 3650
+Wire Wire Line
+	5350 3650 5350 3350
+Wire Wire Line
+	5350 3350 4450 3350
+Wire Wire Line
+	5600 3550 5250 3550
+Wire Wire Line
+	5250 3550 5250 3450
+Wire Wire Line
+	5250 3450 4450 3450
+Wire Wire Line
+	5600 3450 5500 3500
+Wire Wire Line
+	5500 3500 4950 3500
+Wire Wire Line
+	4950 3500 4950 3550
+Wire Wire Line
+	4950 3550 4450 3550
+Wire Wire Line
+	5900 2650 5500 2650
+Wire Wire Line
+	5200 2650 5200 3650
+Wire Wire Line
+	5200 3650 4450 3650
+Text Label 4700 3350 0    50   ~ 0
+IN2
+Text Label 4700 3450 0    50   ~ 0
+IN1
+Text Label 4550 3550 0    50   ~ 0
+{slash}SLEEP
+Text Label 4650 3650 0    50   ~ 0
+VCC
+Text Label 6350 2650 0    50   ~ 0
+VM
+Text Label 6500 3250 0    50   ~ 0
+OUT1
+Text Label 6550 3450 0    50   ~ 0
+OUT2
+Text Label 7100 3950 0    50   ~ 0
+GND
+$Comp
+L Device:C C2
+U 1 1 5E3D2069
+P 7000 2900
+F 0 "C2" H 7115 2946 50  0000 L CNN
+F 1 "0.1uF" H 7115 2855 50  0000 L CNN
+F 2 "Capacitor_SMD:C_0603_1608Metric_Pad1.05x0.95mm_HandSolder" H 7038 2750 50  0001 C CNN
+F 3 "~" H 7000 2900 50  0001 C CNN
+	1    7000 2900
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	6850 2650 7000 2650
+Connection ~ 6850 2650
+$Comp
+L power:GND #PWR04
+U 1 1 5E3D2C55
+P 7000 3050
+F 0 "#PWR04" H 7000 2800 50  0001 C CNN
+F 1 "GND" H 7005 2877 50  0000 C CNN
+F 2 "" H 7000 3050 50  0001 C CNN
+F 3 "" H 7000 3050 50  0001 C CNN
+	1    7000 3050
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	7000 2650 7000 2750
+Wire Wire Line
+	5900 2650 5900 3050
+$Comp
+L power:GND #PWR03
+U 1 1 5E3D6CB2
+P 5500 3050
+F 0 "#PWR03" H 5500 2800 50  0001 C CNN
+F 1 "GND" H 5505 2877 50  0000 C CNN
+F 2 "" H 5500 3050 50  0001 C CNN
+F 3 "" H 5500 3050 50  0001 C CNN
+	1    5500 3050
+	1    0    0    -1  
+$EndComp
+$Comp
+L Device:C C1
+U 1 1 5E3D6CC0
+P 5500 2900
+F 0 "C1" H 5615 2946 50  0000 L CNN
+F 1 "0.1uF" H 5615 2855 50  0000 L CNN
+F 2 "Capacitor_SMD:C_0603_1608Metric_Pad1.05x0.95mm_HandSolder" H 5538 2750 50  0001 C CNN
+F 3 "~" H 5500 2900 50  0001 C CNN
+	1    5500 2900
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	5500 2650 5500 2750
+Connection ~ 5500 2650
+Wire Wire Line
+	5500 2650 5200 2650
+$EndSCHEMATC
