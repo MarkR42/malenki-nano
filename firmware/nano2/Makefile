@@ -32,7 +32,7 @@ $(OBJDIR)/%.o: %.c Makefile
 install: link
 	pyupdi.py -d tiny3217 -c /dev/ttyUSB0 -f $(HEX)
 install1614: link
-	pyupdi.py -d tiny1614 -c /dev/ttyUSB1 -f $(HEX)
+	pyupdi.py -d tiny1614 -c /dev/ttyUSB0 -f $(HEX)
 
 
 

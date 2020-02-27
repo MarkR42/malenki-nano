@@ -35,6 +35,7 @@ typedef struct {
     // Other info - not saved between boots
     uint8_t state;
     uint8_t hop_index;
+    uint8_t old_hop_index;
     uint8_t current_channel; // channel we are listening, right now
     uint8_t packet_channel; // channel of last saved packet.
     uint8_t missed_packet_count; // successive

@@ -17,9 +17,6 @@
 
 #include <string.h>
 
-// Number of hops we do each time.
-#define HOP_COUNT 1
-
 // Auto bind time in centiseconds.
 #define AUTO_BIND_TIME (60 * 100)
 
@@ -103,10 +100,11 @@ static void init_interrupts()
     
     // Timer will run at CLK_PER (10mhz) / 2
     // So 5mhz.
+    const uint16_t timeout_ms = ((3800 * 5) / 4 );
     
     diag_println("Initialising interrupts");
     memset(&radio_counters, 0, sizeof(radio_counters));
-    uint16_t compare_value = 3900 * 5 ; // Must not overflow 16-bit int.
+    uint16_t compare_value = timeout_ms * 5 ; // Must not overflow 16-bit int.
     TCB0.CCMP = compare_value;
     TCB0.INTCTRL = TCB_CAPT_bm; // Turn on irq
     // CTRLB bits 0-2 are the mode, which by default
@@ -223,14 +221,16 @@ void radio_init()
         init_bind_mode();
     } else {
         diag_println("initialising from saved tx id: ");
-        dump_buf(radio_state.tx_id, 4);
+        dump_buf(radio_state.tx_id,  4);
         radio_state.state = RADIO_STATE_HOPPING;
         // Save the hopping channels in case we need them later.
         memcpy(radio_state.hop_channels_saved, radio_state.hop_channels,
-            sizeof(radio_state.hop_channels_saved));
+            NR_HOP_CHANNELS);
         // Save previous tx id.
         memcpy(radio_state.tx_id_saved, radio_state.tx_id,
             sizeof(radio_state.tx_id_saved));
+        diag_println("Hop channels: ");
+        dump_buf(radio_state.hop_channels, NR_HOP_CHANNELS);
     }
     // Init led BLINKY gpio - set it as output.
     LED_VPORT->DIR |= LED_PIN_bm;
@@ -363,6 +363,28 @@ static void handle_packet_bind()
     }
 }
 
+static void radio_show_diagnostics(uint32_t now)
+{
+    // Do this every time the hop index resets, e.g.
+    // once every 32 packets or missed packets.
+    uint8_t temp_hop_index = radio_state.hop_index;
+    if (temp_hop_index < radio_state.old_hop_index) {
+        radio_counters.last_report_time = now;
+        cli();
+        uint16_t rx = radio_counters.rx;
+        uint16_t missed = radio_counters.missed;
+        radio_counters.rx = 0;
+        radio_counters.missed = 0;
+        sei();
+        diag_println("rx: %05u missed: %05u", rx, missed);
+        if (radio_state.state == RADIO_STATE_BIND) {
+            // Blink led in bind mode.
+            radio_state.led_on = ! radio_state.led_on;
+        }
+    }
+    radio_state.old_hop_index = temp_hop_index;
+}
+
 // BIND MODE: uses channels
 // 0c and 8b
 // Transmitter transmits one channel number higher?
@@ -398,22 +420,7 @@ void radio_loop()
             }
         }
     }
-    if ((now - radio_counters.last_report_time) > 50) {
-        if (radio_state.hop_index == 0) {
-            radio_counters.last_report_time = now;
-            cli();
-            uint16_t rx = radio_counters.rx;
-            uint16_t missed = radio_counters.missed;
-            radio_counters.rx = 0;
-            radio_counters.missed = 0;
-            sei();
-            diag_println("rx: %05u missed: %05u", rx, missed);
-        }
-        if (radio_state.state == RADIO_STATE_BIND) {
-            // Blink led in bind mode.
-            radio_state.led_on = (now & 0x10);
-        }
-    }
+    radio_show_diagnostics(now);
 }
 
 static void init_bind_mode()
@@ -424,13 +431,10 @@ static void init_bind_mode()
     for (uint8_t i=0; i< NR_HOP_CHANNELS; i++) {
         radio_state.hop_channels[i] = (i & 1) ? 0x0d : 0x8c;
     }
-    // Also check the first channel from our saved rx,
-    if (! is_all_zeros(radio_state.hop_channels_saved, sizeof(radio_state.hop_channels_saved))) {
-        uint8_t firstchan = radio_state.hop_channels_saved[0];
-        for (uint8_t i=(NR_HOP_CHANNELS - 4); i < NR_HOP_CHANNELS; i++) {
-            radio_state.hop_channels[i] = firstchan;
-        }
-    }
+    diag_puts("Bind mode hopping pattern: ");
+    dump_buf(radio_state.hop_channels, NR_HOP_CHANNELS);
+    diag_println("tx_id_saved: ");
+    dump_buf(radio_state.tx_id_saved, 4);
 }
 
 /***************************************************
@@ -441,7 +445,7 @@ static void init_bind_mode()
 static void maybe_diag_putc(char c)
 {
     // Write character to tx for diag, only if enabled.
-#if 0
+#if 1
     USART0.TXDATAL = c;
 #endif
 }
@@ -455,8 +459,17 @@ static void enable_rx(uint8_t channel)
  
 static void restart_rx(uint8_t channel_increment)
 {
-    radio_state.hop_index = (radio_state.hop_index + channel_increment) & 0xf;
-    uint8_t chan = radio_state.hop_channels[radio_state.hop_index];
+    // hop_index should count up to 31,
+    radio_state.hop_index = (radio_state.hop_index + channel_increment) & 0x1f;
+    // but chan_index only count to 15
+    uint8_t chan_index = radio_state.hop_index & 0xf;
+    uint8_t bind_seek_old = radio_state.hop_index & 0x10;
+    uint8_t chan = radio_state.hop_channels[chan_index];
+    // In bind mode, we will switch to a different channel half the time.
+    if ((radio_state.state == RADIO_STATE_BIND) && bind_seek_old) {
+        // Channel from the old transmitter.
+        chan = radio_state.hop_channels_saved[0];
+    }
     enable_rx(chan);
 }
 
@@ -489,22 +502,20 @@ ISR(TCB0_INT_vect)
     // the irq was generated (if do_rx was in progress during timeout)
     if (TCB0.INTFLAGS & TCB_CAPT_bm) {
         TCB0.INTFLAGS |= TCB_CAPT_bm; //clear the interrupt flag(to reset TCB0.CNT)
-        timeout_irq_count += 1;
-        if (timeout_irq_count == HOP_COUNT) {
-            radio_counters.missed += 1;
-            if (radio_state.missed_packet_count < 5) {
-                // Try to hop to catch up.
-                restart_rx(HOP_COUNT);
-                radio_state.missed_packet_count += 1; // successive missed packets.
-            } else {
-                // Too out of sync, stay on same channel and wait for
-                // it to come around again.
-                restart_rx(0);
-            }
-            maybe_diag_putc('.');
-            timeout_irq_count = 0;
-            update_led();
+        radio_counters.missed += 1;
+        if ((radio_state.missed_packet_count < 5) || (radio_state.state==RADIO_STATE_BIND)) {
+            // Try to hop to catch up.
+            // Always hop in bind mode.
+            restart_rx(1);
+            radio_state.missed_packet_count += 1; // successive missed packets.
+        } else {
+            // Too out of sync, stay on same channel and wait for
+            // it to come around again.
+            restart_rx(0);
         }
+        maybe_diag_putc('.');
+        timeout_irq_count = 0;
+        update_led();
     }
 }
 
@@ -549,10 +560,11 @@ static void do_rx()
             do_hop = true;
         }
         
-        // If we are in bind mode, bind packets are important, ignore
-        // anything else 
+        // If we are in bind mode, bind packets are important, 
+        // But so are sticks packets.
         if (state == RADIO_STATE_BIND) {
-            if ((packet_type == 0xbb) || (packet_type == 0xbc)) {
+            if ((packet_type == 0xbb) || (packet_type == 0xbc) || 
+                (packet_type == PACKET_TYPE_STICKS)) {
                 // Bind packet.
                 ok = true;
                 do_hop = true;
@@ -562,7 +574,7 @@ static void do_rx()
     }
     if (do_hop) {
         // GOOD packet.
-        restart_rx(HOP_COUNT);
+        restart_rx(1);
         radio_counters.rx += 1;
         reset_timeout();         
     } else {
