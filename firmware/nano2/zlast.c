@@ -1,3 +1,3 @@
 
-const char * end_marker = "SLATFATF";
+const char * const end_marker = "SLATFATF";
 

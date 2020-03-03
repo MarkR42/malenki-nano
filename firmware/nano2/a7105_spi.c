@@ -18,18 +18,27 @@
 // We use the VPORTs for more efficient operations, because the vport
 // locations can use optimised instructions
 VPORT_t * const SDIO_VPORT = &VPORTA;
-VPORT_t * const SCK_VPORT = &VPORTA;
 VPORT_t * const SCS_VPORT = &VPORTB;
 
 const uint8_t SCS_PIN = 3; // PB3
-const uint8_t SCK_PIN = 7; // PA7
 const uint8_t SDIO_PIN = 6; // PA6
+
+#if NANOX_PINOUT
+// Nanox design uses PB7 for SPI_SCK
+VPORT_t * const SCK_VPORT = &VPORTB;
+const uint8_t SCK_PIN = 7; // PB7
+#else
+// Other versions using PA7
+VPORT_t * const SCK_VPORT = &VPORTA;
+const uint8_t SCK_PIN = 7; // PA7
+#endif
+
 /*
  * Before sending a command to the device, we must set SCS low
  * for at least 50ns before the first clock pulse.
  *
  * Clock freq is 10mhz max (we are unlikely to reach that with
- * the default cpu clock rate of 3.3mhz) 
+ * the cpu clock rate of 10mhz) 
  * When sending a command to the device, the bits are:
  * A7 (the first bit) - 1= strobe command - these are four-bit commands with no parameters.
  *      0= anything else.
@@ -68,7 +77,7 @@ __attribute__((always_inline)) inline static void pulse_clock()
     _NOP();
     SCK_VPORT->OUT &= ~(1 << SCK_PIN);
 }
-static uint8_t pulse_clock_read_bit()
+__attribute__((always_inline)) inline static uint8_t pulse_clock_read_bit()
 {
     SCK_VPORT->OUT |= 1 << SCK_PIN;
     uint8_t res = (SDIO_VPORT->IN & (1 << SDIO_PIN));

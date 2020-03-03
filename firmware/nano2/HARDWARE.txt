@@ -25,7 +25,7 @@ PA4 - Motor3R (Right) - WO4
 PA5 - Motor3F (Right) - WO5
 
 PA6 - SPI_SDIO - connected to the A7105 radio
-PA7 - SPI_SCK - connected to the A7105
+PA7 - SPI_SCK - connected to the A7105 / OR WEAPON3 (nanox)
 
 PB0 - Motor1R (Weapon) - WO0
 PB1 - Motor2R (Left) - WO1
@@ -35,6 +35,8 @@ PB3 - SPI_SCS - chip select - connected to A7105
 PB4 - WEAPON2 (optional) - this is an output, it should send pulses
     1000-2000us
     We will need a way of using hardware pwm on this, might be tricky.
+    
+PB7 - SPI_SCK (nanox only)
 PC2 - VSENSE - analogue input, potential divider on battery,
         approx 10/43 of bat. voltage.
 PC5 - BLINKY - flashing light.
@@ -121,3 +123,19 @@ HOW TO RUN RADIO:
     
     If in bind mode, then we need to use the bind channel
     
+-----------
+Serial number and device id:
+
+Example from attiny3217:
+
+device id=1e 95 22
+serial number: 51 51 37 41 43 20 34 c0 20 24 
+serial number (ascii) is:QQ7AC 4� $
+
+Serial number is not always printable ascii, but it sometimes is.
+Serial number is 10 bytes.
+
+Example from attiny1614:
+device id=1e 94 22
+serial number: 51 4e 4a 4e 4c 20 4b 79 26 41
+serial number (ascii) is:QNJNL Ky&A

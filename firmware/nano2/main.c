@@ -18,7 +18,7 @@
 #include "mixing.h"
 
 volatile master_state_t master_state;
-extern const char * end_marker;
+extern const char * const end_marker;
 
 static void init_clock()
 {
@@ -120,6 +120,31 @@ static void integrity_check()
     diag_println("Integrity check ok");
 }
 
+/*
+ * Device id is at SIGROW.DEVICEID0, 1, 2
+ * attiny1614 =  0x1e 0x94 0x22
+ * attiny1617 =  0x1e 0x94 0x20
+ * attiny3217 =  0x1e 0x95 0x22
+ */
+ 
+static void show_device_info()
+{
+    diag_println("device id=%02x %02x %02x",
+        (int) SIGROW.DEVICEID0,
+        (int) SIGROW.DEVICEID1,
+        (int) SIGROW.DEVICEID2);
+    diag_print("serial number: ");
+    uint8_t * serialnum = (uint8_t *) & (SIGROW.SERNUM0);
+    for (uint8_t i=0; i<10; i++) {
+        diag_print("%02x ", (int) serialnum[i]);
+    }
+    diag_puts("\r\n");
+    char buf[20];
+    strncpy(buf, (char *) serialnum, 10);
+    buf[10] = '\0';
+    diag_println("serial number (ascii) is:%s", buf);
+}
+ 
 int main(void)
 {
     init_clock();
@@ -129,6 +154,7 @@ int main(void)
     integrity_check();
     init_timer();
     sei(); // interrupts on
+    show_device_info();
     // test_get_micros();
     spi_init();
     motors_init();
