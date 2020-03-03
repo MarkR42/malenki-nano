@@ -1,0 +1,221 @@
+EESchema-LIBRARY Version 2.4
+#encoding utf-8
+#
+# mal_nano_A7105-MODULE
+#
+DEF mal_nano_A7105-MODULE U 0 40 Y Y 1 F N
+F0 "U" 0 0 50 H V C CNN
+F1 "mal_nano_A7105-MODULE" 100 -150 50 H V C CNN
+F2 "" 0 0 50 H I C CNN
+F3 "" 0 0 50 H I C CNN
+DRAW
+S -400 400 400 -450 0 1 0 N
+X NC 1 -600 300 200 R 50 50 1 1 N
+X GND 10 150 -650 200 U 50 50 1 1 W
+X NC 11 600 0 200 L 50 50 1 1 N
+X SCS 12 600 100 200 L 50 50 1 1 I
+X SCK 13 600 200 200 L 50 50 1 1 I
+X SDIO 14 600 300 200 L 50 50 1 1 B
+X GIO1 2 -600 200 200 R 50 50 1 1 B
+X NC 3 -600 100 200 R 50 50 1 1 N
+X GIO2 4 -600 0 200 R 50 50 1 1 B
+X NC 5 -600 -100 200 R 50 50 1 1 N
+X NC 6 -600 -200 200 R 50 50 1 1 N
+X GND 7 -150 -650 200 U 50 50 1 1 W
+X NC 8 600 -300 200 L 50 50 1 1 N
+X VDD 9 0 600 200 D 50 50 1 1 W
+ENDDRAW
+ENDDEF
+#
+# mal_nano_ATtiny1614
+#
+DEF mal_nano_ATtiny1614 U 0 40 Y Y 1 F N
+F0 "U" -350 450 50 H V C CNN
+F1 "mal_nano_ATtiny1614" 50 150 50 H V C CNN
+F2 "" 0 0 50 H I C CNN
+F3 "" 0 0 50 H I C CNN
+DRAW
+S -450 550 600 -800 0 1 0 N
+X VCC 1 0 750 200 D 50 50 1 1 W
+X PA0/RESET/UPDI 10 800 -50 200 L 50 50 1 1 B
+X PA1 11 800 50 200 L 50 50 1 1 B
+X PA2 12 800 150 200 L 50 50 1 1 B
+X PA3/EXTCLK 13 800 250 200 L 50 50 1 1 B
+X GND 14 0 -1000 200 U 50 50 1 1 W
+X PA4 2 -650 250 200 R 50 50 1 1 B
+X PA5 3 -650 150 200 R 50 50 1 1 B
+X PA6 4 -650 50 200 R 50 50 1 1 B
+X PA7 5 -650 -50 200 R 50 50 1 1 B
+X TOSC1/PB3 6 -650 -150 200 R 50 50 1 1 B
+X TOSC2/PB2 7 -650 -250 200 R 50 50 1 1 B
+X PB1 8 800 -250 200 L 50 50 1 1 B
+X PB0 9 800 -150 200 L 50 50 1 1 B
+ENDDRAW
+ENDDEF
+#
+# mal_nano_RZ7899
+#
+DEF mal_nano_RZ7899 U 0 40 Y Y 1 F N
+F0 "U" -150 -150 50 H V C CNN
+F1 "mal_nano_RZ7899" -100 100 50 H V C CNN
+F2 "" -50 0 50 H I C CNN
+F3 "" -50 0 50 H I C CNN
+DRAW
+S 350 200 -550 -450 0 1 0 N
+X INR 1 -600 0 200 R 50 50 1 1 I
+X INF 2 -600 -100 200 R 50 50 1 1 I
+X GND 3 -600 -200 200 R 50 50 1 1 W
+X VCC 4 -600 -300 200 R 50 50 1 1 W
+X OUTF 5 400 -300 200 L 50 50 1 1 O
+X OUTF 6 400 -200 200 L 50 50 1 1 P
+X OUTR 7 400 -100 200 L 50 50 1 1 O
+X OUTR 8 400 0 200 L 50 50 1 1 P
+ENDDRAW
+ENDDEF
+#
+# mal_nano_generic-ldo
+#
+DEF mal_nano_generic-ldo U 0 40 Y Y 1 F N
+F0 "U" 0 50 50 H V C CNN
+F1 "mal_nano_generic-ldo" 50 0 50 H V C CNN
+F2 "" 0 0 50 H I C CNN
+F3 "" 0 0 50 H I C CNN
+DRAW
+S -200 -350 200 -75 1 1 10 f
+X GND 1 0 -450 100 U 50 50 1 1 W
+X VI 2 -300 -150 100 R 50 50 1 1 W
+X VO 3 300 -150 100 L 50 50 1 1 w
+ENDDRAW
+ENDDEF
+#
+# malenki-nano-rescue_C-Device
+#
+DEF malenki-nano-rescue_C-Device C 0 10 N Y 1 F N
+F0 "C" 25 100 50 H V L CNN
+F1 "malenki-nano-rescue_C-Device" 25 -100 50 H V L CNN
+F2 "" 38 -150 50 H I C CNN
+F3 "" 0 0 50 H I C CNN
+$FPLIST
+ C_*
+$ENDFPLIST
+DRAW
+P 2 0 1 20 -80 -30 80 -30 N
+P 2 0 1 20 -80 30 80 30 N
+X ~ 1 0 150 110 D 50 50 1 1 P
+X ~ 2 0 -150 110 U 50 50 1 1 P
+ENDDRAW
+ENDDEF
+#
+# malenki-nano-rescue_Conn_01x02_Male-Connector
+#
+DEF malenki-nano-rescue_Conn_01x02_Male-Connector J 0 40 Y N 1 F N
+F0 "J" 0 100 50 H V C CNN
+F1 "malenki-nano-rescue_Conn_01x02_Male-Connector" 0 -200 50 H V C CNN
+F2 "" 0 0 50 H I C CNN
+F3 "" 0 0 50 H I C CNN
+$FPLIST
+ Connector*:*_1x??_*
+$ENDFPLIST
+DRAW
+S 34 -95 0 -105 1 1 6 F
+S 34 5 0 -5 1 1 6 F
+P 2 1 1 6 50 -100 34 -100 N
+P 2 1 1 6 50 0 34 0 N
+X Pin_1 1 200 0 150 L 50 50 1 1 P
+X Pin_2 2 200 -100 150 L 50 50 1 1 P
+ENDDRAW
+ENDDEF
+#
+# malenki-nano-rescue_Conn_01x04_Male-Connector
+#
+DEF malenki-nano-rescue_Conn_01x04_Male-Connector J 0 40 Y N 1 F N
+F0 "J" 0 200 50 H V C CNN
+F1 "malenki-nano-rescue_Conn_01x04_Male-Connector" 0 -300 50 H V C CNN
+F2 "" 0 0 50 H I C CNN
+F3 "" 0 0 50 H I C CNN
+$FPLIST
+ Connector*:*_1x??_*
+$ENDFPLIST
+DRAW
+S 34 -195 0 -205 1 1 6 F
+S 34 -95 0 -105 1 1 6 F
+S 34 5 0 -5 1 1 6 F
+S 34 105 0 95 1 1 6 F
+P 2 1 1 6 50 -200 34 -200 N
+P 2 1 1 6 50 -100 34 -100 N
+P 2 1 1 6 50 0 34 0 N
+P 2 1 1 6 50 100 34 100 N
+X Pin_1 1 200 100 150 L 50 50 1 1 P
+X Pin_2 2 200 0 150 L 50 50 1 1 P
+X Pin_3 3 200 -100 150 L 50 50 1 1 P
+X Pin_4 4 200 -200 150 L 50 50 1 1 P
+ENDDRAW
+ENDDEF
+#
+# malenki-nano-rescue_GND-power
+#
+DEF malenki-nano-rescue_GND-power #PWR 0 0 Y Y 1 F P
+F0 "#PWR" 0 -250 50 H I C CNN
+F1 "malenki-nano-rescue_GND-power" 0 -150 50 H V C CNN
+F2 "" 0 0 50 H I C CNN
+F3 "" 0 0 50 H I C CNN
+DRAW
+P 6 0 1 0 0 0 0 -50 50 -50 0 -100 -50 -50 0 -50 N
+X GND 1 0 0 0 D 50 50 1 1 W N
+ENDDRAW
+ENDDEF
+#
+# malenki-nano-rescue_LED-Device
+#
+DEF malenki-nano-rescue_LED-Device D 0 40 N N 1 F N
+F0 "D" 0 100 50 H V C CNN
+F1 "malenki-nano-rescue_LED-Device" 0 -100 50 H V C CNN
+F2 "" 0 0 50 H I C CNN
+F3 "" 0 0 50 H I C CNN
+$FPLIST
+ LED*
+ LED_SMD:*
+ LED_THT:*
+$ENDFPLIST
+DRAW
+P 2 0 1 8 -50 -50 -50 50 N
+P 2 0 1 0 -50 0 50 0 N
+P 4 0 1 8 50 -50 50 50 -50 0 50 -50 N
+P 5 0 1 0 -120 -30 -180 -90 -150 -90 -180 -90 -180 -60 N
+P 5 0 1 0 -70 -30 -130 -90 -100 -90 -130 -90 -130 -60 N
+X K 1 -150 0 100 R 50 50 1 1 P
+X A 2 150 0 100 L 50 50 1 1 P
+ENDDRAW
+ENDDEF
+#
+# malenki-nano-rescue_PWR_FLAG-power
+#
+DEF malenki-nano-rescue_PWR_FLAG-power #FLG 0 0 N N 1 F P
+F0 "#FLG" 0 75 50 H I C CNN
+F1 "malenki-nano-rescue_PWR_FLAG-power" 0 150 50 H V C CNN
+F2 "" 0 0 50 H I C CNN
+F3 "" 0 0 50 H I C CNN
+DRAW
+P 6 0 1 0 0 0 0 50 -40 75 0 100 40 75 0 50 N
+X pwr 1 0 0 0 U 50 50 0 0 w
+ENDDRAW
+ENDDEF
+#
+# malenki-nano-rescue_R-Device
+#
+DEF malenki-nano-rescue_R-Device R 0 0 N Y 1 F N
+F0 "R" 80 0 50 V V C CNN
+F1 "malenki-nano-rescue_R-Device" 0 0 50 V V C CNN
+F2 "" -70 0 50 V I C CNN
+F3 "" 0 0 50 H I C CNN
+$FPLIST
+ R_*
+$ENDFPLIST
+DRAW
+S -40 -100 40 100 0 1 10 N
+X ~ 1 0 150 50 D 50 50 1 1 P
+X ~ 2 0 -150 50 U 50 50 1 1 P
+ENDDRAW
+ENDDEF
+#
+#End Library
