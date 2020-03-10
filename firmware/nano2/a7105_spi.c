@@ -23,15 +23,9 @@ VPORT_t * const SCS_VPORT = &VPORTB;
 const uint8_t SCS_PIN = 3; // PB3
 const uint8_t SDIO_PIN = 6; // PA6
 
-#if NANOX_PINOUT
-// Nanox design uses PB7 for SPI_SCK
-VPORT_t * const SCK_VPORT = &VPORTB;
-const uint8_t SCK_PIN = 7; // PB7
-#else
-// Other versions using PA7
+// using PA7
 VPORT_t * const SCK_VPORT = &VPORTA;
 const uint8_t SCK_PIN = 7; // PA7
-#endif
 
 /*
  * Before sending a command to the device, we must set SCS low

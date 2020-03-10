@@ -25,18 +25,18 @@ PA4 - Motor3R (Right) - WO4
 PA5 - Motor3F (Right) - WO5
 
 PA6 - SPI_SDIO - connected to the A7105 radio
-PA7 - SPI_SCK - connected to the A7105 / OR WEAPON3 (nanox)
+PA7 - SPI_SCK - connected to the A7105
 
 PB0 - Motor1R (Weapon) - WO0
 PB1 - Motor2R (Left) - WO1
 PB2 - Motor2F (Left) - WO2
 
 PB3 - SPI_SCS - chip select - connected to A7105
-PB4 - WEAPON2 (optional) - this is an output, it should send pulses
+PC0 - WEAPON2 (optional) - this is an output, it should send pulses
     1000-2000us
     We will need a way of using hardware pwm on this, might be tricky.
+PC1 - WEAPON3    
     
-PB7 - SPI_SCK (nanox only)
 PC2 - VSENSE - analogue input, potential divider on battery,
         approx 10/43 of bat. voltage.
 PC5 - BLINKY - flashing light.
@@ -61,7 +61,7 @@ HCMP2 - WO5 - Motor3F
 TCB0 - Radio timeout. Controlled by radio.c
 TCB1 - 16-bit timer running at max clock speed, interrupts cpu every 10ms.
 
-TCD0 - unused
+TCD0 - use to generate PWM for WEAPON2 / WEAPON3.
 
 Note that the SPI peripheral is not used for spi communication;
     it's not necessary for our usage. SPI can be bit-banged efficiently.
