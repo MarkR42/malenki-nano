@@ -18,27 +18,27 @@ Comment7 ""
 Comment8 ""
 Comment9 ""
 $EndDescr
-Connection ~ 1800 2200
-Connection ~ 3650 1900
-Connection ~ 8550 4100
+Connection ~ 3100 2200
 Connection ~ 2500 2200
 Connection ~ 8450 1700
-Connection ~ 2500 1900
-Connection ~ 8300 5650
-Connection ~ 8350 3700
-Connection ~ 3600 4700
-Connection ~ 2250 1900
-Connection ~ 2100 6200
-Connection ~ 3100 2200
 Connection ~ 8500 6050
+Connection ~ 3600 4700
 Connection ~ 4200 6150
 Connection ~ 2250 2200
 Connection ~ 8650 2100
-NoConn ~ 5600 4900
+Connection ~ 8300 5650
+Connection ~ 2250 1900
+Connection ~ 2100 6200
+Connection ~ 2500 1900
+Connection ~ 3650 1900
+Connection ~ 1800 2200
+Connection ~ 8350 3700
+Connection ~ 8550 4100
 NoConn ~ 1500 5550
+NoConn ~ 5600 4700
+NoConn ~ 5600 5000
 NoConn ~ 5600 4800
-NoConn ~ 4400 4400
-NoConn ~ 4400 4300
+NoConn ~ 5600 4900
 Wire Wire Line
 	1400 4650 2100 4650
 Wire Wire Line
@@ -263,6 +263,10 @@ Text GLabel 2700 5450 2    50   Input ~ 0
 SPI_SCS
 Text GLabel 4200 5850 1    50   Input ~ 0
 VBAT
+Text GLabel 4400 4300 0    50   Input ~ 0
+WEAPON3
+Text GLabel 4400 4400 0    50   Input ~ 0
+WEAPON2
 Text GLabel 4400 4500 0    50   Input ~ 0
 VSENSE
 Text GLabel 4400 4800 0    50   Input ~ 0
@@ -290,7 +294,7 @@ MOTOR3F
 Text GLabel 5600 4000 2    50   Input ~ 0
 SPI_SDIO
 Text GLabel 5600 4100 2    50   Input ~ 0
-WEAPON3
+SPI_SCK
 Text GLabel 5600 4300 2    50   Input ~ 0
 MOTOR1R
 Text GLabel 5600 4400 2    50   Input ~ 0
@@ -299,10 +303,6 @@ Text GLabel 5600 4500 2    50   Input ~ 0
 MOTOR2F
 Text GLabel 5600 4600 2    50   Input ~ 0
 SPI_SCS
-Text GLabel 5600 4700 2    50   Input ~ 0
-WEAPON2
-Text GLabel 5600 5000 2    50   Input ~ 0
-SPI_SCK
 Text GLabel 5750 6000 1    50   Input ~ 0
 TXDEBUG
 Text GLabel 6500 1950 0    50   Input ~ 0
