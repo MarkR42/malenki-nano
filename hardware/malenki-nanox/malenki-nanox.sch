@@ -1,5 +1,5 @@
 EESchema Schematic File Version 5
-EELAYER 31 0
+EELAYER 32 0
 EELAYER END
 $Descr A4 11693 8268
 encoding utf-8
@@ -284,9 +284,9 @@ UPDI
 Text GLabel 5600 3500 2    50   Input ~ 0
 TXDEBUG
 Text GLabel 5600 3600 2    50   Input ~ 0
-MOTOR1F
-Text GLabel 5600 3700 2    50   Input ~ 0
 GIO1
+Text GLabel 5600 3700 2    50   Input ~ 0
+MOTOR1F
 Text GLabel 5600 3800 2    50   Input ~ 0
 MOTOR3R
 Text GLabel 5600 3900 2    50   Input ~ 0
