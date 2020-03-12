@@ -32,10 +32,10 @@ PB1 - Motor2R (Left) - WO1
 PB2 - Motor2F (Left) - WO2
 
 PB3 - SPI_SCS - chip select - connected to A7105
-PC0 - WEAPON2 (optional) - this is an output, it should send pulses
+PC0 - WEAPON3 (optional) - this is an output, it should send pulses
     1000-2000us
     We will need a way of using hardware pwm on this, might be tricky.
-PC1 - WEAPON3    
+PC1 - WEAPON2    
     
 PC2 - VSENSE - analogue input, potential divider on battery,
         approx 10/43 of bat. voltage.

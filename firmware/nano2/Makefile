@@ -3,9 +3,9 @@
 #
 OBJDIR=obj
 
-OBJ_FILES=main.o diag.o a7105_spi.o radio.o motors.o nvconfig.o mixing.o zlast.o
+OBJ_FILES=main.o diag.o a7105_spi.o radio.o motors.o nvconfig.o mixing.o weapons.o zlast.o
 OBJECTS=$(addprefix $(OBJDIR)/,$(OBJ_FILES))
-HEADERS=radio.h nvconfig.h state.h motors.h diag.h a7105_spi.h mixing.h
+HEADERS=radio.h nvconfig.h state.h motors.h diag.h a7105_spi.h mixing.h weapons.h
 
 MCU=attiny3217
 
@@ -33,7 +33,7 @@ $(OBJDIR)/%.o: %.c Makefile
 install: link
 	pyupdi.py -d tiny3217 -c /dev/ttyUSB0 -f $(HEX)
 install1614: link
-	pyupdi.py -d tiny1614 -c /dev/ttyUSB1 -f $(HEX)
+	pyupdi.py -d tiny1614 -c /dev/ttyUSB0 -f $(HEX)
 
 
 

@@ -27,7 +27,7 @@ const uint8_t GIO1_bm = 1 << GIO1_PIN;
 
 // Where is the LED?
 VPORT_t * const LED_VPORT = &VPORTC;
-const uint8_t LED_PIN = 1;
+const uint8_t LED_PIN = 5;
 const uint8_t LED_PIN_bm = 1 << LED_PIN;
 
 radio_state_t radio_state;
@@ -133,6 +133,29 @@ static const uint8_t radio_id[] = {
     0x54, 0x75, 0xc5, 0x2a
     };
 
+static void init_gio1_pin()
+{
+    diag_println("Configuring GIO1 pin...");
+    // Bit 0 = enable
+    // Bit 1= invert
+    // Bits 2-5 = select mode (0= WTR wait until ready, 0xc = inhibit)
+    // We should initially have no received data, so it
+    // Should go low  as soon as we enable.
+    uint8_t gio_setting = 0x1; // This is what we want to program.   
+    spi_write_byte(0xb, gio_setting);    
+    uint8_t in0 = (GIO1_PORT->IN & GIO1_bm);
+    spi_write_byte(0xb, gio_setting | 0x2); // Enable invert bit    
+    uint8_t in1 = (GIO1_PORT->IN & GIO1_bm);
+    diag_println(" in0=%02x in1=%02x", (int) in0, (int) in1);
+    if (in0 == in1) {
+        // This should really not happen
+        diag_println("GIO1 pin does not appear to work");
+        epic_fail("GIO1 pin fail");        
+    }
+    // Reset to expected value.
+    spi_write_byte(0xb, gio_setting);        
+}
+
 static void init_a7105_hardware()
 {
     // Assume spi is initialised.
@@ -147,8 +170,7 @@ static void init_a7105_hardware()
     // register_dump();
     // program config registers
     program_config();
-    diag_println("Configuring GIO1 pin...");
-    spi_write_byte(0xb, 0x1);
+    init_gio1_pin();
     diag_println("Register dump after programming");
     register_dump();
     spi_strobe(STROBE_STANDBY);

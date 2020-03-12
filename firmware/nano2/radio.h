@@ -6,13 +6,16 @@
 
 // This is the number of channels that we care about.
 // The transmitter will send more, but we ignore those.
-#define NUM_CONTROL_CHANNELS 6
+#define NUM_CONTROL_CHANNELS 8
 
 #define CHANNEL_INDEX_STEERING 0
-#define CHANNEL_INDEX_WEAPON 1
-#define CHANNEL_INDEX_THROTTLE 2
+#define CHANNEL_INDEX_WEAPON 2
+#define CHANNEL_INDEX_THROTTLE 1
 #define CHANNEL_INDEX_INVERT 4
 #define CHANNEL_INDEX_CALIBRATE 5
+// Additional weapons.
+#define CHANNEL_INDEX_WEAPON2 6
+#define CHANNEL_INDEX_WEAPON3 7
 
 // Packet length, in bytes.
 #define RADIO_PACKET_LEN 37

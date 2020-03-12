@@ -16,6 +16,7 @@
 #include "motors.h"
 #include "nvconfig.h"
 #include "mixing.h"
+#include "weapons.h"
 
 volatile master_state_t master_state;
 extern const char * const end_marker;
@@ -160,6 +161,8 @@ int main(void)
     motors_init();
     mixing_init();
     nvconfig_load();
+    weapons_init();
+    // Initialise the radio last.
     radio_init();
     
     while(1) {
