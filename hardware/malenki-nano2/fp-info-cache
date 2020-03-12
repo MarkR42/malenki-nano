@@ -1,4 +1,4 @@
-17196854960711600
+17198461679680600
 Battery
 BatteryHolder_Bulgin_BX0036_1xC
 Bulgin{space}Battery{space}Holder,{space}BX0036,{space}Battery{space}Type{space}C{space}(https://www.bulgin.com/products/pub/media/bulgin/data/Battery_holders.pdf)
@@ -76054,6 +76054,13 @@ Through{space}hole{space}pin{space}header{space}THT{space}1x04{space}2.54mm{spac
 0
 4
 4
+malenki-nano
+WSON-8-1EP_2x2mm_P0.5mm_HAND1
+8-Lead{space}Plastic{space}WSON,{space}2x2mm{space}Body,{space}0.5mm{space}Pitch,{space}WSON-8,{space}http://www.ti.com/lit/ds/symlink/lm27761.pdf
+WSON{space}8{space}1EP
+0
+11
+9
 malenki-nano
 qfn24-hand1
 QFN,{space}24{space}Pin{space}(http://ww1.microchip.com/downloads/en/PackagingSpec/00000049BQ.pdf#page=278),{space}generated{space}with{space}kicad-footprint-generator{space}ipc_dfn_qfn_generator.py
