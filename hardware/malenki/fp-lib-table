@@ -1,3 +1,0 @@
-(fp_lib_table
-  (lib (name tinyesc)(type KiCad)(uri ${KIPRJMOD}/tinyesc.pretty)(options "")(descr ""))
-)

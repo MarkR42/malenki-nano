@@ -1,16 +1,13 @@
 This directory will contain the firmware (embedded software) for 
-our microcontroller (attiny1614 at time of writing)
+our microcontroller (attiny3217 at time of writing)
 
 Required to compile
 -------------------
 
 To compile these, you need a avr-gcc compiler configured for the
-attiny1614.
+attiny3217.
 
-Old instructions are here:
-https://github.com/vladbelous/tinyAVR_gcc_setup
-
-A newer script I've written is here:
+Toolchain here:
 https://github.com/MarkR42/robotbits/tree/master/avr_toolchain
 
 To flash the firmware, you need a suitable flashing utility.

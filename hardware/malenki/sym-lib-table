@@ -1,4 +1,0 @@
-(sym_lib_table
-  (lib (name hbridge)(type Legacy)(uri ${KIPRJMOD}/hbridge.lib)(options "")(descr ""))
-  (lib (name tinyesc)(type Legacy)(uri ${KIPRJMOD}/tinyesc.lib)(options "")(descr ""))
-)
