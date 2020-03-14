@@ -467,7 +467,7 @@ static void init_bind_mode()
 static void maybe_diag_putc(char c)
 {
     // Write character to tx for diag, only if enabled.
-#if 1
+#if 0
     USART0.TXDATAL = c;
 #endif
 }

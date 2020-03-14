@@ -3,9 +3,10 @@
 #
 OBJDIR=obj
 
-OBJ_FILES=main.o diag.o a7105_spi.o radio.o motors.o nvconfig.o mixing.o weapons.o zlast.o
+OBJ_FILES=main.o diag.o a7105_spi.o radio.o motors.o nvconfig.o mixing.o weapons.o \
+	vsense.o zlast.o
 OBJECTS=$(addprefix $(OBJDIR)/,$(OBJ_FILES))
-HEADERS=radio.h nvconfig.h state.h motors.h diag.h a7105_spi.h mixing.h weapons.h
+HEADERS=radio.h nvconfig.h state.h motors.h diag.h a7105_spi.h mixing.h weapons.h vsense.h
 
 MCU=attiny3217
 
