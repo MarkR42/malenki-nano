@@ -11,6 +11,7 @@
 #include "nvconfig.h"
 #include "motors.h"
 #include "mixing.h"
+#include "weapons.h"
 
 #define F_CPU 10000000
 #include <util/delay.h>
@@ -323,8 +324,11 @@ static void handle_packet_sticks()
     uint16_t rel_steering = (int16_t) sticks[CHANNEL_INDEX_STEERING] - 1500;
     uint16_t rel_throttle = (int16_t) sticks[CHANNEL_INDEX_THROTTLE] - 1500;
     uint16_t rel_weapon = (int16_t) sticks[CHANNEL_INDEX_WEAPON] - 1500;
-    bool invert = false; // TODO
+    // Inverted driving option
+    bool invert = (bool) (sticks[CHANNEL_INDEX_INVERT] > 1600) ;
     mixing_drive_motors(rel_throttle, rel_steering, rel_weapon, invert);
+    // Activate extra weapon channels
+    weapons_set(sticks[CHANNEL_INDEX_WEAPON2], sticks[CHANNEL_INDEX_WEAPON3]);
     // Turn on the LED so the driver can see it's connected.
     radio_state.led_on = true;
 }
@@ -430,6 +434,7 @@ void radio_loop()
                 // Lost signal.
                 diag_println("No signal");
                 motors_all_off();
+                weapons_all_off();
                 radio_state.led_on = false;
                 radio_state.last_sticks_packet = now; // avoid spamming debug port
                 // Auto-rebind:
