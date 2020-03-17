@@ -1,21 +1,5 @@
-update=Tue 17 Mar 2020 14:06:35 GMT
-version=1
-last_client=kicad
-[general]
-version=1
-RootSch=
-BoardNm=
-[cvpcb]
-version=1
-NetIExt=net
-[eeschema]
-version=1
-LibDir=
-[eeschema/libraries]
-[ModEditFrame]
-version=1
-[sheetnames]
-1=00000000-0000-0000-0000-00005e70d8fb:
+update=Fri 13 Mar 2020 14:55:12 GMT
+last_client=pcbnew
 [pcbnew]
 version=1
 PageLayoutDescrFile=
@@ -37,11 +21,14 @@ MinMicroViaDrill=0.09999999999999999
 MinHoleToHole=0.25
 RequireCourtyardDefinitions=0
 ProhibitOverlappingCourtyards=1
-CopperEdgeClearance=0.025
+CopperEdgeClearance=0.01
 TrackWidth1=0.25
 TrackWidth2=0.3
 TrackWidth3=0.5
 TrackWidth4=0.8
+TrackWidth5=0.3
+TrackWidth6=0.5
+TrackWidth7=0.8
 ViaDiameter1=0.8
 ViaDrill1=0.4
 dPairWidth1=0.2
@@ -61,7 +48,7 @@ CopperTextItalic=0
 CopperTextUpright=1
 EdgeCutLineWidth=0.05
 CourtyardLineWidth=0.05
-OthersLineWidth=0.15
+OthersLineWidth=0.09999999999999999
 OthersTextSizeV=1
 OthersTextSizeH=1
 OthersTextSizeThickness=0.15
@@ -70,7 +57,7 @@ OthersTextUpright=1
 DimensionUnits=0
 DimensionPrecision=1
 SolderMaskClearance=0.051
-SolderMaskMinWidth=0.15
+SolderMaskMinWidth=0.25
 SolderPasteClearance=0
 SolderPasteRatio=0
 [pcbnew/Layer.F.Cu]

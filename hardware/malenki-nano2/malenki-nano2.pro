@@ -1,4 +1,4 @@
-update=Thu 12 Mar 2020 09:33:24 GMT
+update=Mon 16 Mar 2020 23:03:40 GMT
 version=1
 last_client=kicad
 [general]
@@ -14,6 +14,10 @@ LibDir=
 [eeschema/libraries]
 [ModEditFrame]
 version=1
+[LibeditFrame]
+version=1
+[sheetnames]
+1=00000000-0000-0000-0000-00005e6a0dec:
 [pcbnew]
 version=1
 PageLayoutDescrFile=
@@ -248,7 +252,3 @@ uViaDrill=0.1
 dPairWidth=0.2
 dPairGap=0.25
 dPairViaGap=0.25
-[LibeditFrame]
-version=1
-[sheetnames]
-1=00000000-0000-0000-0000-00005e6a0dec:

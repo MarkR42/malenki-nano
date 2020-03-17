@@ -264,9 +264,9 @@ SPI_SCS
 Text GLabel 4200 5850 1    50   Input ~ 0
 VBAT
 Text GLabel 4400 4300 0    50   Input ~ 0
-WEAPON3
-Text GLabel 4400 4400 0    50   Input ~ 0
 WEAPON2
+Text GLabel 4400 4400 0    50   Input ~ 0
+WEAPON3
 Text GLabel 4400 4500 0    50   Input ~ 0
 VSENSE
 Text GLabel 4400 4800 0    50   Input ~ 0
@@ -306,9 +306,9 @@ SPI_SCS
 Text GLabel 5750 6000 1    50   Input ~ 0
 TXDEBUG
 Text GLabel 6500 1950 0    50   Input ~ 0
-WEAPON2
-Text GLabel 6500 2050 0    50   Input ~ 0
 WEAPON3
+Text GLabel 6500 2050 0    50   Input ~ 0
+WEAPON2
 Text GLabel 8200 5650 0    50   Input ~ 0
 VBAT
 Text GLabel 8250 3700 0    50   Input ~ 0
