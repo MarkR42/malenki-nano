@@ -187,6 +187,7 @@ void radio_init()
 
 void radio_txtest()
 {
+    diag_println("radio_txtest");
     // Prepare packet
     const size_t packet_len = 24;
     uint8_t packet[packet_len];
@@ -201,7 +202,19 @@ void radio_txtest()
 
     // Set channel and Strobe: begin tx
     uint8_t channel = 0xc; // Bind channel
+    uint8_t gio1_before = GIO1_PORT->IN & GIO1_bm;
     spi_write_byte_then_strobe(0x0f, channel, STROBE_TX);
+    uint8_t gio1_after = GIO1_PORT->IN & GIO1_bm;
+    diag_println("before %d after %d", (int)gio1_before, (int)gio1_after);
     // wait for tx finish
     // this could read status register or use gio1?
+    // gio1 should go low when tx is completed.
+    for(uint8_t i=0; i<100; i++) {
+        bool on = GIO1_PORT->IN & GIO1_bm;
+        if (! on) {
+            diag_println("Transmitted after %d count", i);
+            break;
+        }
+        _delay_us(10);
+    }
 }
