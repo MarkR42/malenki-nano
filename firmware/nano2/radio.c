@@ -126,7 +126,9 @@ static void init_interrupts()
 #define STROBE_STANDBY 0xa0 
 #define STROBE_PLL 0xb0 
 #define STROBE_RX 0xc0 
+#define STROBE_TX 0xd0 
 #define STROBE_READ_PTR_RESET 0xf0 
+#define STROBE_WRITE_PTR_RESET 0xe0 
 
 // This is the magic ID for the a7105 for flysky protocol
 // AFHDS2A protocol - contains this ID ending with 2A
@@ -232,9 +234,20 @@ static bool is_all_zeros(const uint8_t *buf, uint8_t len)
     return (acc == 0);
 }
 
+static void init_rx_id()
+{
+    // TODO: Take some ID from the device ID
+    radio_state.rx_id[0] = 0x2a;
+    radio_state.rx_id[1] = 0x09;
+    radio_state.rx_id[2] = 0x90;
+    radio_state.rx_id[3] = 0x99;
+    diag_print("rx_id: "); dump_buf(radio_state.rx_id, 4);
+}
+
 void radio_init()
 {
     diag_println("Begin radio_init");
+    init_rx_id();
     init_a7105_hardware();
 
     /* Determine whether we have any tx info loaded from nvram.
@@ -257,6 +270,13 @@ void radio_init()
     }
     // Init led BLINKY gpio - set it as output.
     LED_VPORT->DIR |= LED_PIN_bm;
+    
+    /* Init the tx buffer with all 0xff for sending telemetry.
+     */
+    spi_strobe(STROBE_WRITE_PTR_RESET);
+    for (uint8_t i=0; i<RADIO_PACKET_LEN; i++) {
+        spi_write_byte(0x5, 0xff); // address to write packet data.
+    }
     
     init_interrupts();
     diag_println("End radio_init");
@@ -303,6 +323,47 @@ __attribute__ ((unused)) static void radio_test1()
 }
 
 #define PACKET_TYPE_STICKS 0x58
+#define PACKET_TYPE_TELEMETRY 0xAA
+#define PACKET_TYPE_BIND1 0xbb
+#define PACKET_TYPE_BIND2 0xbc
+
+static void build_telemetry_packet()
+{
+    // TODO: take actual useful data from the sensors
+    // of voltage and temperature.
+    if (radio_state.telemetry_is_valid) {
+        // We already have a telemetry packet ready to send.
+        return;
+    }
+    uint8_t off = 0;
+    // First byte - packet type
+    radio_state.telemetry_packet[off++] = PACKET_TYPE_TELEMETRY;
+    // First four bytes - tx id
+    memcpy(radio_state.telemetry_packet + off, radio_state.tx_id, 4);
+    off += 4;
+    // next four bytes - rx id
+    memcpy(radio_state.telemetry_packet + off, radio_state.rx_id, 4);
+    off += 4;
+    
+    // sensor ID 0 = VOLTAGE
+    radio_state.telemetry_packet[off++] = 0;
+    radio_state.telemetry_packet[off++] = 1; // sensor index
+    // Sensor value - 16 bits big endian?
+    uint16_t v = 500;
+    radio_state.telemetry_packet[off++] = v >> 8;
+    radio_state.telemetry_packet[off++] = v & 0xff;
+    // End of packet marker
+    radio_state.telemetry_packet[off++] = 0xfe;
+    for (uint8_t i=0; i<3; i++) {
+        radio_state.telemetry_packet[off++] = 0; 
+    }
+    
+    radio_state.telemetry_packet_len = off;
+    // Special value, 0 means "the same as last rx"
+    radio_state.telemetry_channel = 0;
+    // Enable sending next time.
+    radio_state.telemetry_is_valid = 1;
+}
 
 static void handle_packet_sticks()
 {
@@ -331,6 +392,16 @@ static void handle_packet_sticks()
     weapons_set(sticks[CHANNEL_INDEX_WEAPON2], sticks[CHANNEL_INDEX_WEAPON3]);
     // Turn on the LED so the driver can see it's connected.
     radio_state.led_on = true;
+    // Decide if we want to set up telemetry.
+    // Maybe we do!
+#if 0
+    if (radio_state.telemetry_counter == 0) {
+        build_telemetry_packet();
+        radio_state.telemetry_counter = 11;
+    } else {
+        radio_state.telemetry_counter --;
+    }
+#endif
 }
 
 static void dump_buf(uint8_t *buf, uint8_t len)
@@ -353,8 +424,57 @@ static void handle_bind_complete()
     dump_buf(radio_state.hop_channels, NR_HOP_CHANNELS);
     radio_state.hop_index = 0;
     radio_state.state = RADIO_STATE_HOPPING;
+    radio_state.telemetry_is_valid = 0;
     // Save the transmitter id, etc, in nvram.
     nvconfig_save();
+    // Now we will send a big block of bind response packets.
+    // This will decrement down to zero then stop.
+    radio_state.bind_response_count = 480;
+}
+
+static void build_bind_response_packet() 
+{
+    /*
+     * During binding, we send the rx id as a response packet, in the
+     * same style as a telemetry packet (telemetry is only sent when bound).
+     * 
+     * This tells the transmitter that we are a reciever capable of sending
+     * telemetry and it should remember our rx id.
+     * 
+     * Which channel to send on? It seems that the FlySky receivers send
+     * these packets on every channel in a loop, so we will do the same.
+     */
+    if (radio_state.telemetry_is_valid) {
+        // We already have a telemetry packet ready to send.
+        return;
+    }
+    memset(radio_state.telemetry_packet, 0xff, RADIO_PACKET_LEN);
+    uint8_t *p = radio_state.telemetry_packet;
+    p[0] = PACKET_TYPE_BIND2;
+    memcpy(p+1, radio_state.tx_id, 4); // transmitter ID 
+    memcpy(p+5, radio_state.rx_id, 4); // rx ID (my id) 
+    // Not sure if the rest of the packet does anything useful.
+    // These values were seen in the bind response from a iA6C receiver.
+    // Who knows what they mean?!
+    p[6] = 0x02;
+    p[7] = 0;
+    
+    //This appears at offset 27
+    // 01 80
+    p[27] = 0x01;
+    p[28] = 0x80;
+    radio_state.telemetry_packet_len = RADIO_PACKET_LEN;
+    // Loop through all channels.
+    radio_state.telemetry_channel += 1;
+    if (radio_state.telemetry_channel > 0xa0) {
+        radio_state.telemetry_channel = 1;
+    }
+    // Decrement the counter, so we will stop sending bind responses
+    // eventually.
+    radio_state.bind_response_count -= 1;
+    // diag_puts("bindres");
+    // dump_buf(radio_state.telemetry_packet, RADIO_PACKET_LEN);
+    radio_state.telemetry_is_valid = 1;
 }
 
 static void handle_packet_bind()
@@ -445,6 +565,11 @@ void radio_loop()
                     init_bind_mode();
                 }
             }
+            // If we recently, just bound, then we should send
+            // a bunch of response packets across all channels.
+            if (radio_state.bind_response_count > 0) {
+                build_bind_response_packet();
+            }
         }
     }
     radio_show_diagnostics(now);
@@ -468,11 +593,14 @@ static void init_bind_mode()
  * IRQ CODE BELOW HERE!
  * Here be dragons, woof woof
  **********************/
+
+static void send_telemetry();
+static void reset_timeout();
  
 static void maybe_diag_putc(char c)
 {
     // Write character to tx for diag, only if enabled.
-#if 0
+#if 1
     USART0.TXDATAL = c;
 #endif
 }
@@ -530,17 +658,24 @@ ISR(TCB0_INT_vect)
     if (TCB0.INTFLAGS & TCB_CAPT_bm) {
         TCB0.INTFLAGS |= TCB_CAPT_bm; //clear the interrupt flag(to reset TCB0.CNT)
         radio_counters.missed += 1;
+        uint8_t hop_delta = 0;
         if ((radio_state.missed_packet_count < 5) || (radio_state.state==RADIO_STATE_BIND)) {
             // Try to hop to catch up.
             // Always hop in bind mode.
-            restart_rx(1);
+            hop_delta = 1;
             radio_state.missed_packet_count += 1; // successive missed packets.
         } else {
             // Too out of sync, stay on same channel and wait for
             // it to come around again.
-            restart_rx(0);
         }
-        maybe_diag_putc('.');
+        // If we want to send telemetry, do it now.
+        // This is especially usually used for bind responses.
+        if (radio_state.telemetry_is_valid) {
+            send_telemetry();
+        } else { // Otherwise restart receiver.
+            restart_rx(hop_delta);
+        }
+        // maybe_diag_putc('.');
         timeout_irq_count = 0;
         update_led();
     }
@@ -555,7 +690,6 @@ static void reset_timeout()
     TCB0.INTFLAGS |= TCB_CAPT_bm;
     timeout_irq_count = 0;
 }
-
 
 static void do_rx()
 {
@@ -590,7 +724,8 @@ static void do_rx()
         // If we are in bind mode, bind packets are important, 
         // But so are sticks packets.
         if (state == RADIO_STATE_BIND) {
-            if ((packet_type == 0xbb) || (packet_type == 0xbc) || 
+            if ((packet_type == PACKET_TYPE_BIND1) || 
+                (packet_type == PACKET_TYPE_BIND2) || 
                 (packet_type == PACKET_TYPE_STICKS)) {
                 // Bind packet.
                 ok = true;
@@ -601,9 +736,14 @@ static void do_rx()
     }
     if (do_hop) {
         // GOOD packet.
-        restart_rx(1);
+        if (radio_state.telemetry_is_valid) {
+            send_telemetry();
+        } else {
+            // No telemetry this time.
+            restart_rx(1);
+        }
         radio_counters.rx += 1;
-        reset_timeout();         
+        reset_timeout();
     } else {
         // BAD packet; stay on the same channel, do not reset timer.
         restart_rx(0);
@@ -626,6 +766,36 @@ static void do_rx()
     update_led();
 }
 
+static void send_telemetry()
+{
+    spi_strobe(STROBE_WRITE_PTR_RESET);
+    // Write our data with spi_write_block
+    spi_write_block(0x5, // Data buffer register
+        radio_state.telemetry_packet, radio_state.telemetry_packet_len);
+    // Work out which channel to transmit on
+    // (do not -1), 
+    uint8_t chan = radio_state.current_channel + 1;
+    if (radio_state.telemetry_channel) 
+        chan = radio_state.telemetry_channel;
+    spi_write_byte(0x0f, chan);
+    spi_strobe(STROBE_TX);
+    
+    // set flag, so that when GIO1 goes low,
+    // irq will hop and restart the rx.
+    radio_state.tx_in_progress = 1;
+    // Set flag so that the main loop can write new telemetry.
+    radio_state.telemetry_is_valid = 0;
+}
+
+static void do_tx_complete()
+{
+    // Transmit is now finished.
+    // We need to hop on to next channel.
+    radio_state.tx_in_progress = 0;
+    restart_rx(1);
+    maybe_diag_putc('T');
+}
+
 ISR(PORTA_PORT_vect)
 {
     // RX packet.
@@ -635,7 +805,11 @@ ISR(PORTA_PORT_vect)
     // too late and we missed it.
     uint8_t bit = PORTA.IN & GIO1_bm;
     if (! bit) {
-        do_rx();
+        if (radio_state.tx_in_progress) {
+            do_tx_complete();
+        } else {
+            do_rx();
+        }
     }
     // clear the irq
     PORTA.INTFLAGS = GIO1_bm;

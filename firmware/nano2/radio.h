@@ -29,7 +29,8 @@
 typedef struct {
     // Saved binding info from the transmitter:
     // saved into nvrame:
-    uint8_t tx_id[4]; // Transmitter ID
+    uint8_t tx_id[4]; // Transmitter ID (of bound transmitter, 0 otherwise)
+    uint8_t rx_id[4]; // Receiver ID of our device.
     uint8_t hop_channels[NR_HOP_CHANNELS]; // List of hopping channels.
     // Hopping channels saved from nvram, in case we decide to change hopping
     // channels going into bind mode, then want to restore them back.
@@ -48,6 +49,14 @@ typedef struct {
     uint32_t last_sticks_packet; // time of last sticks packet
     uint8_t got_signal_ever; // Set this to 1 after we got anything, to suppress autobind.
     bool led_on; // Set in the main loop, interrupt code enables it via a7105 and spi 
+    // Telemetry
+    uint8_t telemetry_packet[RADIO_PACKET_LEN];
+    uint8_t telemetry_packet_len; // Significant length of telemetry packet.
+    bool telemetry_is_valid; // Set this to 1 to have telemetry sent next time
+    uint16_t telemetry_counter; // number of rx packets before we send telem.
+    uint8_t telemetry_channel; // Channel to send next telem
+    uint8_t tx_in_progress; // Flag to set for irq, tx is in progress.
+    uint16_t bind_response_count; // Number of bind responses to send (decrements down to 0)
 } radio_state_t;
 
 extern radio_state_t radio_state;
