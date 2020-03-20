@@ -1,0 +1,56 @@
+CAPTURES 19.3.2020
+
+Normal sticks packet, no rx bound:
+
+chan=2f data=58 c4 1b b4 c4 01 00 00 00 dc 05 cd 05 e8 03 e3 05 dc 05 e8 03 14 05 dc 05 dc 05 dc 05 dc 05 dc 05 dc 05 dc 85 
+
+
+Note that rx id is 01 00 00 00
+
+Bind packets:
+
+chan=8c data=bc c4 1b b4 c4 ff ff ff ff 01 00 6b 79 42 19 49 53 5b 24 6f 3d 2f 57 12 2a 74 80 01 80 ff ff ff ff ff ff ff ff 
+chan=8c data=bc c4 1b b4 c4 ff ff ff ff 00 00 6b 79 42 19 49 53 5b 24 6f 3d 2f 57 12 2a 74 80 01 80 ff ff ff ff ff ff ff ff 
+chan=0d data=bb c4 1b b4 c4 ff ff ff ff 01 00 6b 79 42 19 49 53 5b 24 6f 3d 2f 57 12 2a 74 80 ff ff ff ff ff ff ff ff ff ff 
+chan=0d data=bc c4 1b b4 c4 ff ff ff ff 01 00 6b 79 42 19 49 53 5b 24 6f 3d 2f 57 12 2a 74 80 01 80 ff ff ff ff ff ff ff ff 
+chan=0d data=bc c4 1b b4 c4 ff ff ff ff 00 00 6b 79 42 19 49 53 5b 24 6f 3d 2f 57 12 2a 74 80 01 80 ff ff ff ff ff ff ff ff 
+chan=8c data=bc c4 1b b4 c4 ff ff ff ff 01 00 6b 79 42 19 49 53 5b 24 6f 3d 2f 57 12 2a 74 80 01 80 ff ff ff ff ff ff ff ff 
+chan=8c data=bc c4 1b b4 c4 ff ff ff ff 00 00 6b 79 42 19 49 53 5b 24 6f 3d 2f 57 12 2a 74 80 01 80 ff ff ff ff ff ff ff ff 
+chan=8c data=bb c4 1b b4 c4 ff ff ff ff 01 00 6b 79 42 19 49 53 5b 24 6f 3d 2f 57 12 2a 74 80 ff ff ff ff ff ff ff ff ff ff 
+chan=0d data=bc c4 1b b4 c4 ff ff ff ff 01 00 6b 79 42 19 49 53 5b 24 6f 3d 2f 57 12 2a 74 80 01 80 ff ff ff ff ff ff ff ff 
+chan=0d data=bc c4 1b b4 c4 ff ff ff ff 00 00 6b 79 42 19 49 53 5b 24 6f 3d 2f 57 12 2a 74 80 01 80 ff ff ff ff ff ff ff ff 
+
+Hop seq: 6b 79 42 19 49 53 5b 24 6f 3d 2f 57 12 2a 74 80
+
+chan=0d data=bc f3 86 b3 c4 ff ff ff ff 01 00 7f 55 1c 95 8f 84 38 88 13 45 3f 6d 4f 72 60 78 01 80 ff ff ff ff ff ff ff ff 
+chan=0d data=bc f3 86 b3 c4 ff ff ff ff 00 00 7f 55 1c 95 8f 84 38 88 13 45 3f 6d 4f 72 60 78 01 80 ff ff ff ff ff ff ff ff 
+chan=4d data=bb f3 86 b3 c4 ff ff ff ff 01 00 7f 55 1c 95 8f 84 38 88 13 45 3f 6d 4f 72 60 78 ff ff ff ff ff ff ff ff ff ff 
+chan=8c data=bc f3 86 b3 c4 ff ff ff ff 01 00 7f 55 1c 95 8f 84 38 88 13 45 3f 6d 4f 72 60 78 01 80 ff ff ff ff ff ff ff ff 
+chan=8c data=bc f3 86 b3 c4 ff ff ff ff 00 00 7f 55 1c 95 8f 84 38 88 13 45 3f 6d 4f 72 60 78 01 80 ff ff ff ff ff ff ff ff 
+
+
+Bind response packet:
+
+chan=5d data=bc c4 1b b4 c4 9c fb 96 41 02 00 ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff 01 80 ff ff ff ff ff ff ff ff
+
+Why is it on chan 0x5d ?
+
+
+Here is another:
+
+chan=64 data=bc c4 1b b4 c4 9c fb 96 41 02 00 ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff 01 80 ff ff ff ff ff ff ff ff
+
+And some more:
+chan=93 data=bc c4 1b b4 c4 9c fb 96 41 02 00 ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff 01 80 ff ff ff ff ff ff ff ff
+chan=94 data=bc c4 1b b4 c4 9c fb 96 41 02 00 ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff 01 80 ff ff ff ff ff ff ff ff
+
+Another bind response:
+chan=0f data=bc f3 86 b3 c4 9c fb 96 41 02 00 ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff 01 80 ff ff ff ff ff ff ff ff 
+
+Bind response packet appears on a random channel, is it sent on every channel?!
+
+It seems that the bind response packet is sent on every channel, perhaps several times. This may
+be because the rx does not know which channel the tx is listening on, so it just send it on
+all channel. Poor design? It works.
+
+So we have to do the same.
