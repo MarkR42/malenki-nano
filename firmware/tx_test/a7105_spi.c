@@ -107,6 +107,7 @@ void spi_init() {
     SDIO_VPORT->DIR &= ~(1 << SDIO_PIN);
 }
 
+/*
 void spi_write_byte(uint8_t addr, uint8_t data)
 {
     uint8_t firstbyte = addr & 0x3f;
@@ -115,7 +116,9 @@ void spi_write_byte(uint8_t addr, uint8_t data)
     send_byte(data);
     scs_high();
 }
+*/
 
+/*
 void spi_write_block(uint8_t addr, const uint8_t *buf, uint8_t datalen)
 {
     uint8_t firstbyte = addr & 0x3f;
@@ -126,7 +129,9 @@ void spi_write_block(uint8_t addr, const uint8_t *buf, uint8_t datalen)
     }
     scs_high();
 }
+*/
 
+/*
 void spi_strobe(uint8_t cmd)
 {
     uint8_t firstbyte = cmd; // must have top bit set.
@@ -134,8 +139,10 @@ void spi_strobe(uint8_t cmd)
     send_byte(firstbyte);
     scs_high();
 }
+*/
 
 // Optimised: write a byte then send strobe command.
+/*
 void spi_write_byte_then_strobe(uint8_t addr, uint8_t data, uint8_t cmd)
 {
     uint8_t firstbyte = addr & 0x3f;
@@ -145,8 +152,10 @@ void spi_write_byte_then_strobe(uint8_t addr, uint8_t data, uint8_t cmd)
     send_byte(cmd);
     scs_high();
 }
+*/
 
 // Two strobe commands without deasserting scs
+/*
 void spi_strobe2(uint8_t cmd, uint8_t cmd2)
 {
     scs_low();
@@ -162,7 +171,9 @@ void spi_strobe3(uint8_t cmd, uint8_t cmd2, uint8_t cmd3)
     send_byte(cmd3);
     scs_high();
 }
+*/
 
+/*
 uint8_t spi_read_byte(uint8_t addr) {
     // Read a single byte
     //
@@ -179,7 +190,9 @@ uint8_t spi_read_byte(uint8_t addr) {
     scs_high();
     return data;
 }
+*/
 
+/*
 static void read_block1(uint8_t addr, uint8_t *buf, uint8_t datalen) {
     // Read block with scs low.
     // Read more than 1 byte
@@ -196,17 +209,21 @@ static void read_block1(uint8_t addr, uint8_t *buf, uint8_t datalen) {
         buf[i] = data;
     }
 }
+*/
 
+/*
 void spi_read_block(uint8_t addr, uint8_t *buf, uint8_t datalen) {
     scs_low();
     read_block1(addr, buf, datalen);
     scs_high();
 }
+*/
 
 /*
  * This is typically used to read packet data, by sending a strobe
  * command to reset the read pointer, then read.
  */
+/*
 void spi_strobe_then_read_block(uint8_t cmd,
     uint8_t addr, uint8_t *buf, uint8_t datalen) 
 {
@@ -215,3 +232,4 @@ void spi_strobe_then_read_block(uint8_t cmd,
     read_block1(addr, buf, datalen);
     scs_high();
 }
+*/

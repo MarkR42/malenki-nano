@@ -1,9 +1,10 @@
 
-# We require the avr-gcc toolchain
+# We require the toolchain avr-gcc
+# from ../../avr_toolchain
 #
 OBJDIR=obj
 
-OBJ_FILES=main.o diag.o a7105_spi.o radio.o
+OBJ_FILES=main.o diag.o a7105_spi.o spi_asm.o radio.o
 OBJECTS=$(addprefix $(OBJDIR)/,$(OBJ_FILES))
 HEADERS=radio.h diag.h a7105_spi.h state.h
 
@@ -23,17 +24,19 @@ link: $(OBJECTS) $(HEADERS)
 	avr-objdump -t $(ELF) > $(OBJDIR)/main.sym
 	avr-objdump -j .bss -j .data -t $(ELF) | grep 00 |sort > $(OBJDIR)/ram.txt # show ram usage
 	avr-objcopy -j .text -j .data -j .rodata -O ihex $(ELF) $(HEX)
-	avr-objcopy -j .text -j .data -j .rodata -O binary $(ELF) obj/main.bin
 
 CFLAGS=-mmcu=$(MCU) -Os -Wall
 $(OBJDIR)/%.o: %.c Makefile
-	mkdir -p $(OBJDIR)
+	@mkdir -p $(OBJDIR)
 	avr-gcc -c $(CFLAGS) -o $@ $<
-		
+
+# Assembly language compile
+$(OBJDIR)/%.o: %.S Makefile $(HEADERS)
+	@mkdir -p $(OBJDIR)
+	avr-gcc -c $(CFLAGS) -Xassembler -a=$(OBJDIR)/$(<).lst -o $@ $<
+
 install: link
 	pyupdi.py -d tiny3217 -c /dev/ttyUSB0 -f $(HEX)
-install1614: link
-	pyupdi.py -d tiny1614 -c /dev/ttyUSB0 -f $(HEX)
 
 clean:
 	rm -r obj/
