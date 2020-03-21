@@ -3,7 +3,7 @@
 #
 OBJDIR=obj
 
-OBJ_FILES=main.o diag.o a7105_spi.o radio.o motors.o nvconfig.o mixing.o weapons.o \
+OBJ_FILES=main.o diag.o a7105_spi.o spi_asm.o radio.o motors.o nvconfig.o mixing.o weapons.o \
 	vsense.o zlast.o
 OBJECTS=$(addprefix $(OBJDIR)/,$(OBJ_FILES))
 HEADERS=radio.h nvconfig.h state.h motors.h diag.h a7105_spi.h mixing.h weapons.h vsense.h
@@ -28,9 +28,14 @@ link: $(OBJECTS) $(HEADERS)
 
 CFLAGS=-mmcu=$(MCU) -Os -Wall
 $(OBJDIR)/%.o: %.c Makefile
-	mkdir -p $(OBJDIR)
+	@mkdir -p $(OBJDIR)
 	avr-gcc -c $(CFLAGS) -o $@ $<
-		
+
+# Assembly language compile
+$(OBJDIR)/%.o: %.S Makefile $(HEADERS)
+	@mkdir -p $(OBJDIR)
+	avr-gcc -c $(CFLAGS) -Xassembler -a=$(OBJDIR)/$(<).lst -o $@ $<
+
 install: link
 	pyupdi.py -d tiny3217 -c /dev/ttyUSB0 -f $(HEX)
 install1614: link
