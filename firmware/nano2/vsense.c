@@ -5,6 +5,8 @@
 #include "diag.h"
 #include "state.h"
 
+vsense_state_t vsense_state;
+
 void vsense_init()
 {
     // NB: input voltage to mcu should be 3.3
@@ -35,8 +37,6 @@ void vsense_init()
 static const uint32_t vsense_period = 100; // Centiseconds
 static uint32_t last_vsense_tickcount = 0;
 
-static int cells_count = 0;
-
 void vsense_loop()
 {
     // called every loop.
@@ -60,25 +60,26 @@ void vsense_loop()
             if (now < 700) {
                 if ((vsense_mv > 6000) && (vsense_mv < 8500)) {
                     // 2s pack
-                    cells_count = 2;
+                    vsense_state.cells_count = 2;
                 } else if ((vsense_mv > 3000) && (vsense_mv < 4250)) {
                     // 1s lipo
-                    cells_count = 1;
+                    vsense_state.cells_count = 1;
                 } else {
                     // This means we have neither 1s nor 2s pack.
-                    cells_count = 0;
+                    vsense_state.cells_count = 0;
                 }
-                if (cells_count > 0) {
-                    diag_println("Detected %d battery cells", cells_count); 
+                if (vsense_state.cells_count > 0) {
+                    diag_println("Detected %d battery cells", vsense_state.cells_count); 
                 } else {
                     diag_println("Battery voltage out of range, bench test?");
                 }
             }
-            diag_println("vbat=%04ld mv", vsense_mv);
-            if (cells_count > 0) 
+            // diag_println("vbat=%04ld mv", vsense_mv);
+            vsense_state.voltage_mv = vsense_mv;
+            if (vsense_state.cells_count > 0) 
             {
                 // Only do battery diagnostics if we have a known size pack.
-                int warn_voltage = cells_count  * 3400;
+                int warn_voltage = vsense_state.cells_count  * 3400;
                 if (vsense_mv < warn_voltage) 
                     diag_println("Warning: low battery");
                 // TODO: flash lights if low battery

@@ -12,6 +12,7 @@
 #include "motors.h"
 #include "mixing.h"
 #include "weapons.h"
+#include "vsense.h"
 
 #define F_CPU 10000000
 #include <util/delay.h>
@@ -338,11 +339,16 @@ static void prepare_telemetry()
     memcpy(p+1, radio_state.tx_id, 4);
     memcpy(p+5, radio_state.rx_id, 4);
     p[9] = 0x0; // telemetry type (0=volts)
-    p[10] = 0x0; // telemetry id
-    uint16_t volts_100 = 500;
+    p[10] = 0x2; // telemetry id (0=internal 1=? 2=external)
+    uint16_t volts_100 = vsense_state.voltage_mv / 10;
     p[11] = (volts_100 & 0xff); // low
     p[12] = (volts_100 >> 8);// high
-    p[13] = 0xfe; // end
+    p[13] = 1; // Type (1=temp.)
+    p[14] = 0; // id
+    uint16_t temp_10 = 585; // (Temperature+40), * 10,
+    p[15] = temp_10 & 0xff; // temperature
+    p[16] = temp_10 >> 8; // temperature
+    p[17] = 0xfe; // end
     radio_state.telemetry_packet_is_valid = 1;
 }
 
@@ -446,11 +452,15 @@ static void handle_packet_bind(uint32_t now)
         }
 
     } else {
-        // New bind packet
-        diag_println("New tx detected");
-        radio_state.bind_packet_count = 0;
-        memcpy(radio_state.tx_id, bind_tx_id, 4); // store id.
-        memcpy(radio_state.hop_channels_new, radio_state.packet + 11, NR_HOP_CHANNELS);
+        // Make sure it really is a bind packet.
+        uint8_t t = radio_state.packet[0];
+        if ((t == PACKET_TYPE_BIND1) || (t == PACKET_TYPE_BIND2)) {
+            // New bind packet
+            diag_println("New tx detected");
+            radio_state.bind_packet_count = 0;
+            memcpy(radio_state.tx_id, bind_tx_id, 4); // store id.
+            memcpy(radio_state.hop_channels_new, radio_state.packet + 11, NR_HOP_CHANNELS);
+        }
     }
     
 }
