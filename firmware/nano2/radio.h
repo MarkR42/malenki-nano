@@ -25,6 +25,8 @@
 // Because most tx don't support more than 8 channels anyway, we don't need
 // to worry about channels 9-14  
 #define RADIO_PACKET_SIGNIFICANT_LEN 27
+// Length of a telemetry we care about (more bytes are set to 0xff)
+#define RADIO_TELEMETRY_SIGNIFICANT_LEN 19
 
 typedef struct {
     // Saved binding info from the transmitter:
@@ -35,6 +37,7 @@ typedef struct {
     // Hopping channels saved from nvram, in case we decide to change hopping
     // channels going into bind mode, then want to restore them back.
     uint8_t hop_channels_saved[NR_HOP_CHANNELS];
+    uint8_t hop_channels_new[NR_HOP_CHANNELS]; // From a NEW tx
     uint8_t tx_id_saved[4]; // Saved previous transmitter ID
     // Other info - not saved between boots
     uint8_t state;
@@ -44,6 +47,7 @@ typedef struct {
     uint8_t packet_channel; // channel of last saved packet.
     uint8_t missed_packet_count; // successive
     uint16_t bind_packet_count; // successive bind packets from same tx.
+    uint32_t bind_complete_time; // When we should complete binding
     uint8_t packet[RADIO_PACKET_LEN];
     bool packet_is_valid; // set to true if the packet is waiting to be processed, set false after.
     uint32_t last_sticks_packet; // time of last sticks packet

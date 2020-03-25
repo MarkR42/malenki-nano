@@ -267,6 +267,15 @@ void radio_init()
         diag_println("Hop channels: ");
         dump_buf(radio_state.hop_channels, NR_HOP_CHANNELS);
     }
+
+    // Init send buffer with all ff
+    spi_strobe(STROBE_WRITE_PTR_RESET);
+    for (uint8_t j=0; j<RADIO_PACKET_LEN; j++) {
+        spi_write_byte(0x5, 0xff);
+        // Also init telemetry packet in state
+        radio_state.telemetry_packet[j] = 0xff;
+    }
+    
     // Init led BLINKY gpio - set it as output.
     LED_VPORT->DIR |= LED_PIN_bm;
     
@@ -365,7 +374,7 @@ static void handle_bind_complete()
     diag_print("tx id: ");
     dump_buf(radio_state.tx_id, 4);
     // copy the list of hopping channels.
-    memcpy(radio_state.hop_channels, radio_state.packet + 11,
+    memcpy(radio_state.hop_channels, radio_state.hop_channels_new,
         NR_HOP_CHANNELS);
     diag_print("hop: ");
     dump_buf(radio_state.hop_channels, NR_HOP_CHANNELS);
@@ -375,7 +384,7 @@ static void handle_bind_complete()
     nvconfig_save();
 }
 
-static void handle_packet_bind()
+static void handle_packet_bind(uint32_t now)
 {
     // packet is in radio_state.packet.
     uint8_t *bind_tx_id = radio_state.packet + 1;
@@ -392,19 +401,36 @@ static void handle_packet_bind()
         radio_state.state = RADIO_STATE_HOPPING;
     }
     // Check if a lot of repeated bind packets appear.
+    // (This is for non-telemetry transmitters)
     if (memcmp(bind_tx_id, radio_state.tx_id, 4) == 0) {
         // Repeated bind packet.
         radio_state.bind_packet_count += 1;
         if (radio_state.bind_packet_count >= 100) {
             // Excellent, done.
             handle_bind_complete();
+            return;
         }
+
+        // For telemetry transmitters, which heard our responses,
+        // Check for a "BIND2" type
+        // Which should contain our rx id.
+        if (radio_state.packet[9] == 2) {
+            if (memcmp(radio_state.packet + 5, radio_state.rx_id, 4) == 0) {
+                // Yeah!
+                diag_println("Bind2 detected");
+                // handle_bind_complete();
+                radio_state.bind_complete_time = now + 50;
+            }
+        }
+
     } else {
         // New bind packet
         diag_println("New tx detected");
         radio_state.bind_packet_count = 0;
         memcpy(radio_state.tx_id, bind_tx_id, 4); // store id.
+        memcpy(radio_state.hop_channels_new, radio_state.packet + 11, NR_HOP_CHANNELS);
     }
+    
 }
 
 static void radio_show_diagnostics(uint32_t now)
@@ -438,7 +464,7 @@ void radio_loop()
     uint32_t now = get_tickcount();
     if (radio_state.packet_is_valid) {
         if (radio_state.state == RADIO_STATE_BIND) {
-            handle_packet_bind();
+            handle_packet_bind(now);
         } else {
             handle_packet_sticks();
             radio_state.last_sticks_packet = now;
@@ -446,7 +472,14 @@ void radio_loop()
         radio_state.got_signal_ever = true;
         radio_state.packet_is_valid = false;
     } else {
-        if (radio_state.state != RADIO_STATE_BIND) {
+        if (radio_state.state == RADIO_STATE_BIND) {
+            if ((radio_state.bind_complete_time != 0) && (radio_state.bind_complete_time < now)) {
+                handle_bind_complete();
+            }
+        } 
+        else 
+        {
+            // radio_state.state != RADIO_STATE_BIND
             uint32_t age = now - radio_state.last_sticks_packet;
             if (age > 25) { // centiseconds
                 // Lost signal.
@@ -475,7 +508,7 @@ static void init_bind_mode()
     radio_state.state = RADIO_STATE_BIND;
     // Set up the hop-table with the bind channels.
     for (uint8_t i=0; i< NR_HOP_CHANNELS; i++) {
-        radio_state.hop_channels[i] = (i & 1) ? 0x0d : 0x8c;
+        radio_state.hop_channels[i] = (i & 2) ? 0x0d : 0x8c;
     }
     diag_puts("Bind mode hopping pattern: ");
     dump_buf(radio_state.hop_channels, NR_HOP_CHANNELS);
@@ -507,6 +540,8 @@ static void do_tx()
     // Transmit packet in radio_state.telemetry_packet
     spi_strobe(STROBE_STANDBY);
     // Set tx channel
+    spi_strobe(STROBE_WRITE_PTR_RESET);
+    spi_write_block(0x5, radio_state.telemetry_packet, RADIO_TELEMETRY_SIGNIFICANT_LEN);
     spi_write_byte(0x0f, radio_state.telemetry_packet_channel);
     spi_strobe(STROBE_TX);
     radio_state.tx_active = true;
@@ -517,19 +552,9 @@ static void do_tx()
 static void do_tx_complete()
 {
     maybe_diag_putc('T');
-    if (radio_state.tx_response_counter > 0) {  
-        radio_state.tx_response_counter -= 1;
-        radio_state.telemetry_packet_channel += 1;
-        if (radio_state.telemetry_packet_channel >= 0xa0) {
-            radio_state.telemetry_packet_channel = 1;
-        }
-        // Start another tx!
-        do_tx();
-    } else {
-        // No more tx 
-        radio_state.tx_active = false;
-        enable_rx();
-    }
+    // reactivate the receiver 
+    radio_state.tx_active = false;
+    enable_rx();
 }
 
 static void hop_to_next_channel(uint8_t channel_increment)
@@ -587,6 +612,12 @@ ISR(TCB0_INT_vect)
             // it to come around again.
             hop_to_next_channel(0);
         }
+        if (! radio_state.tx_active)
+        {
+            // Only enable the rx if we are not currently transmitting.
+            // Because it will stop the rx.
+            enable_rx();    
+        }
         maybe_diag_putc('.');
         update_led();
     }
@@ -601,6 +632,48 @@ static void reset_timeout()
     TCB0.INTFLAGS |= TCB_CAPT_bm;
 }   
 
+static void irq_prepare_bind_response(uint8_t *buf)
+{
+    // Send a response to a bind packet.
+    // Example stage 0/1 bind packet:
+    // BC 44 2A 37 77 FF FF FF FF 00 00 
+    // Example stage 1 response: BC 44 2A 37 77 25 31 91 41 01 00 FF
+    // Example stage 2 bind packet:
+    // BC 44 2A 37 77 25 31 91 41 02 00
+    // Example stage 2: BC 44 2A 37 77 25 31 91 41 02 00 FF
+    uint8_t b9 = buf[9];
+    uint8_t response = 0;
+    // Check we actually have the tx id saved.
+    // Do not send responses too soon.
+    if (memcmp(buf+1, radio_state.tx_id, 4) != 0) {
+        // Not saved yet.
+        return;
+    }
+    if (b9 == 0) {
+        // Send stage 1 response
+        response = 1; 
+    }
+    if ((b9 == 2) && (memcmp(buf+5, radio_state.rx_id, 4) == 0)) {
+        // Send stage 2 response.
+        response = 2;
+    }
+    // Build this packet as quickly as we can.
+    if (response) {
+        // First 5 bytes are identical to the request.
+        memcpy(radio_state.telemetry_packet, buf, 5);
+        // Add our rx id.
+        memcpy(radio_state.telemetry_packet+5, radio_state.rx_id, 4);
+        // Then the "response" byte
+        radio_state.telemetry_packet[9] = response;
+        radio_state.telemetry_packet[10] = 0;
+        // then some ff
+        radio_state.telemetry_packet[11] = 0xff;
+        radio_state.telemetry_packet[12] = 0xff;
+        
+        radio_state.telemetry_packet_channel = radio_state.current_channel;
+        radio_state.telemetry_packet_is_valid = true;
+    }
+}
 
 static void do_rx()
 {
@@ -642,8 +715,13 @@ static void do_rx()
                 do_hop = true;
             }
         }
+        // Do this *in* the interrupt so we can send a response asap.
+        if ((state == RADIO_STATE_BIND) && (packet_type == PACKET_TYPE_BIND2)) {
+            irq_prepare_bind_response(buf);
+        }
         if (!ok) maybe_diag_putc('0');
     }
+    uint8_t rx_channel = radio_state.current_channel;
     if (do_hop) {
         // GOOD packet.
         hop_to_next_channel(1);
@@ -653,7 +731,12 @@ static void do_rx()
         // BAD packet; stay on the same channel, do not reset timer.
         hop_to_next_channel(0);
     }
-    enable_rx();
+    // If we have any telemetry to send, do it now.
+    if (radio_state.telemetry_packet_is_valid) {
+        do_tx();
+    } else {
+        enable_rx();
+    }
     
     if (ok) {
         // If radio_state.packet does not already contain a packet,
@@ -662,7 +745,7 @@ static void do_rx()
             // Copy packet into buffer for the main loop.
             memcpy(radio_state.packet, buf, RADIO_PACKET_SIGNIFICANT_LEN);
             radio_state.packet_is_valid = true;
-            radio_state.packet_channel = radio_state.current_channel;
+            radio_state.packet_channel = rx_channel;
         } else {
             // Drop the packet contents, but still hop to next channel
         }

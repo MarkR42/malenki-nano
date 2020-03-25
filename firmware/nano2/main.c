@@ -107,21 +107,6 @@ void epic_fail(const char * reason)
     trigger_reset(); // Reset the whole device to try again.
 }
 
-static void integrity_check()
-{
-    /*
-     * Check some data at the end of the flash image, to see if
-     * they are present and correct. This probably means that
-     * the flash was successful.
-     */
-    // Check end_marker
-    int l = strlen(end_marker);
-    if ((l != 8) || (end_marker[0] != 'S')) {
-        epic_fail("Integrity check failed");
-    }
-    diag_println("Integrity check ok");
-}
-
 /*
  * Device id is at SIGROW.DEVICEID0, 1, 2
  * attiny1614 =  0x1e 0x94 0x22
@@ -153,7 +138,6 @@ int main(void)
     init_serial();
     // Write the greeting message as soon as possible.
     diag_println("\r\nMalenki-nano2 receiver starting up");
-    integrity_check();
     init_timer();
     sei(); // interrupts on
     show_device_info();
