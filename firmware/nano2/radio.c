@@ -329,6 +329,22 @@ __attribute__ ((unused)) static void radio_test1()
 
 #define PACKET_TYPE_BIND1 0xbb
 #define PACKET_TYPE_BIND2 0xbc
+#define PACKET_TYPE_TELEMETRY 0xaa
+
+static void prepare_telemetry()
+{
+    uint8_t *p = radio_state.telemetry_packet;
+    p[0] = PACKET_TYPE_TELEMETRY;
+    memcpy(p+1, radio_state.tx_id, 4);
+    memcpy(p+5, radio_state.rx_id, 4);
+    p[9] = 0x0; // telemetry type (0=volts)
+    p[10] = 0x0; // telemetry id
+    uint16_t volts_100 = 500;
+    p[11] = (volts_100 & 0xff); // low
+    p[12] = (volts_100 >> 8);// high
+    p[13] = 0xfe; // end
+    radio_state.telemetry_packet_is_valid = 1;
+}
 
 static void handle_packet_sticks()
 {
@@ -358,6 +374,12 @@ static void handle_packet_sticks()
     // Turn on the LED so the driver can see it's connected.
     radio_state.led_on = true;
     radio_state.got_signal = true;
+    if (radio_state.telemetry_countdown == 0) {
+        prepare_telemetry();
+        radio_state.telemetry_countdown = 13;
+    } else {
+        radio_state.telemetry_countdown --;
+    }
 }
 
 static void dump_buf(uint8_t *buf, uint8_t len)
@@ -535,14 +557,15 @@ static void enable_rx()
     spi_write_byte_then_strobe(0x0f, chanminus1, STROBE_RX);
 }
 
-static void do_tx()
+static void do_tx(uint8_t channel)
 {
     // Transmit packet in radio_state.telemetry_packet
     spi_strobe(STROBE_STANDBY);
+    // Write data
+    spi_strobe_then_write_block(STROBE_WRITE_PTR_RESET,
+        0x5, radio_state.telemetry_packet, RADIO_TELEMETRY_SIGNIFICANT_LEN);
     // Set tx channel
-    spi_strobe(STROBE_WRITE_PTR_RESET);
-    spi_write_block(0x5, radio_state.telemetry_packet, RADIO_TELEMETRY_SIGNIFICANT_LEN);
-    spi_write_byte(0x0f, radio_state.telemetry_packet_channel);
+    spi_write_byte(0x0f, channel);
     spi_strobe(STROBE_TX);
     radio_state.tx_active = true;
     radio_state.telemetry_packet_is_valid = false; // consumed.
@@ -670,7 +693,6 @@ static void irq_prepare_bind_response(uint8_t *buf)
         radio_state.telemetry_packet[11] = 0xff;
         radio_state.telemetry_packet[12] = 0xff;
         
-        radio_state.telemetry_packet_channel = radio_state.current_channel;
         radio_state.telemetry_packet_is_valid = true;
     }
 }
@@ -733,7 +755,7 @@ static void do_rx()
     }
     // If we have any telemetry to send, do it now.
     if (radio_state.telemetry_packet_is_valid) {
-        do_tx();
+        do_tx(rx_channel);
     } else {
         enable_rx();
     }

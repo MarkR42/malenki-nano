@@ -61,6 +61,17 @@ bit_sdio=6
 .endr
 .endm
 
+.macro send_nibble
+.rept 4
+        sbrc r24,7 ; skip if bit 7 set
+        data_high
+        sbrs r24,7 ; skip if bit 7 set
+        data_low
+        pulse_clock
+        lsl r24 
+.endr
+.endm
+
 ; void spi_write_byte(uint8_t addr, uint8_t data)
 .global spi_write_byte
 spi_write_byte:
@@ -117,7 +128,9 @@ wbfinished:
 spi_strobe: ; command in r24
     scs_low
     dir_out
-    send_byte ; r24
+    ; According to the datasheet we can skip the next 4 bits.
+    ; strobe commands only have the top 4 bits.
+    send_nibble ; r24
     dir_in
     scs_high
     ret

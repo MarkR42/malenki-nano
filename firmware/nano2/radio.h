@@ -26,7 +26,7 @@
 // to worry about channels 9-14  
 #define RADIO_PACKET_SIGNIFICANT_LEN 27
 // Length of a telemetry we care about (more bytes are set to 0xff)
-#define RADIO_TELEMETRY_SIGNIFICANT_LEN 19
+#define RADIO_TELEMETRY_SIGNIFICANT_LEN 18
 
 typedef struct {
     // Saved binding info from the transmitter:
@@ -56,7 +56,7 @@ typedef struct {
     bool got_signal;
     uint8_t telemetry_packet[RADIO_PACKET_LEN];
     bool telemetry_packet_is_valid; // Ready to tx
-    uint8_t telemetry_packet_channel; // Send on this channel.
+    uint8_t telemetry_countdown; // Number of packets until next telem tx.
     bool tx_active; // flag so that interrupt knows tx is happening.
     uint16_t tx_response_counter; // flag - continuously send the tx until it reaches zero.
 } radio_state_t;
