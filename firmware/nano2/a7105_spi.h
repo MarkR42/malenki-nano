@@ -13,3 +13,6 @@ void spi_write_block(uint8_t addr, const uint8_t *buf, uint8_t datalen);
 
 void spi_strobe_then_read_block(uint8_t cmd,
     uint8_t addr, uint8_t *buf, uint8_t datalen);
+
+void spi_strobe_then_write_block(uint8_t cmd,
+    uint8_t addr, uint8_t *buf, uint8_t datalen);

@@ -29,28 +29,27 @@ chan=8c data=bc f3 86 b3 c4 ff ff ff ff 01 00 7f 55 1c 95 8f 84 38 88 13 45 3f 6
 chan=8c data=bc f3 86 b3 c4 ff ff ff ff 00 00 7f 55 1c 95 8f 84 38 88 13 45 3f 6d 4f 72 60 78 01 80 ff ff ff ff ff ff ff ff 
 
 
-Bind response packet:
+; --- TYPICAL BIND SEQUENCE ---
 
-chan=5d data=bc c4 1b b4 c4 9c fb 96 41 02 00 ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff 01 80 ff ff ff ff ff ff ff ff
+TX: Sent from transmitter
+RX: Sent from receiver
 
-Why is it on chan 0x5d ?
+; BIND 0 - from tx
+TX: chan=8c BC 44 2A 37 77 FF FF FF FF 00 00 2B 62 1D 50 0F 41 3C 92 71 6C 32 79 58 7F 86 8B 01 80 FF FF FF FF FF FF FF FF
+TX: chan=8c BC 44 2A 37 77 FF FF FF FF 00 00 2B 62 1D 50 0F 41 3C 92 71 6C 32 79 58 7F 86 8B 01 80 FF FF FF FF FF FF FF FF
 
+; BIND 1 - note the rx id is ffffffff here:
+TX: chan=0d BC 44 2A 37 77 FF FF FF FF 00 00 2B 62 1D 50 0F 41 3C 92 71 6C 32 79 58 7F 86 8B 01 80 FF FF FF FF FF FF FF FF 
+RX: chan=0d BC 44 2A 37 77 25 31 91 41 01 00 FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF
 
-Here is another:
+; BIND 2
+; Note the rx id is filled and there is an 02 at offset 9
+; rx response is almost identical
+TX: chan=0d BC 44 2A 37 77 25 31 91 41 02 00 FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF 01 80 FF FF FF FF FF FF FF FF
+RX: chan=0d BC 44 2A 37 77 25 31 91 41 02 00 FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF
 
-chan=64 data=bc c4 1b b4 c4 9c fb 96 41 02 00 ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff 01 80 ff ff ff ff ff ff ff ff
+; BIND 3 - this is the really weird one
+; These packets are basically the same but are sent on *MANY* channels.
 
-And some more:
-chan=93 data=bc c4 1b b4 c4 9c fb 96 41 02 00 ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff 01 80 ff ff ff ff ff ff ff ff
-chan=94 data=bc c4 1b b4 c4 9c fb 96 41 02 00 ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff 01 80 ff ff ff ff ff ff ff ff
+TX: chan=** BC 44 2A 37 77 25 31 91 41 02 00 FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF 01 80 FF FF FF FF FF FF FF FF  
 
-Another bind response:
-chan=0f data=bc f3 86 b3 c4 9c fb 96 41 02 00 ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff 01 80 ff ff ff ff ff ff ff ff 
-
-Bind response packet appears on a random channel, is it sent on every channel?!
-
-It seems that the bind response packet is sent on every channel, perhaps several times. This may
-be because the rx does not know which channel the tx is listening on, so it just send it on
-all channel. Poor design? It works.
-
-So we have to do the same.

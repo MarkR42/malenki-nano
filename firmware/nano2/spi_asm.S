@@ -75,6 +75,19 @@ spi_write_byte:
     scs_high
     ret
 
+; void spi_strobe_then_write_block(uint8_t cmd,
+;     uint8_t addr, uint8_t *buf, uint8_t datalen);
+
+.global spi_strobe_then_write_block
+spi_strobe_then_write_block:
+    scs_low
+    dir_out
+    send_byte ; send strobe cmd in r24
+    ; shift arguments into correct registers for spi_write_block
+    mov r24, r22 ; addr
+    movw r22, r20 ; buf
+    mov r20, r18 ; datalen
+    ; Fall through into spi_write_block
 
 ; void spi_write_block(uint8_t addr, const uint8_t *buf, uint8_t datalen)
 .global spi_write_block

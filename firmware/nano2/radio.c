@@ -67,8 +67,8 @@ static void register_dump()
 static const unsigned char reg_init_values[] = {
     // NOTE: Registers 0xb and 0xc control GIO1 and GIO2, set them to 0 for now.
     0xFF, 0x42 , 0x00, 0x25, 0x00, 0xFF, 0xFF, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x05, 0x00, 0x50,        // 00 - 0f
-    0x9e, 0x4b, 0x00, 0x02, 0x16, 0x2b, 0x12, 0x00, 0x62, 0x80, 0xFF, 0xFF, 0x2a, 0x32, 0xc3, 0x1f,                         // 10 - 1f
-    0x13, 0xc3, 0x00, 0xFF, 0x00, 0x00, 0x3b, 0x00, 0x17, 0x47, 0x80, 0x03, 0x01, 0x45, 0x18, 0x00,                         // 20 - 2f
+    0x9e, 0x4b, 0x00, 0x02, 0x16, 0x2b, 0x12, 0x4f, 0x62, 0x80, 0xFF, 0xFF, 0x2a, 0x32, 0xc3, 0x1f,                         // 10 - 1f
+    0x1e, 0xff, 0x00, 0xFF, 0x00, 0x00, 0x3b, 0x00, 0x17, 0x47, 0x80, 0x03, 0x01, 0x45, 0x18, 0x00,                         // 20 - 2f
     0x01, 0x0f // 30 - 31
 };
 
@@ -126,6 +126,8 @@ static void init_interrupts()
 #define STROBE_STANDBY 0xa0 
 #define STROBE_PLL 0xb0 
 #define STROBE_RX 0xc0 
+#define STROBE_TX 0xd0 
+#define STROBE_WRITE_PTR_RESET 0xe0 
 #define STROBE_READ_PTR_RESET 0xf0 
 
 // This is the magic ID for the a7105 for flysky protocol
@@ -232,9 +234,19 @@ static bool is_all_zeros(const uint8_t *buf, uint8_t len)
     return (acc == 0);
 }
 
+static void radio_init_rx_id()
+{
+    // Real rx gives: 9c fb 96 41
+    radio_state.rx_id[0] = 0x2a;
+    radio_state.rx_id[1] = 0x01;
+    radio_state.rx_id[2] = 0x02;
+    radio_state.rx_id[3] = 0x09;
+}
+
 void radio_init()
 {
     diag_println("Begin radio_init");
+    radio_init_rx_id();
     init_a7105_hardware();
 
     /* Determine whether we have any tx info loaded from nvram.
@@ -267,13 +279,15 @@ void radio_init()
      */
 }
 
-static void enable_rx(uint8_t channel);
+static void enable_rx();
+
 static uint8_t test1_channel = 0x8c;// bind channel 0x0d or 0x8c
 
 __attribute__ ((unused)) static void radio_test1()
 {
     diag_println("radio_test1: this must not run with interrupts doing rx");
-    enable_rx(test1_channel); 
+    radio_state.current_channel = test1_channel;
+    enable_rx(); 
     diag_println("Waiting for packet on chan %02x", (int) test1_channel);
     uint32_t timeout = get_tickcount() + 100;
     while (GIO1_PORT->IN & GIO1_bm) {
@@ -304,6 +318,9 @@ __attribute__ ((unused)) static void radio_test1()
 
 #define PACKET_TYPE_STICKS 0x58
 
+#define PACKET_TYPE_BIND1 0xbb
+#define PACKET_TYPE_BIND2 0xbc
+
 static void handle_packet_sticks()
 {
     uint8_t type = radio_state.packet[0];
@@ -331,6 +348,7 @@ static void handle_packet_sticks()
     weapons_set(sticks[CHANNEL_INDEX_WEAPON2], sticks[CHANNEL_INDEX_WEAPON3]);
     // Turn on the LED so the driver can see it's connected.
     radio_state.led_on = true;
+    radio_state.got_signal = true;
 }
 
 static void dump_buf(uint8_t *buf, uint8_t len)
@@ -437,6 +455,7 @@ void radio_loop()
                 weapons_all_off();
                 radio_state.led_on = false;
                 radio_state.last_sticks_packet = now; // avoid spamming debug port
+                radio_state.got_signal = false;
                 // Auto-rebind:
                 // if we have got no signal since power on, then
                 // automatically enter bind mode after some time.
@@ -477,14 +496,43 @@ static void maybe_diag_putc(char c)
 #endif
 }
 
-static void enable_rx(uint8_t channel)
+static void enable_rx()
 {
-    uint8_t chanminus1 = channel - 1 ;
+    uint8_t chanminus1 = radio_state.current_channel - 1 ;
     spi_write_byte_then_strobe(0x0f, chanminus1, STROBE_RX);
-    radio_state.current_channel = channel;
 }
- 
-static void restart_rx(uint8_t channel_increment)
+
+static void do_tx()
+{
+    // Transmit packet in radio_state.telemetry_packet
+    spi_strobe(STROBE_STANDBY);
+    // Set tx channel
+    spi_write_byte(0x0f, radio_state.telemetry_packet_channel);
+    spi_strobe(STROBE_TX);
+    radio_state.tx_active = true;
+    radio_state.telemetry_packet_is_valid = false; // consumed.
+    maybe_diag_putc('t');
+}
+
+static void do_tx_complete()
+{
+    maybe_diag_putc('T');
+    if (radio_state.tx_response_counter > 0) {  
+        radio_state.tx_response_counter -= 1;
+        radio_state.telemetry_packet_channel += 1;
+        if (radio_state.telemetry_packet_channel >= 0xa0) {
+            radio_state.telemetry_packet_channel = 1;
+        }
+        // Start another tx!
+        do_tx();
+    } else {
+        // No more tx 
+        radio_state.tx_active = false;
+        enable_rx();
+    }
+}
+
+static void hop_to_next_channel(uint8_t channel_increment)
 {
     // hop_index should count up to 31,
     radio_state.hop_index = (radio_state.hop_index + channel_increment) & 0x1f;
@@ -497,8 +545,9 @@ static void restart_rx(uint8_t channel_increment)
         // Channel from the old transmitter.
         chan = radio_state.hop_channels_saved[0];
     }
-    enable_rx(chan);
+    radio_state.current_channel = chan;
 }
+
 
 static void update_led()
 {
@@ -517,8 +566,6 @@ static void update_led()
     spi_write_byte(gio2_register, gio_control);
 } 
 
-static uint8_t timeout_irq_count;
-
 ISR(TCB0_INT_vect)
 {
     // Periodic interrupt:
@@ -533,15 +580,14 @@ ISR(TCB0_INT_vect)
         if ((radio_state.missed_packet_count < 5) || (radio_state.state==RADIO_STATE_BIND)) {
             // Try to hop to catch up.
             // Always hop in bind mode.
-            restart_rx(1);
+            hop_to_next_channel(1);
             radio_state.missed_packet_count += 1; // successive missed packets.
         } else {
             // Too out of sync, stay on same channel and wait for
             // it to come around again.
-            restart_rx(0);
+            hop_to_next_channel(0);
         }
         maybe_diag_putc('.');
-        timeout_irq_count = 0;
         update_led();
     }
 }
@@ -553,8 +599,7 @@ static void reset_timeout()
     // expires again
     TCB0.CNT = 0;
     TCB0.INTFLAGS |= TCB_CAPT_bm;
-    timeout_irq_count = 0;
-}
+}   
 
 
 static void do_rx()
@@ -590,7 +635,7 @@ static void do_rx()
         // If we are in bind mode, bind packets are important, 
         // But so are sticks packets.
         if (state == RADIO_STATE_BIND) {
-            if ((packet_type == 0xbb) || (packet_type == 0xbc) || 
+            if ((packet_type == PACKET_TYPE_BIND1) || (packet_type == PACKET_TYPE_BIND1) || 
                 (packet_type == PACKET_TYPE_STICKS)) {
                 // Bind packet.
                 ok = true;
@@ -601,13 +646,14 @@ static void do_rx()
     }
     if (do_hop) {
         // GOOD packet.
-        restart_rx(1);
+        hop_to_next_channel(1);
         radio_counters.rx += 1;
         reset_timeout();         
     } else {
         // BAD packet; stay on the same channel, do not reset timer.
-        restart_rx(0);
+        hop_to_next_channel(0);
     }
+    enable_rx();
     
     if (ok) {
         // If radio_state.packet does not already contain a packet,
@@ -628,14 +674,21 @@ static void do_rx()
 
 ISR(PORTA_PORT_vect)
 {
-    // RX packet.
+    // Either RX complete, or TX complete.
+    
     // Check the flag on the port - if it is low, then check for reset.
     // pin could legitimately be high, if the interrupt arrived while
     // we were processing a timeout interrupt, in which case, it's
     // too late and we missed it.
     uint8_t bit = PORTA.IN & GIO1_bm;
     if (! bit) {
-        do_rx();
+        if (radio_state.tx_active) {
+            do_tx_complete();
+        } else 
+        {
+            // RX packet.
+            do_rx();
+        }
     }
     // clear the irq
     PORTA.INTFLAGS = GIO1_bm;
