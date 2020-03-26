@@ -58,6 +58,7 @@ void vsense_loop()
             // Calculate the number of cells
             // Do this only during startup.
             if (now < 700) {
+                diag_println("vbat=%04ld mv", vsense_mv);
                 if ((vsense_mv > 6000) && (vsense_mv < 8500)) {
                     // 2s pack
                     vsense_state.cells_count = 2;
@@ -74,7 +75,6 @@ void vsense_loop()
                     diag_println("Battery voltage out of range, bench test?");
                 }
             }
-            // diag_println("vbat=%04ld mv", vsense_mv);
             vsense_state.voltage_mv = vsense_mv;
             if (vsense_state.cells_count > 0) 
             {

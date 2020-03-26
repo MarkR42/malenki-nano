@@ -239,9 +239,14 @@ static void radio_init_rx_id()
 {
     // Real rx gives: 9c fb 96 41
     radio_state.rx_id[0] = 0x2a;
-    radio_state.rx_id[1] = 0x01;
-    radio_state.rx_id[2] = 0x02;
-    radio_state.rx_id[3] = 0x09;
+    // Mix the device serial number into the rx id.
+    // serial number is 10 bytes.
+    uint8_t * serialnum = (uint8_t *) & (SIGROW.SERNUM0);
+    for (uint8_t i=0; i<10; i++) {
+        radio_state.rx_id[i % 4] ^= serialnum[i];
+    }
+    diag_puts("rx_id=");
+    dump_buf(radio_state.rx_id, 4);
 }
 
 void radio_init()
@@ -348,7 +353,7 @@ static void prepare_telemetry()
     uint16_t temp_10 = 585; // (Temperature+40), * 10,
     p[15] = temp_10 & 0xff; // temperature
     p[16] = temp_10 >> 8; // temperature
-    p[17] = 0xfe; // end
+    p[17] = 0xff; // end
     radio_state.telemetry_packet_is_valid = 1;
 }
 
