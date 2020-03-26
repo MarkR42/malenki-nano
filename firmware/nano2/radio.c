@@ -350,7 +350,7 @@ static void prepare_telemetry()
     p[12] = (volts_100 >> 8);// high
     p[13] = 1; // Type (1=temp.)
     p[14] = 0; // id
-    uint16_t temp_10 = 585; // (Temperature+40), * 10,
+    uint16_t temp_10 = vsense_state.temperature_c10 + 400; // (Temperature+40), * 10,
     p[15] = temp_10 & 0xff; // temperature
     p[16] = temp_10 >> 8; // temperature
     p[17] = 0xff; // end
