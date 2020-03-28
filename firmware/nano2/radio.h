@@ -3,20 +3,6 @@
 
 #define NR_HOP_CHANNELS 16
 
-
-// This is the number of channels that we care about.
-// The transmitter will send more, but we ignore those.
-#define NUM_CONTROL_CHANNELS 8
-
-#define CHANNEL_INDEX_STEERING 0
-#define CHANNEL_INDEX_WEAPON 2
-#define CHANNEL_INDEX_THROTTLE 1
-#define CHANNEL_INDEX_INVERT 4
-#define CHANNEL_INDEX_CALIBRATE 5
-// Additional weapons.
-#define CHANNEL_INDEX_WEAPON2 6
-#define CHANNEL_INDEX_WEAPON3 7
-
 // Packet length, in bytes.
 #define RADIO_PACKET_LEN 37
 // The amount of packet that we care about;
@@ -26,7 +12,7 @@
 // to worry about channels 9-14  
 #define RADIO_PACKET_SIGNIFICANT_LEN 27
 // Length of a telemetry we care about (more bytes are set to 0xff)
-#define RADIO_TELEMETRY_SIGNIFICANT_LEN 18
+#define RADIO_TELEMETRY_SIGNIFICANT_LEN 22
 
 typedef struct {
     // Saved binding info from the transmitter:

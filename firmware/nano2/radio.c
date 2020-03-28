@@ -9,10 +9,9 @@
 #include "radio.h"
 #include "state.h"
 #include "nvconfig.h"
-#include "motors.h"
-#include "mixing.h"
-#include "weapons.h"
 #include "vsense.h"
+#include "sticks.h"
+#include "mixing.h"
 
 #define F_CPU 10000000
 #include <util/delay.h>
@@ -343,17 +342,28 @@ static void prepare_telemetry()
     p[0] = PACKET_TYPE_TELEMETRY;
     memcpy(p+1, radio_state.tx_id, 4);
     memcpy(p+5, radio_state.rx_id, 4);
-    p[9] = 0x0; // telemetry type (0=volts)
-    p[10] = 0x2; // telemetry id (0=internal 1=? 2=external)
+    uint8_t n=9;
+    
+    p[n++] = 0x0; // telemetry type (0=volts)
+    p[n++] = 0x1; // telemetry id (0=internal 1=? 2=external)
     uint16_t volts_100 = vsense_state.voltage_mv / 10;
-    p[11] = (volts_100 & 0xff); // low
-    p[12] = (volts_100 >> 8);// high
-    p[13] = 1; // Type (1=temp.)
-    p[14] = 0; // id
+    p[n++] = (volts_100 & 0xff); // low
+    p[n++] = (volts_100 >> 8);// high
+    
+    p[n++] = 1; // Type (1=temp.)
+    p[n++] = 1; // id
     uint16_t temp_10 = vsense_state.temperature_c10 + 400; // (Temperature+40), * 10,
-    p[15] = temp_10 & 0xff; // temperature
-    p[16] = temp_10 >> 8; // temperature
-    p[17] = 0xff; // end
+    p[n++] = temp_10 & 0xff; // temperature
+    p[n++] = temp_10 >> 8; // temperature
+    
+    // Special sensor for our info
+    //uint8_t special_value = mixing_state.invert_left;
+    //p[n++] = 0x2; // "RPM"
+    //p[n++] = 1;
+    //p[n++] = special_value;
+    //p[n++] = 0;
+    
+    p[n++] = 0xff; // end
     radio_state.telemetry_packet_is_valid = 1;
 }
 
@@ -372,19 +382,11 @@ static void handle_packet_sticks()
         uint16_t *stick = (uint16_t *) (radio_state.packet + sticks_offset + (2*n));
         sticks[n] = *stick;
     }
-    // Centre is *always* 1500.
-    // Convert to signed.
-    uint16_t rel_steering = (int16_t) sticks[CHANNEL_INDEX_STEERING] - 1500;
-    uint16_t rel_throttle = (int16_t) sticks[CHANNEL_INDEX_THROTTLE] - 1500;
-    uint16_t rel_weapon = (int16_t) sticks[CHANNEL_INDEX_WEAPON] - 1500;
-    // Inverted driving option
-    bool invert = (bool) (sticks[CHANNEL_INDEX_INVERT] > 1600) ;
-    mixing_drive_motors(rel_throttle, rel_steering, rel_weapon, invert);
-    // Activate extra weapon channels
-    weapons_set(sticks[CHANNEL_INDEX_WEAPON2], sticks[CHANNEL_INDEX_WEAPON3]);
+    sticks_receive_positions(sticks);
     // Turn on the LED so the driver can see it's connected.
     radio_state.led_on = true;
     radio_state.got_signal = true;
+    // Send telemetry from time to time.
     if (radio_state.telemetry_countdown == 0) {
         prepare_telemetry();
         radio_state.telemetry_countdown = 13;
@@ -521,8 +523,7 @@ void radio_loop()
             if (age > 25) { // centiseconds
                 // Lost signal.
                 diag_println("No signal");
-                motors_all_off();
-                weapons_all_off();
+                sticks_no_signal();
                 radio_state.led_on = false;
                 radio_state.last_sticks_packet = now; // avoid spamming debug port
                 radio_state.got_signal = false;
@@ -616,6 +617,8 @@ static void update_led()
 {
     // Called in interrupts, update the "BLINKY" led with the state of
     // led_on
+    // On older models, the LED is on the GIO2 pin of A7105.
+    // On newer modules, it's on a pin of the microcontroller.
     uint8_t gio_control =
         ((0x0c) << 2 )  // GIO2 pin control: "Inhibited"
         | 1; // Enable

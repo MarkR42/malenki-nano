@@ -1,0 +1,55 @@
+Configuration mode
+------------------
+
+Configuration mode allows the operator to change various settings
+by remote control, which avoids the need to connect programmers etc
+to change settings.
+
+These are:
+
+* Invert (left, right, weapon)
+* Mixing on/off
+
+1 pulse = no effect - so that the operator does not accidentally
+    trigger anything if the switch is switched too slowly.
+2 pulses = invert left channel
+3 pulses = invert right channel
+4 pulses = invert weapon channel
+5 pulses = reset default - reset everything to default
+6 pulses = mixing on/ off (on by default) - this will change the steering/throttle channels to left/right
+    - if you want to use mixing on the tx.
+
+There is also a "reset"
+
+How do we enter configuration mode?
+-----------------------------------
+
+If the device gets no signal for a few seconds, it will automatically
+enter configuration mode. 
+
+In configuration mode, flipping the invert switch a number of times
+will change the configuration.
+
+In configuration mode, stick positions are mostly ignored and the motors 
+do not drive. No pulses are emitted from the PWM outputs.
+
+We do NOT enter configuration mode if we get a signal immediately after
+power-on. If the transmitter is turned on before the receiver, 
+the rx starts up immediately. This means that if (e.g.) in the middle
+of a battle power is briefly lost, then it will restart immediately. 
+
+How do we leave configuration mode?
+-----------------------------------
+To leave configuration mode:
+
+1. Move the weapon stick to the centre
+2. Move the throttle stick to the centre (it probably self-centres anyway)
+3. Move the throttle away from the centre.
+
+Some transmitters (e.g. the Turnigy Evolution) insist on the weapon stick
+(CH2) is moved to the lowest position at startup. This is because that
+channel is used for the throttle on quadcopters, they don't want the
+drone taking off immediately at tx power on.
+
+Quadcopter throttle is 1000us minimum 2000us maximum, because it
+does not need reverse!

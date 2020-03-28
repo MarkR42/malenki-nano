@@ -39,8 +39,7 @@ PC1 - WEAPON2
     
 PC2 - VSENSE - analogue input, potential divider on battery,
         approx 10/43 of bat. voltage.
-PC5 - BLINKY - flashing light.
-
+PC5 - BLINKY - blue LED which indicates signal and flashes in bind mode.
 
 Peripheral usage
 
@@ -73,8 +72,8 @@ This is complicated and probably not required.
 A7105 pin connections:
 
 GIO1 - connected to mcu PA2 pin
-GIO2 - connected to a blue LED,
-    active high.
+GIO2 - (NO LONGER) connected to a blue LED,
+    active high. (Connected to a LED of earlier versions of hardware)
 
 SPI pins also connected to respective lines as above.
 

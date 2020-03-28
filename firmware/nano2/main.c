@@ -18,6 +18,7 @@
 #include "mixing.h"
 #include "weapons.h"
 #include "vsense.h"
+#include "sticks.h"
 
 volatile master_state_t master_state;
 extern const char * const end_marker;
@@ -148,6 +149,7 @@ int main(void)
     nvconfig_load();
     weapons_init();
     vsense_init();
+    sticks_init();
     // Initialise the radio last.
     radio_init();
     
@@ -155,5 +157,6 @@ int main(void)
         // Main loop
         radio_loop();
         vsense_loop();
+        sticks_loop();
     }
 }

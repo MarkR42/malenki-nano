@@ -84,13 +84,8 @@ The transmitter may expect a bind response with id
 chan=0d data=bc c4 1b b4 c4 9c fb 96 41 02 00 ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff 01 80 ff ff ff ff ff ff ff ff 
 
 ---
-OPEN QUESTION:
+QUESTION:
 Which channel should the telemetry or bind response be sent on?
-Should it be - the SAME channel as the previous received packet?
-Or one channel LOWER? 
-Or one channel HIGHER?
+It should be the SAME channel as the previous received packet?
 
-The tx will receive on one channel higher, unless it changes channel,
-deviation firmware does not appear to change channel when checking for
-telemetry packet.
  
