@@ -79,8 +79,8 @@ static void wait_auto_clear(uint8_t reg, uint8_t bit)
 #define STROBE_PLL 0xb0 
 #define STROBE_RX 0xc0 
 #define STROBE_TX 0xd0 
-#define STROBE_READ_PTR_RESET 0xf0 
 #define STROBE_WRITE_PTR_RESET 0xe0 
+#define STROBE_READ_PTR_RESET 0xf0 
 
 // This is the magic ID for the a7105 for flysky protocol
 // AFHDS2A protocol - contains this ID ending with 2A
@@ -205,6 +205,7 @@ void radio_txtest()
     uint8_t gio1_before = GIO1_PORT->IN & GIO1_bm;
     spi_write_byte_then_strobe(0x0f, channel, STROBE_TX);
     uint8_t gio1_after = GIO1_PORT->IN & GIO1_bm;
+    uint8_t modereg_before = spi_read_byte(0);
     diag_println("before %d after %d", (int)gio1_before, (int)gio1_after);
     // wait for tx finish
     // this could read status register or use gio1?
@@ -213,6 +214,9 @@ void radio_txtest()
         bool on = GIO1_PORT->IN & GIO1_bm;
         if (! on) {
             diag_println("Transmitted after %d count", i);
+            uint8_t modereg_after = spi_read_byte(0);
+            diag_println("modereg before %02x", (int) modereg_before);
+            diag_println("modereg after tx %02x", (int) modereg_after);
             break;
         }
         _delay_us(10);
