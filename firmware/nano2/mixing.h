@@ -9,6 +9,7 @@ typedef struct {
     bool invert_left;
     bool invert_right;
     bool invert_weapon;
+    bool enable_mixing;
 } mixing_state_t;
 
 extern mixing_state_t mixing_state;

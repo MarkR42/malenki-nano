@@ -10,7 +10,11 @@ mixing_state_t mixing_state;
 
 void mixing_init()
 {
+    // Do not need to zero mixing_state at power on, that is guaranteed by the
+    // C standard, but mixing_init is also called when the operator
+    // resets the defaults.
     memset(&mixing_state, 0, sizeof(mixing_state));
+    mixing_state.enable_mixing = true;
 }
 
 static int signedclamp(int n, int maxval)
@@ -87,14 +91,22 @@ void mixing_drive_motors(int16_t throttle, int16_t steering, int16_t weapon, boo
     
     throttle = deadzone(throttle, 10);    
     steering = deadzone(steering, 10);    
-    // Apply "squaring"
-    squaring(&throttle,100);
-    squaring(&steering,100);
-    // Scale steering further, to stop steering too fast.
-    steering = steering / 2;
     
-    int left = throttle + steering;   
-    int right = throttle - steering;   
+    int left, right;
+    if (mixing_state.enable_mixing) {
+        // Apply "squaring"
+        squaring(&throttle,100);
+        squaring(&steering,100);
+        // Scale steering further, to stop steering too fast.
+        steering = steering / 2;
+        
+        left = throttle + steering;   
+        right = throttle - steering;
+    } else {
+        // no mixing; no squaring.
+        left = steering;
+        right = throttle;
+    }
    
     // left / right should now have range -150 ... 150
     // Clamp them again at 100

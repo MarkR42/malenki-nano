@@ -67,11 +67,14 @@ static void handle_switches()
             need_save = true;
             break;
         case 5: // Reset defaults.
-            mixing_state.invert_weapon = 0;
-            mixing_state.invert_left = 0;
-            mixing_state.invert_right = 0;
+            mixing_init();
             need_save = true;
             break;
+        case 6: // Mixing on/off (on by default)
+            mixing_state.enable_mixing = ! mixing_state.enable_mixing;
+            need_save = true;
+            break;
+            
     }
     if (need_save) {
         nvconfig_save();

@@ -145,8 +145,8 @@ int main(void)
     // test_get_micros();
     spi_init();
     motors_init();
-    mixing_init();
-    nvconfig_load();
+    mixing_init(); // reset default config
+    nvconfig_load(); // load config from eeprom, if it is setup.
     weapons_init();
     vsense_init();
     sticks_init();
