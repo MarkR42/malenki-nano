@@ -4,6 +4,7 @@
 #include "vsense.h"
 #include "diag.h"
 #include "state.h"
+#include "radio.h"
 
 vsense_state_t vsense_state;
 
@@ -84,6 +85,8 @@ void vsense_init()
 static const uint32_t vsense_period = 100; // Centiseconds
 static uint32_t last_vsense_tickcount = 0;
 
+static void shutdown_due_to_low_power();
+
 void vsense_loop()
 {
     // called every loop.
@@ -126,11 +129,19 @@ void vsense_loop()
             if (vsense_state.cells_count > 0) 
             {
                 // Only do battery diagnostics if we have a known size pack.
-                int warn_voltage = vsense_state.cells_count  * 3400;
+                uint16_t warn_voltage = vsense_state.cells_count  * 3500;
                 if (vsense_mv < warn_voltage) 
                     diag_println("Warning: low battery");
-                // TODO: flash lights if low battery
-                // TODO: shut down the system if battery too low.
+                uint16_t critical_voltage = vsense_state.cells_count * 3350;
+                if (vsense_mv < critical_voltage) {
+                    vsense_state.critical_count += 1;
+                    diag_println("Warning: VERY LOW BATTERY");
+                    if (vsense_state.critical_count > 4) {
+                        shutdown_due_to_low_power();
+                    }
+                } else {
+                    vsense_state.critical_count = 0;
+                }
             }
         }
         if (ADC0.INTFLAGS & ADC_RESRDY_bm) {
@@ -139,4 +150,23 @@ void vsense_loop()
         }
         last_vsense_tickcount = now;
     }
+}
+
+static void shutdown_due_to_low_power()
+{
+    diag_println("### Shutting down because battery is critically low ###");
+    diag_puts("\r\n");
+    radio_shutdown();
+    diag_println("Radio is shut down. Goodnight.");
+    // Set all ports to inputs.
+    // This saves a little current powering the leds etc.
+    // Also, if the motors are running, they will stop.
+    sei();
+    
+    PORTA.DIRCLR = 0xff;
+    PORTB.DIRCLR = 0xff;
+    PORTC.DIRCLR = 0xff;
+    
+    // The end.
+    for (;;) { }
 }

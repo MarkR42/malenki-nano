@@ -123,6 +123,7 @@ static void init_interrupts()
 }
 
 // Strobe commands - should have bit A7 set (0x80)
+#define STROBE_SLEEP 0x80 
 #define STROBE_STANDBY 0xa0 
 #define STROBE_PLL 0xb0 
 #define STROBE_RX 0xc0 
@@ -344,17 +345,20 @@ static void prepare_telemetry()
     memcpy(p+5, radio_state.rx_id, 4);
     uint8_t n=9;
     
-    p[n++] = 0x0; // telemetry type (0=volts)
-    p[n++] = 0x1; // telemetry id (0=internal 1=? 2=external)
-    uint16_t volts_100 = vsense_state.voltage_mv / 10;
-    p[n++] = (volts_100 & 0xff); // low
-    p[n++] = (volts_100 >> 8);// high
-    
     p[n++] = 1; // Type (1=temp.)
     p[n++] = 1; // id
     uint16_t temp_10 = vsense_state.temperature_c10 + 400; // (Temperature+40), * 10,
     p[n++] = temp_10 & 0xff; // temperature
     p[n++] = temp_10 >> 8; // temperature
+
+    if (vsense_state.voltage_mv > 100) {
+        // Only send voltage telemetry if it is sensible.
+        p[n++] = 0x0; // telemetry type (0=volts)
+        p[n++] = 0x1; // telemetry id (0=internal 1=? 2=external)
+        uint16_t volts_100 = vsense_state.voltage_mv / 10;
+        p[n++] = (volts_100 & 0xff); // low
+        p[n++] = (volts_100 >> 8);// high
+    }
     
     // Special sensor for our info
     //uint8_t special_value = mixing_state.invert_left;
@@ -553,6 +557,27 @@ static void init_bind_mode()
     diag_println("tx_id_saved: ");
     dump_buf(radio_state.tx_id_saved, 4);
 }
+
+void radio_shutdown()
+{
+    // Shut down the radio and sleep.
+    // after this, we need a full reset
+    // Turn off our interrupts.
+    sei();// Make sure no more interrupts arrive.
+    TCB0.INTCTRL = 0; // Turn off irq
+    PORTA.PIN2CTRL = 0; // Turn off irq from there.
+    TCB0.CTRLA = 0; // Shut down timer
+    spi_strobe(STROBE_STANDBY);
+    _delay_ms(10);
+    // Get the radio into low power mode.
+    spi_strobe(STROBE_SLEEP);
+    // There is a possibility that some interrupts are still
+    // pending, but it should be harmless?    
+    // If the radio is in sleep mode, we will read rubbish from
+    // its rx buffer.
+    cli();
+}
+
 
 /***************************************************
  * IRQ CODE BELOW HERE!

@@ -74,7 +74,10 @@ static void handle_switches()
             mixing_state.enable_mixing = ! mixing_state.enable_mixing;
             need_save = true;
             break;
-            
+        case 7: // Factory reset / unbind
+            nvconfig_reset();
+            trigger_reset(); // reset the chip
+            break;
     }
     if (need_save) {
         nvconfig_save();

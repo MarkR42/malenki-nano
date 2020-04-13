@@ -46,5 +46,11 @@ void nvconfig_save()
     eeprom_update_block((void *) &nvdata, eeprom_addr, sizeof(nvdata));
 }
 
+static const uint8_t blank_data[2];
 
+void nvconfig_reset()
+{
+    // Overwrite the magic number
+    eeprom_update_block((void *) &blank_data, eeprom_addr, sizeof(blank_data));
+}
 

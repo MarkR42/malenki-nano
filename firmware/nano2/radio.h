@@ -56,3 +56,5 @@ extern radio_state_t radio_state;
 void radio_init();
 
 void radio_loop();
+
+void radio_shutdown();
