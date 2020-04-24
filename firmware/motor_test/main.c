@@ -137,7 +137,6 @@ static void electrical_test_port(char portname, PORT_t *port, uint8_t pin)
             diag_println("Difference when pin is low!");
         } else {
             diag_println("OK");
-            return;
         }
     }
     diag_puts("init: "); dump_ports(ports_initial);
