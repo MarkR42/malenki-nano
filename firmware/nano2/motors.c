@@ -1,12 +1,54 @@
 #include "motors.h"
+#include "diag.h"
+#include "state.h"
 
 #include <avr/io.h>
 #include <avr/interrupt.h>
 #include <stdlib.h>
+#include <stdbool.h>
 
+#define F_CPU 10000000 /* 10MHz */
+#include <util/delay.h>
+
+static bool pin_check(char portname, PORT_t *port, uint8_t pin)
+{
+    uint8_t bm = 1<<pin;
+    // Set the pin as an input
+    port->DIRCLR = bm;
+    // Wait a very tiny time
+    _delay_ms(1);
+    bool state = (port->IN & bm);
+    if (state) {
+        // High!
+        diag_println("motor pin_check FAIL: port %c %d stuck high",
+            portname, pin);
+        return false;
+    }
+    return true;
+}
+
+static void motors_check()
+{
+    // Check that all of our motor lines are working
+    // The driver chips should hold the control lines all low.
+    // If any are high, it is an error.
+	// motor pwm outputs = PB0,1,2 and PA3,4,5
+    bool ok = true;
+    ok = ok && pin_check('A', &PORTA,3);
+    ok = ok && pin_check('A', &PORTA,4);
+    ok = ok && pin_check('A', &PORTA,5);
+    ok = ok && pin_check('B', &PORTB,0);
+    ok = ok && pin_check('B', &PORTB,1);
+    ok = ok && pin_check('B', &PORTB,2);
+    if (! ok) {
+        diag_println("Motor pin stuck high"); // never returns
+        diag_println("Continuing anyway");
+    }
+}
 
 void motors_init()
 {
+    motors_check();
 	// Set all the ports which need to be outputs, to be outputs.
 	// should all be low initially.
 	// motor pwm outputs = PB0,1,2 and PA3,4,5

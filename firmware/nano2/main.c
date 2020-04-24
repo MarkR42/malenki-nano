@@ -52,12 +52,6 @@ static void init_serial()
     // USART0.CTRLA |= USART_RXCIE_bm;
 }
 
-static void uninit_serial()
-{
-    USART0.CTRLB = 0; //disable rx and tx
-    PORTA.DIRCLR = 1 << 1; // set as input.
-}
-
 static void init_timer()
 {
     // This uses TCB1 for timer interrupts.
@@ -99,12 +93,26 @@ uint32_t get_tickcount()
     return tc;
 }
 
+static void uninit_everything()
+{
+    USART0.CTRLB = 0; //disable rx and tx
+    // Set all ports as inputs.
+    PORTA.DIR = 0 ;
+    PORTB.DIR = 0 ;
+    PORTC.DIR = 0 ;
+}
+
 void epic_fail(const char * reason)
 {
     diag_puts(reason);
     diag_puts("\r\nFAIL FAIL FAIL!\r\n\n\n");
-    uninit_serial();
-    _delay_ms(250);
+    _delay_ms(10); // allow transmission of message
+    cli(); // No interrupts now please.
+    uninit_everything();
+    // This gives UPDI a chance to come in and erase or 
+    // reflash the device, which we might not be able to do
+    // if there is an electrical fault with some pins held.
+    _delay_ms(1000); 
     trigger_reset(); // Reset the whole device to try again.
 }
 

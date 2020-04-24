@@ -354,7 +354,7 @@ static void prepare_telemetry()
     if (vsense_state.voltage_mv > 100) {
         // Only send voltage telemetry if it is sensible.
         p[n++] = 0x0; // telemetry type (0=volts)
-        p[n++] = 0x1; // telemetry id (0=internal 1=? 2=external)
+        p[n++] = 0x2; // telemetry id (0=internal 1=? 2=external)
         uint16_t volts_100 = vsense_state.voltage_mv / 10;
         p[n++] = (volts_100 & 0xff); // low
         p[n++] = (volts_100 >> 8);// high
