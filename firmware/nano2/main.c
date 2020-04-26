@@ -144,6 +144,7 @@ static void show_device_info()
 
 void shutdown_system()
 {
+    cli();
     diag_println("### Shutting down ###");
     diag_puts("\r\n");
     radio_shutdown();
@@ -151,7 +152,6 @@ void shutdown_system()
     // Set all ports to inputs.
     // This saves a little current powering the leds etc.
     // Also, if the motors are running, they will stop.
-    sei();
     uninit_everything();
     
     // The end.
