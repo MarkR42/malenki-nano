@@ -12,6 +12,7 @@ typedef struct {
 uint32_t get_tickcount();
 void trigger_reset();
 void epic_fail(const char * reason);
+void shutdown_system();
 
 extern volatile master_state_t master_state;
 

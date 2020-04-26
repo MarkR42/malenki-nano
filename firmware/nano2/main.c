@@ -140,6 +140,24 @@ static void show_device_info()
     buf[10] = '\0';
     diag_println("serial number (ascii) is:%s", buf);
 }
+
+
+void shutdown_system()
+{
+    diag_println("### Shutting down ###");
+    diag_puts("\r\n");
+    radio_shutdown();
+    diag_println("Radio is shut down. Goodnight.");
+    // Set all ports to inputs.
+    // This saves a little current powering the leds etc.
+    // Also, if the motors are running, they will stop.
+    sei();
+    uninit_everything();
+    
+    // The end.
+    for (;;) { }
+}
+
  
 int main(void)
 {

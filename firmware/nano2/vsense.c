@@ -85,8 +85,6 @@ void vsense_init()
 static const uint32_t vsense_period = 100; // Centiseconds
 static uint32_t last_vsense_tickcount = 0;
 
-static void shutdown_due_to_low_power();
-
 void vsense_loop()
 {
     // called every loop.
@@ -137,7 +135,7 @@ void vsense_loop()
                     vsense_state.critical_count += 1;
                     diag_println("Warning: VERY LOW BATTERY");
                     if (vsense_state.critical_count > 4) {
-                        shutdown_due_to_low_power();
+                        shutdown_system();
                     }
                 } else {
                     vsense_state.critical_count = 0;
@@ -150,23 +148,4 @@ void vsense_loop()
         }
         last_vsense_tickcount = now;
     }
-}
-
-static void shutdown_due_to_low_power()
-{
-    diag_println("### Shutting down because battery is critically low ###");
-    diag_puts("\r\n");
-    radio_shutdown();
-    diag_println("Radio is shut down. Goodnight.");
-    // Set all ports to inputs.
-    // This saves a little current powering the leds etc.
-    // Also, if the motors are running, they will stop.
-    sei();
-    
-    PORTA.DIRCLR = 0xff;
-    PORTB.DIRCLR = 0xff;
-    PORTC.DIRCLR = 0xff;
-    
-    // The end.
-    for (;;) { }
 }

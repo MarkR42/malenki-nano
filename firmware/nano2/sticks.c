@@ -78,6 +78,9 @@ static void handle_switches()
             nvconfig_reset();
             trigger_reset(); // reset the chip
             break;
+        case 8: // Power off
+            shutdown_system();
+            break;
     }
     if (need_save) {
         nvconfig_save();
