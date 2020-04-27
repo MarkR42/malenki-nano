@@ -1,4 +1,4 @@
-(kicad_pcb (version 20200119) (host pcbnew "5.99.0-unknown-9de7547~100~ubuntu18.04.1")
+(kicad_pcb (version 20200119) (host pcbnew "5.99.0-unknown-4f36980~101~ubuntu18.04.1")
 
   (general
     (thickness 1.6)
@@ -73,6 +73,8 @@
       (usegerberattributes false)
       (usegerberadvancedattributes false)
       (creategerberjobfile false)
+      (svguseinch false)
+      (svgprecision 6)
       (excludeedgelayer true)
       (linewidth 0.100000)
       (plotframeref false)
@@ -108,28 +110,36 @@
     (uvia_drill 0.1)
   )
 
-  (module "misc:toolhole" (layer "F.Cu") (tedit 5E6B958A) (tstamp dadfa611-7b6c-4f70-9e57-62b65511b2c5)
-    (at 133 82.2)
-    (fp_text reference "REF**" (at 0 2.54 unlocked) (layer "F.SilkS") hide
+  (module "misc:toolhole" (layer "F.Cu") (tedit 5EA6A02A) (tstamp dadfa611-7b6c-4f70-9e57-62b65511b2c5)
+    (at 133 82.2 90)
+    (fp_text reference "REF**" (at 0 2.54 90 unlocked) (layer "F.SilkS") hide
       (effects (font (size 1 1) (thickness 0.15)))
     )
-    (fp_text value "toolhole" (at 0 -2.54 unlocked) (layer "F.Fab")
+    (fp_text value "toolhole" (at 0 -2.54 90 unlocked) (layer "F.Fab")
       (effects (font (size 1 1) (thickness 0.15)))
     )
-    (pad "" np_thru_hole circle (at 0 0) (size 1.152 1.152) (drill 1.152) (layers *.Cu *.Mask)
-      (solder_mask_margin 0.148) (tstamp 87274726-ee7d-4976-b4f4-fa3f054bb522))
+    (fp_text user "tool" (at 0 2 90 unlocked) (layer "F.SilkS")
+      (effects (font (size 1 1) (thickness 0.15)))
+    )
+    (fp_line (start 0 1.6) (end 0 0) (layer "F.SilkS") (width 0.12))
+    (pad "" np_thru_hole circle (at 0 0 90) (size 1.152 1.152) (drill 1.152) (layers *.Cu *.Mask)
+      (solder_mask_margin 0.6) (tstamp 2c759533-2d6c-497b-aedb-733f51049be4))
   )
 
-  (module "misc:toolhole" (layer "F.Cu") (tedit 5E6B958A) (tstamp ed1854c9-4316-46f3-b5bb-baad5ac90755)
-    (at 133 61.8)
-    (fp_text reference "REF**" (at 0 2.54 unlocked) (layer "F.SilkS") hide
+  (module "misc:toolhole" (layer "F.Cu") (tedit 5EA6A02A) (tstamp ed1854c9-4316-46f3-b5bb-baad5ac90755)
+    (at 133 61.8 90)
+    (fp_text reference "REF**" (at 0 2.54 90 unlocked) (layer "F.SilkS") hide
       (effects (font (size 1 1) (thickness 0.15)))
     )
-    (fp_text value "toolhole" (at 0 -2.54 unlocked) (layer "F.Fab")
+    (fp_text value "toolhole" (at 0 -2.54 90 unlocked) (layer "F.Fab")
       (effects (font (size 1 1) (thickness 0.15)))
     )
-    (pad "" np_thru_hole circle (at 0 0) (size 1.152 1.152) (drill 1.152) (layers *.Cu *.Mask)
-      (solder_mask_margin 0.148) (tstamp 672f7d14-71ad-4fd6-956e-aef58baec438))
+    (fp_text user "tool" (at 0 2 90 unlocked) (layer "F.SilkS")
+      (effects (font (size 1 1) (thickness 0.15)))
+    )
+    (fp_line (start 0 1.6) (end 0 0) (layer "F.SilkS") (width 0.12))
+    (pad "" np_thru_hole circle (at 0 0 90) (size 1.152 1.152) (drill 1.152) (layers *.Cu *.Mask)
+      (solder_mask_margin 0.6) (tstamp 2c759533-2d6c-497b-aedb-733f51049be4))
   )
 
   (gr_text "Order number can be here" (at 132.3 72.6 90) (layer "F.SilkS") (tstamp 6148ee97-3486-432e-b96c-d6bef2d4cb84)

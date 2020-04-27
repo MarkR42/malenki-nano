@@ -1,0 +1,1 @@
+java -jar /home/mark/unpack/kicad-util/target/kicadutil-1.0-SNAPSHOT.jar pcb -f panel-4.kicad_pcb panel --inset=-0.2 --width=5
