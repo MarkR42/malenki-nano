@@ -1,5 +1,7 @@
-update=Mon 27 Apr 2020 11:59:25 BST
+update=Tue 28 Apr 2020 09:31:02 BST
 last_client=pcbnew
+[PcbFrame]
+version=1
 [pcbnew]
 version=1
 PageLayoutDescrFile=

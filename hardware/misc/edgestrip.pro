@@ -1,8 +1,8 @@
-update=Mon 27 Apr 2020 10:06:13 BST
+update=Tue 28 Apr 2020 08:43:05 BST
 last_client=pcbnew
-[PcbFrame]
-version=1
 [ModEditFrame]
+version=1
+[PcbFrame]
 version=1
 [pcbnew]
 version=1
