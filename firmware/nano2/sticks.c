@@ -120,8 +120,9 @@ static void handle_configuration_mode(uint16_t *sticks)
     }
 }
 
-void sticks_receive_positions(uint16_t *sticks)
+bool sticks_receive_positions(uint16_t *sticks)
 {
+    // Returns the value of configuration_mode.
     if (configuration_mode)
     {
         handle_configuration_mode(sticks);
@@ -139,6 +140,7 @@ void sticks_receive_positions(uint16_t *sticks)
     }
     has_signal = true;
     last_signal_time = get_tickcount();
+    return configuration_mode;
 }
 
 // Called when there is no signal, signal is lost or

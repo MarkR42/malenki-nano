@@ -16,10 +16,10 @@
 #define CHANNEL_INDEX_WEAPON3 5
 
 #include <stdint.h>
-
+#include <stdbool.h>
 
 void sticks_init();
 void sticks_loop();
 
-void sticks_receive_positions(uint16_t *sticks); // at least NUM_CONTROL_CHANNELS
+bool sticks_receive_positions(uint16_t *sticks); // at least NUM_CONTROL_CHANNELS
 void sticks_no_signal();

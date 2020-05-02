@@ -43,8 +43,8 @@ typedef struct {
     uint8_t telemetry_packet[RADIO_PACKET_LEN];
     bool telemetry_packet_is_valid; // Ready to tx
     uint8_t telemetry_countdown; // Number of packets until next telem tx.
+    uint8_t sticks_packet_count; // A general packet count that overflows all the time.
     bool tx_active; // flag so that interrupt knows tx is happening.
-    uint16_t tx_response_counter; // flag - continuously send the tx until it reaches zero.
 } radio_state_t;
 
 extern radio_state_t radio_state;

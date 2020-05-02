@@ -354,7 +354,7 @@ static void prepare_telemetry()
     if (vsense_state.voltage_mv > 100) {
         // Only send voltage telemetry if it is sensible.
         p[n++] = 0x0; // telemetry type (0=volts)
-        p[n++] = 0x2; // telemetry id (0=internal 1=? 2=external)
+        p[n++] = 0x0; // telemetry id (0=internal 1=? 2=external)
         uint16_t volts_100 = vsense_state.voltage_mv / 10;
         p[n++] = (volts_100 & 0xff); // low
         p[n++] = (volts_100 >> 8);// high
@@ -373,6 +373,7 @@ static void prepare_telemetry()
 
 static void handle_packet_sticks()
 {
+    radio_state.sticks_packet_count += 1;
     uint8_t type = radio_state.packet[0];
     if (type != PACKET_TYPE_STICKS) {
         // Ignore
@@ -386,13 +387,24 @@ static void handle_packet_sticks()
         uint16_t *stick = (uint16_t *) (radio_state.packet + sticks_offset + (2*n));
         sticks[n] = *stick;
     }
-    sticks_receive_positions(sticks);
+    bool is_config_mode = sticks_receive_positions(sticks);
     // Turn on the LED so the driver can see it's connected.
-    radio_state.led_on = true;
+    // Flicker the LED if we are in config mode, solid if driving mode.
+    if (is_config_mode) {
+        // Flicker a mostly on duty cycle.
+        radio_state.led_on = (( (radio_state.sticks_packet_count / 8) % 8) != 0);
+    } else {
+        // Driving mode.
+        radio_state.led_on = true;
+    }
+    
     radio_state.got_signal = true;
     // Send telemetry from time to time.
     if (radio_state.telemetry_countdown == 0) {
         prepare_telemetry();
+        // Send telemetry an undivisible number of packets,
+        // So that the telemetry does not always appear on one hopping
+        // channel, it moves around them all.
         radio_state.telemetry_countdown = 13;
     } else {
         radio_state.telemetry_countdown --;
