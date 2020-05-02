@@ -1,0 +1,396 @@
+EESchema Schematic File Version 5
+EELAYER 34 0
+EELAYER END
+$Descr A4 11693 8268
+encoding utf-8
+Sheet 1 1
+Title "Test Rig for Malenki-Nano"
+Date "2020-05-02"
+Rev ""
+Comp ""
+Comment1 ""
+Comment2 ""
+Comment3 ""
+Comment4 ""
+Comment5 ""
+Comment6 ""
+Comment7 ""
+Comment8 ""
+Comment9 ""
+$EndDescr
+Connection ~ 4000 3500
+Connection ~ 10100 2350
+Connection ~ 9100 2350
+Connection ~ 10050 3950
+Connection ~ 9050 3950
+Connection ~ 9000 5250
+Connection ~ 10000 5250
+Connection ~ 4700 3200
+NoConn ~ 3150 3200
+Wire Wire Line
+	2800 3200 3150 3200
+Wire Wire Line
+	2800 3300 3400 3300
+Wire Wire Line
+	2800 3400 3550 3400
+Wire Wire Line
+	2800 3500 4000 3500
+Wire Wire Line
+	2800 3600 3650 3600
+Wire Wire Line
+	3400 3050 3800 3050
+Wire Wire Line
+	3400 3300 3400 3050
+Wire Wire Line
+	3550 3200 4700 3200
+Wire Wire Line
+	3550 3400 3550 3200
+Wire Wire Line
+	3650 3400 5850 3400
+Wire Wire Line
+	3650 3600 3650 3400
+Wire Wire Line
+	4000 3500 4000 3800
+Wire Wire Line
+	4000 3500 6150 3500
+Wire Wire Line
+	4100 3050 4700 3050
+Wire Wire Line
+	4700 3050 4700 3200
+Wire Wire Line
+	4700 3200 5250 3200
+Wire Wire Line
+	9000 5050 9000 5250
+Wire Wire Line
+	9000 5400 9000 5250
+Wire Wire Line
+	9050 3750 9050 3950
+Wire Wire Line
+	9050 4100 9050 3950
+Wire Wire Line
+	9100 2150 9100 2350
+Wire Wire Line
+	9100 2500 9100 2350
+Wire Wire Line
+	9350 5050 9000 5050
+Wire Wire Line
+	9400 3750 9050 3750
+Wire Wire Line
+	9400 5400 9000 5400
+Wire Wire Line
+	9450 2150 9100 2150
+Wire Wire Line
+	9450 4100 9050 4100
+Wire Wire Line
+	9500 2500 9100 2500
+Wire Wire Line
+	10000 5050 9650 5050
+Wire Wire Line
+	10000 5250 10000 5050
+Wire Wire Line
+	10000 5250 10000 5400
+Wire Wire Line
+	10000 5400 9700 5400
+Wire Wire Line
+	10050 3750 9700 3750
+Wire Wire Line
+	10050 3950 10050 3750
+Wire Wire Line
+	10050 3950 10050 4100
+Wire Wire Line
+	10050 4100 9750 4100
+Wire Wire Line
+	10100 2150 9750 2150
+Wire Wire Line
+	10100 2350 10100 2150
+Wire Wire Line
+	10100 2350 10100 2500
+Wire Wire Line
+	10100 2500 9800 2500
+Text Notes 3100 2900 2    50   ~ 0
+A USB serial dongle
+Text Notes 3500 2900 2    50   ~ 0
+power in
+Text Notes 10050 1450 2    197  ~ 0
+Fancy Test Rig\nfor Malenki-nano ESC+RX
+Text Label 3000 3600 2    50   ~ 0
+VBAT
+Text Label 3050 3300 2    50   ~ 0
+TXD
+Text Label 3050 3400 2    50   ~ 0
+RXD
+Text Label 3055 3200 2    50   ~ 0
+3V3
+Text Label 3150 3500 2    50   ~ 0
+GNDPWR
+Text Label 4450 3500 2    50   ~ 0
+GND
+Text Label 4500 3200 2    50   ~ 0
+UPDI
+Text Label 4500 3400 2    50   ~ 0
+VBAT
+$Comp
+L power:GNDPWR #PWR01
+U 1 1 5EB587B3
+P 4000 3800
+F 0 "#PWR01" H 4000 3600 50  0001 C CNN
+F 1 "GNDPWR" H 4003 3646 50  0000 C CNN
+F 2 "" H 4000 3750 50  0001 C CNN
+F 3 "" H 4000 3750 50  0001 C CNN
+	1    4000 3800
+	1    0    0    -1  
+$EndComp
+$Comp
+L Connector:Conn_01x01_Male J2
+U 1 1 5EB5A3B7
+P 5450 3200
+F 0 "J2" H 5422 3133 50  0000 R CNN
+F 1 "Conn_01x01_Male" H 5422 3223 50  0000 R CNN
+F 2 "testrig:pogopin" H 5450 3200 50  0001 C CNN
+F 3 "~" H 5450 3200 50  0001 C CNN
+	1    5450 3200
+	-1   0    0    1   
+$EndComp
+$Comp
+L Connector:Conn_01x01_Male J4
+U 1 1 5EB5B178
+P 6050 3400
+F 0 "J4" H 6022 3333 50  0000 R CNN
+F 1 "Conn_01x01_Male" H 6022 3423 50  0000 R CNN
+F 2 "testrig:pogopin" H 6050 3400 50  0001 C CNN
+F 3 "~" H 6050 3400 50  0001 C CNN
+	1    6050 3400
+	-1   0    0    1   
+$EndComp
+$Comp
+L Connector:Conn_01x01_Male J5
+U 1 1 5EB5C03E
+P 6350 3500
+F 0 "J5" H 6322 3433 50  0000 R CNN
+F 1 "Conn_01x01_Male" H 6322 3523 50  0000 R CNN
+F 2 "testrig:pogopin" H 6350 3500 50  0001 C CNN
+F 3 "~" H 6350 3500 50  0001 C CNN
+	1    6350 3500
+	-1   0    0    1   
+$EndComp
+$Comp
+L Connector:Conn_01x01_Male J10
+U 1 1 5EB642C6
+P 8500 5250
+F 0 "J10" H 8606 5426 50  0000 C CNN
+F 1 "Conn_01x01_Male" H 8606 5335 50  0000 C CNN
+F 2 "testrig:pogopin" H 8500 5250 50  0001 C CNN
+F 3 "~" H 8500 5250 50  0001 C CNN
+	1    8500 5250
+	1    0    0    -1  
+$EndComp
+$Comp
+L Connector:Conn_01x01_Male J8
+U 1 1 5EB62C0C
+P 8550 3950
+F 0 "J8" H 8656 4126 50  0000 C CNN
+F 1 "Conn_01x01_Male" H 8656 4035 50  0000 C CNN
+F 2 "testrig:pogopin" H 8550 3950 50  0001 C CNN
+F 3 "~" H 8550 3950 50  0001 C CNN
+	1    8550 3950
+	1    0    0    -1  
+$EndComp
+$Comp
+L Connector:Conn_01x01_Male J6
+U 1 1 5EB5EA81
+P 8600 2350
+F 0 "J6" H 8706 2526 50  0000 C CNN
+F 1 "Conn_01x01_Male" H 8706 2435 50  0000 C CNN
+F 2 "testrig:pogopin" H 8600 2350 50  0001 C CNN
+F 3 "~" H 8600 2350 50  0001 C CNN
+	1    8600 2350
+	1    0    0    -1  
+$EndComp
+$Comp
+L Connector:Conn_01x01_Male J11
+U 1 1 5EB642C0
+P 10200 5250
+F 0 "J11" H 10172 5183 50  0000 R CNN
+F 1 "Conn_01x01_Male" H 10172 5273 50  0000 R CNN
+F 2 "testrig:pogopin" H 10200 5250 50  0001 C CNN
+F 3 "~" H 10200 5250 50  0001 C CNN
+	1    10200 5250
+	-1   0    0    1   
+$EndComp
+$Comp
+L Connector:Conn_01x01_Male J9
+U 1 1 5EB62C12
+P 10250 3950
+F 0 "J9" H 10222 3883 50  0000 R CNN
+F 1 "Conn_01x01_Male" H 10222 3973 50  0000 R CNN
+F 2 "testrig:pogopin" H 10250 3950 50  0001 C CNN
+F 3 "~" H 10250 3950 50  0001 C CNN
+	1    10250 3950
+	-1   0    0    1   
+$EndComp
+$Comp
+L Connector:Conn_01x01_Male J7
+U 1 1 5EB5EC12
+P 10300 2350
+F 0 "J7" H 10272 2283 50  0000 R CNN
+F 1 "Conn_01x01_Male" H 10272 2373 50  0000 R CNN
+F 2 "testrig:pogopin" H 10300 2350 50  0001 C CNN
+F 3 "~" H 10300 2350 50  0001 C CNN
+	1    10300 2350
+	-1   0    0    1   
+$EndComp
+$Comp
+L Mechanical:MountingHole H1
+U 1 1 5EB78E91
+P 5000 2300
+F 0 "H1" H 5100 2345 50  0000 L CNN
+F 1 "MountingHole" H 5100 2255 50  0000 L CNN
+F 2 "testrig:pogohole" H 5000 2300 50  0001 C CNN
+F 3 "~" H 5000 2300 50  0001 C CNN
+	1    5000 2300
+	1    0    0    -1  
+$EndComp
+$Comp
+L Mechanical:MountingHole H2
+U 1 1 5EB79326
+P 5000 2550
+F 0 "H2" H 5100 2595 50  0000 L CNN
+F 1 "MountingHole" H 5100 2505 50  0000 L CNN
+F 2 "testrig:pogohole" H 5000 2550 50  0001 C CNN
+F 3 "~" H 5000 2550 50  0001 C CNN
+	1    5000 2550
+	1    0    0    -1  
+$EndComp
+$Comp
+L Device:R R4
+U 1 1 5EB73976
+P 3950 3050
+F 0 "R4" V 4156 3050 50  0000 C CNN
+F 1 "4.7k" V 4065 3050 50  0000 C CNN
+F 2 "Resistor_SMD:R_0805_2012Metric_Pad1.15x1.40mm_HandSolder" V 3880 3050 50  0001 C CNN
+F 3 "~" H 3950 3050 50  0001 C CNN
+	1    3950 3050
+	0    -1   -1   0   
+$EndComp
+$Comp
+L Device:R R3
+U 1 1 5EB642BA
+P 8850 5250
+F 0 "R3" V 9056 5250 50  0000 C CNN
+F 1 "330R" V 8965 5250 50  0000 C CNN
+F 2 "Resistor_SMD:R_0805_2012Metric_Pad1.15x1.40mm_HandSolder" V 8780 5250 50  0001 C CNN
+F 3 "~" H 8850 5250 50  0001 C CNN
+	1    8850 5250
+	0    -1   -1   0   
+$EndComp
+$Comp
+L Device:R R2
+U 1 1 5EB62C19
+P 8900 3950
+F 0 "R2" V 9106 3950 50  0000 C CNN
+F 1 "330R" V 9015 3950 50  0000 C CNN
+F 2 "Resistor_SMD:R_0805_2012Metric_Pad1.15x1.40mm_HandSolder" V 8830 3950 50  0001 C CNN
+F 3 "~" H 8900 3950 50  0001 C CNN
+	1    8900 3950
+	0    -1   -1   0   
+$EndComp
+$Comp
+L Device:R R1
+U 1 1 5EB608D0
+P 8950 2350
+F 0 "R1" V 9156 2350 50  0000 C CNN
+F 1 "330R" V 9065 2350 50  0000 C CNN
+F 2 "Resistor_SMD:R_0805_2012Metric_Pad1.15x1.40mm_HandSolder" V 8880 2350 50  0001 C CNN
+F 3 "~" H 8950 2350 50  0001 C CNN
+	1    8950 2350
+	0    -1   -1   0   
+$EndComp
+$Comp
+L Device:LED D5
+U 1 1 5EB642CF
+P 9500 5050
+F 0 "D5" H 9493 4799 50  0000 C CNN
+F 1 "LED Red" H 9493 4890 50  0000 C CNN
+F 2 "LED_SMD:LED_0805_2012Metric_Castellated" H 9500 5050 50  0001 C CNN
+F 3 "~" H 9500 5050 50  0001 C CNN
+	1    9500 5050
+	-1   0    0    1   
+$EndComp
+$Comp
+L Device:LED D3
+U 1 1 5EB62C03
+P 9550 3750
+F 0 "D3" H 9543 3499 50  0000 C CNN
+F 1 "LED Red" H 9543 3590 50  0000 C CNN
+F 2 "LED_SMD:LED_0805_2012Metric_Castellated" H 9550 3750 50  0001 C CNN
+F 3 "~" H 9550 3750 50  0001 C CNN
+	1    9550 3750
+	-1   0    0    1   
+$EndComp
+$Comp
+L Device:LED D6
+U 1 1 5EB642B2
+P 9550 5400
+F 0 "D6" H 9543 5616 50  0000 C CNN
+F 1 "LED Blue" H 9542 5525 50  0000 C CNN
+F 2 "LED_SMD:LED_0805_2012Metric_Castellated" H 9550 5400 50  0001 C CNN
+F 3 "~" H 9550 5400 50  0001 C CNN
+	1    9550 5400
+	1    0    0    -1  
+$EndComp
+$Comp
+L Device:LED D1
+U 1 1 5EB60EDA
+P 9600 2150
+F 0 "D1" H 9593 1899 50  0000 C CNN
+F 1 "LED Red" H 9593 1990 50  0000 C CNN
+F 2 "LED_SMD:LED_0805_2012Metric_Castellated" H 9600 2150 50  0001 C CNN
+F 3 "~" H 9600 2150 50  0001 C CNN
+	1    9600 2150
+	-1   0    0    1   
+$EndComp
+$Comp
+L Device:LED D4
+U 1 1 5EB62BFB
+P 9600 4100
+F 0 "D4" H 9593 4316 50  0000 C CNN
+F 1 "LED Blue" H 9592 4225 50  0000 C CNN
+F 2 "LED_SMD:LED_0805_2012Metric_Castellated" H 9600 4100 50  0001 C CNN
+F 3 "~" H 9600 4100 50  0001 C CNN
+	1    9600 4100
+	1    0    0    -1  
+$EndComp
+$Comp
+L Device:LED D2
+U 1 1 5EB613D5
+P 9650 2500
+F 0 "D2" H 9643 2716 50  0000 C CNN
+F 1 "LED Blue" H 9642 2625 50  0000 C CNN
+F 2 "LED_SMD:LED_0805_2012Metric_Castellated" H 9650 2500 50  0001 C CNN
+F 3 "~" H 9650 2500 50  0001 C CNN
+	1    9650 2500
+	1    0    0    -1  
+$EndComp
+$Comp
+L Connector:Conn_01x05_Male J1
+U 1 1 5EB6FC03
+P 2600 3400
+F 0 "J1" H 2706 3776 50  0000 C CNN
+F 1 "Conn_01x05_Male" H 2706 3685 50  0000 C CNN
+F 2 "Connector_PinSocket_2.54mm:PinSocket_1x05_P2.54mm_Horizontal" H 2600 3400 50  0001 C CNN
+F 3 "~" H 2600 3400 50  0001 C CNN
+	1    2600 3400
+	1    0    0    -1  
+$EndComp
+$Comp
+L Graphic:Logo_Open_Hardware_Large LOGO1
+U 1 1 5EB5A359
+P 3350 1900
+F 0 "LOGO1" H 3350 2400 50  0001 C CNN
+F 1 "Logo_Open_Hardware_Large" H 3350 1500 50  0001 C CNN
+F 2 "Symbol:KiCad-Logo2_6mm_SilkScreen" H 3350 1900 50  0001 C CNN
+F 3 "~" H 3350 1900 50  0001 C CNN
+	1    3350 1900
+	1    0    0    -1  
+$EndComp
+$EndSCHEMATC
