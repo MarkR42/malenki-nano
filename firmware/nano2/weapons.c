@@ -3,6 +3,11 @@
 #include "weapons.h"
 #include "diag.h"
 
+#define F_CPU 10000000 /* 10MHz / prescale=2 */
+#include <util/delay.h>
+
+#include <stdbool.h>
+
 // Maximum count of the timer-counter 
 static const uint16_t max_count = 3125;
 
@@ -25,25 +30,73 @@ static void weapons_ccl_init()
     CCL.CTRLA = CCL_ENABLE_bm; // Enable CCL
 }
 
+static void weapon3_init()
+{
+    /*
+     * Determine if weapon3 pin is electrically shorted to weapon2.
+     * If it is shorted, then leave the pin set as input.
+     * 
+     * If it is not shorted, set it as an output.
+     * 
+     * This allows the builder to solder a single wire across both
+     * pads, which is much easier than just connecting weapon2.
+     * 
+     * e.g. for only one pwm weapon.
+     */
+    diag_println("checking weapon 3");
+    // Set it to an input.
+    uint8_t weapon3_bm = 1 << 1;
+    uint8_t weapon2_bm = 1 << 0;
+    PORTC.DIRCLR |= weapon3_bm;
+    // Read initial value. We would usually expect 0,
+    // because the pin is not driven and the other side might
+    // pull it down.
+    bool v0 = (PORTC.IN & weapon3_bm);
+    // Now pulse weapon2.
+    // Make sure this pulse is short enough that the weapon does
+    // not actually activate! Do not e.g. send 1500us
+    PORTC.OUTSET = weapon2_bm;
+    _delay_us(5);
+    // Now check weapon3 again
+    bool v1 = (PORTC.IN & weapon3_bm);
+    // And set the weapon2 low.
+    PORTC.OUTCLR = weapon2_bm;
+    // If we saw the weapon3 pin pulse too, then they are
+    // presumably shorted.
+    if (v1 && (! v0)) {
+        diag_println("Weapon3 appears shorted to weapon2");
+        // Do not activate. It can stay as an input.
+    } else {
+        diag_println("Weapon3 ok.");
+        // Activate it.
+        PORTC.DIRSET = weapon3_bm;
+    }
+}
+
 void weapons_init() 
 {
-    diag_puts("Initialising extra weapons!");
+    diag_println("Initialising extra weapons!");
     /*
      * Use ports PORTC 0 and 1
      */
-    PORTC.DIRSET |= 1 << 0;
-    PORTC.DIRSET |= 1 << 1;
+    PORTC.DIRSET = 1 << 0;
+    weapon3_init();
     
     /* Set up TCD */
-    // one ramp mode
+    // one ramp mode (default)
+    
+    
+    // " The two additional outputs WOC and WOD can be configured by 
+    // software to be connected to either WOA or WOB by writing the
+    //  Compare C/D Output Select bits (CMPCSEL and CMPDSEL) in
+    //  the Control C register (TCDn.CTRLC)" (datasheet)
+    TCD0.CTRLC |= TCD_CMPDSEL_bm;
+    
     // enable WOA
     // enable WOB
     // Enable A and B comparator
     // And enable WOC and WOD
-    TCD0.FAULTCTRL = 
-        TCD_CMPAEN_bm   
-        | TCD_CMPBEN_bm;
-    _PROTECTED_WRITE(TCD0.FAULTCTRL,
+    _PROTECTED_WRITE(TCD0.FAULTCTRL, 
         TCD_CMPCEN_bm | TCD_CMPDEN_bm);
     // Divider will be 64, 
     // clock rate is 10mhz / 64 = 
@@ -81,10 +134,15 @@ void weapons_set(uint16_t pulse2, uint16_t pulse3)
     uint16_t p3 = scale_pulse(pulse3);
     TCD0.CMPASET = max_count - p2;
     TCD0.CMPBSET = max_count - p3;
+    // Sync domain
+    TCD0.CTRLE = TCD_SYNCEOC_bm;
+    
 }
 
 void weapons_all_off()
 {
     TCD0.CMPASET = max_count;
     TCD0.CMPBSET = max_count;    
+    // Sync domain
+    TCD0.CTRLE = TCD_SYNCEOC_bm;
 }
