@@ -354,7 +354,22 @@ static void prepare_telemetry()
     if (vsense_state.voltage_mv > 100) {
         // Only send voltage telemetry if it is sensible.
         p[n++] = 0x0; // telemetry type (0=volts)
-        p[n++] = 0x0; // telemetry id (0=internal 1=? 2=external)
+        // Some transmitters (FS i6) assume that "internal" voltage
+        // is always a 2S lipo (6.4-8.4 volts) 
+        // Because the official receivers for FS do not support 1S
+        // packs. 
+        // So we will set the voltage as "external" if there are NOT
+        // 2 cells in the pack.
+        // Otherwise the fs i6 will be constantly beeping low battery if we run off 1S.
+        // It appears that the voltage alarm is not configurable
+        // for the internal sensor, and also cannot be disabled
+        // (which is annoying!)
+        uint8_t voltage_id = 1; // "External sensor"
+        if (vsense_state.cells_count == 2) {
+            // 2 cell pack, use "internal sensor"
+            voltage_id = 0;
+        }
+        p[n++] = voltage_id; // telemetry id (0=internal 1 or more=external)
         uint16_t volts_100 = vsense_state.voltage_mv / 10;
         p[n++] = (volts_100 & 0xff); // low
         p[n++] = (volts_100 >> 8);// high
