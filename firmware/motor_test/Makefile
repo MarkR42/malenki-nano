@@ -37,6 +37,8 @@ $(OBJDIR)/%.o: %.S Makefile $(HEADERS)
 
 install: link
 	pyupdi.py -d tiny3217 -c /dev/ttyUSB0 -f $(HEX)
+install1617: link
+	pyupdi.py -d tiny1617 -c /dev/ttyUSB0 -f $(HEX)
 
 clean:
 	rm -r obj/
