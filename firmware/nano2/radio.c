@@ -364,7 +364,7 @@ static void prepare_telemetry()
         // It appears that the voltage alarm is not configurable
         // for the internal sensor, and also cannot be disabled
         // (which is annoying!)
-        uint8_t voltage_id = 1; // "External sensor"
+        uint8_t voltage_id = 2; // "External sensor"
         if (vsense_state.cells_count == 2) {
             // 2 cell pack, use "internal sensor"
             voltage_id = 0;
