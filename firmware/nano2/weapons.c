@@ -44,26 +44,31 @@ static void weapon3_init()
      * e.g. for only one pwm weapon.
      */
     diag_println("checking weapon 3");
-    // Set it to an input.
+    // Set both to input.
     uint8_t weapon3_bm = 1 << 1;
     uint8_t weapon2_bm = 1 << 0;
-    PORTC.DIRCLR |= weapon3_bm;
-    // Read initial value. We would usually expect 0,
-    // because the pin is not driven and the other side might
-    // pull it down.
-    bool v0 = (PORTC.IN & weapon3_bm);
-    // Now pulse weapon2.
-    // Make sure this pulse is short enough that the weapon does
-    // not actually activate! Do not e.g. send 1500us
+    uint8_t both = weapon2_bm | weapon3_bm;
+    // Set both low, and wait long enough for any residual charge
+    // to drain away.
+    PORTC.OUTCLR = both;
+    PORTC.DIRSET = both;
+    _delay_us(1000);
+    // Now set weapon3 as input,see if it can detect a high
+    // on weapon2.
+    PORTC.DIRCLR = weapon3_bm;
     PORTC.OUTSET = weapon2_bm;
-    _delay_us(5);
-    // Now check weapon3 again
-    bool v1 = (PORTC.IN & weapon3_bm);
-    // And set the weapon2 low.
+    _delay_us(50);
+    uint8_t in0 = PORTC.IN;
     PORTC.OUTCLR = weapon2_bm;
-    // If we saw the weapon3 pin pulse too, then they are
+    _delay_us(50);
+    uint8_t in1 = PORTC.IN;
+
+    diag_println("in0=%02x in1=%02x", in0, in1);
+    bool v0 = in0 & weapon3_bm;
+    bool v1 = in1 & weapon3_bm;
+    // If we saw the other pin pulse too, then they are
     // presumably shorted.
-    if (v1 && (! v0)) {
+    if (v1 != v0) {
         diag_println("Weapon3 appears shorted to weapon2");
         // Do not activate. It can stay as an input.
     } else {
@@ -79,8 +84,15 @@ void weapons_init()
     /*
      * Use ports PORTC 0 and 1
      */
-    PORTC.DIRSET = 1 << 0;
+
+
+    // Initially disable tcd outputs.
+    _PROTECTED_WRITE(TCD0.FAULTCTRL, 0);
+    // And disable TCD
+    TCD0.CTRLA = 0;
+
     weapon3_init();
+    PORTC.DIRSET = 1 << 0;
     
     /* Set up TCD */
     // one ramp mode (default)

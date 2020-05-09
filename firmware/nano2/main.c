@@ -167,13 +167,13 @@ int main(void)
     diag_println("\r\nMalenki-nano2 receiver starting up");
     init_timer();
     sei(); // interrupts on
+    weapons_init();
     show_device_info();
     // test_get_micros();
     spi_init();
     motors_init();
     mixing_init(); // reset default config
     nvconfig_load(); // load config from eeprom, if it is setup.
-    weapons_init();
     vsense_init();
     sticks_init();
     // Initialise the radio last.
