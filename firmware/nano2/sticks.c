@@ -44,7 +44,7 @@ void sticks_loop()
 
 static bool is_centred(uint16_t stick)
 {
-    return ((stick > 1450) && (stick < 1550));
+    return ((stick > 1400) && (stick < 1600));
 }
 
 static void handle_switches()
@@ -78,8 +78,7 @@ static void handle_switches()
             nvconfig_reset();
             trigger_reset(); // reset the chip
             break;
-        case 8: // Power off
-            shutdown_system();
+        case 8: // Nothing yet
             break;
     }
     if (need_save) {
