@@ -11,25 +11,6 @@
 // Maximum count of the timer-counter 
 static const uint16_t max_count = 3125;
 
-static void weapons_ccl_init()
-{
-    // Set up CCL so that TCD.WOC is mirrored on    CCL LUT0OUT
-    // Set alternate output pins for ccl
-    // PB4 pin12 
-    PORTMUX.CTRLA |= PORTMUX_LUT0_ALTERNATE_gc;
-    // Set those pins as out
-    PORTB.DIRSET |= 1 << 4;
-    // Set up LUT0
-    // Truth:
-    // Wire as a "OR" so we or all the inputs together and NOT
-    // So we set all bits to 1, except bit0
-    CCL.TRUTH0 = 0xfe;
-    CCL.LUT0CTRLB = 0x9; // INSEL0 = 0x9 = TCD WOA bit
-    // ALl other inputs will default to "mask" which I think is always 0
-    CCL.LUT0CTRLA =  CCL_OUTEN_bm | CCL_ENABLE_bm; //enable out+lut
-    CCL.CTRLA = CCL_ENABLE_bm; // Enable CCL
-}
-
 static void weapon3_init()
 {
     /*
@@ -127,7 +108,6 @@ void weapons_init()
         TCD_CLKSEL_SYSCLK_gc | // sys clock
         TCD_SYNCPRES_DIV2_gc | // prescale by 2
         TCD_CNTPRES_DIV32_gc; // further prescale by 32
-    weapons_ccl_init();
 }
 
 static uint16_t scale_pulse(uint16_t pulse)
