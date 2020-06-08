@@ -10,6 +10,8 @@ typedef struct {
     bool invert_right;
     bool invert_weapon;
     bool enable_mixing;
+    bool swap_weapon_channels; 
+    bool enable_braking;
 } mixing_state_t;
 
 extern mixing_state_t mixing_state;
