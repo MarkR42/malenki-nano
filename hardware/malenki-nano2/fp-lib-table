@@ -1,3 +1,0 @@
-(fp_lib_table
-  (lib (name malenki-nano)(type KiCad)(uri ${KIPRJMOD}/malenki-nano.pretty)(options "")(descr ""))
-)
