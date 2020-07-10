@@ -83,11 +83,17 @@ static void program_config()
 }
 static void wait_auto_clear(uint8_t reg, uint8_t bit)
 {
+    uint32_t t0 = get_tickcount();
     while (1) {
         uint8_t v = spi_read_byte(reg);
         if (! (v & bit)) {
             // Cleared.
             break;
+        }
+        uint8_t t1 = get_tickcount();
+        if ((t1 - t0) > 25) {
+            // Timeout (centiseconds)
+            epic_fail("TIMEOUT initialising radio. Faulty crystal?");
         }
     }
 }

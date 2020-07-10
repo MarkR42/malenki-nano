@@ -78,7 +78,13 @@ static void handle_switches()
             nvconfig_reset();
             trigger_reset(); // reset the chip
             break;
-        case 8: // Nothing yet
+        case 8: // Option to swap the weapon channels.
+            mixing_state.swap_weapon_channels = ! mixing_state.swap_weapon_channels;
+            need_save = true;
+            break;
+        case 9: // Option to disable braking.
+            mixing_state.enable_braking = ! mixing_state.enable_braking;
+            need_save = true;
             break;
     }
     if (need_save) {
@@ -121,6 +127,13 @@ static void handle_configuration_mode(uint16_t *sticks)
 
 bool sticks_receive_positions(uint16_t *sticks)
 {
+    // Swap the weapon & weapon2 channels, if enabled.
+    if (mixing_state.swap_weapon_channels) {
+        int16_t temp;
+        temp = sticks[CHANNEL_INDEX_WEAPON];
+        sticks[CHANNEL_INDEX_WEAPON] = sticks[CHANNEL_INDEX_WEAPON2];
+        sticks[CHANNEL_INDEX_WEAPON2] = temp;
+    }
     // Returns the value of configuration_mode.
     if (configuration_mode)
     {

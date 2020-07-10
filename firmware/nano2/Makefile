@@ -4,12 +4,12 @@
 OBJDIR=obj
 
 OBJ_FILES=main.o diag.o a7105_spi.o spi_asm.o radio.o motors.o nvconfig.o mixing.o weapons.o \
-	vsense.o sticks.o
+	vsense.o sticks.o motor_test.o
 OBJECTS=$(addprefix $(OBJDIR)/,$(OBJ_FILES))
 HEADERS=radio.h nvconfig.h state.h motors.h diag.h a7105_spi.h mixing.h weapons.h vsense.h\
-	sticks.h
+	sticks.h motor_test.h
 
-MCU=attiny3217
+MCU=attiny1617
 
 ELF=$(OBJDIR)/main.elf
 HEX=$(OBJDIR)/main.hex
@@ -38,12 +38,14 @@ $(OBJDIR)/%.o: %.S Makefile $(HEADERS)
 	avr-gcc -c $(CFLAGS) -Xassembler -a=$(OBJDIR)/$(<).lst -o $@ $<
 
 install: link
-	pyupdi.py -d tiny3217 -c /dev/ttyUSB0 -f $(HEX)
+	pyupdi.py -d tiny1617 -c /dev/ttyUSB0 -f $(HEX)
 install1614: link
 	pyupdi.py -d tiny1614 -c /dev/ttyUSB0 -f $(HEX)
-install1617: link
-	pyupdi.py -d tiny1617 -c /dev/ttyUSB0 -f $(HEX)
-
+install3217: link
+	pyupdi.py -d tiny3217 -c /dev/ttyUSB0 -f $(HEX)
+motor_test:
+	# Set fuse for motor test.
+	pyupdi.py -d tiny1617 -c /dev/ttyUSB0 -fs 128:0x2a
 
 
 clean:

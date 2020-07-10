@@ -15,6 +15,7 @@ void mixing_init()
     // resets the defaults.
     memset(&mixing_state, 0, sizeof(mixing_state));
     mixing_state.enable_mixing = true;
+    mixing_state.enable_braking = true;
 }
 
 static int signedclamp(int n, int maxval)
@@ -138,12 +139,12 @@ void mixing_drive_motors(int16_t throttle, int16_t steering, int16_t weapon, boo
         weapon = -weapon;
 
     set_motor_direction_duty(MOTOR_WEAPON, weapon);
-    if (left == 0) {
+    if ((left == 0) && mixing_state.enable_braking) {
         enable_motor_brake(MOTOR_LEFT);
     } else {
         set_motor_direction_duty(MOTOR_LEFT, left);
     }
-    if (right == 0) {
+    if ((right == 0) && mixing_state.enable_braking) {
         enable_motor_brake(MOTOR_RIGHT);
     } else {
         set_motor_direction_duty(MOTOR_RIGHT, right);
