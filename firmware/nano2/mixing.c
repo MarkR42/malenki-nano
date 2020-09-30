@@ -16,6 +16,7 @@ void mixing_init()
     memset(&mixing_state, 0, sizeof(mixing_state));
     mixing_state.enable_mixing = true;
     mixing_state.enable_braking = true;
+    mixing_state.swap_weapon_channels = true;
 }
 
 static int signedclamp(int n, int maxval)
