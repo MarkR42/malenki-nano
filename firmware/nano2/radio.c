@@ -673,21 +673,11 @@ static void hop_to_next_channel(uint8_t channel_increment)
 
 static void update_led()
 {
-    // Called in interrupts, update the "BLINKY" led with the state of
-    // led_on
-    // On older models, the LED is on the GIO2 pin of A7105.
-    // On newer modules, it's on a pin of the microcontroller.
-    uint8_t gio_control =
-        ((0x0c) << 2 )  // GIO2 pin control: "Inhibited"
-        | 1; // Enable
     if (radio_state.led_on) {
-        gio_control |= 0x2; // Invert signal bit for gio
         LED_VPORT->OUT |= LED_PIN_bm; // turn on microcontroller gpio
     } else {
         LED_VPORT->OUT &= ~LED_PIN_bm; // turn off micro gpio
     }
-    const uint8_t gio2_register = 0xc; 
-    spi_write_byte(gio2_register, gio_control);
 } 
 
 ISR(TCB0_INT_vect)
