@@ -85,6 +85,20 @@ void vsense_init()
 static const uint32_t vsense_period = 100; // Centiseconds
 static uint32_t last_vsense_tickcount = 0;
 
+/*
+ * Shutdown on low voltage, but not too easily.
+ * 
+ * A very high current spike, e.g. spinner starting or servo might
+ * cause a temporary voltage drop which does not indicate low battery,
+ * so we will wait a while to see if it recovers.
+ */
+
+// Voltage, in mv, per cell, where we shut down.
+#define CRITICAL_VOLTAGE_PER_CELL 3100
+// Number of readings below CRITICAL_VOLTAGE_PER_CELL to take before
+// shutdown.
+#define CRITICAL_COUNT 12
+
 void vsense_loop()
 {
     // called every loop.
@@ -130,14 +144,15 @@ void vsense_loop()
                 uint16_t warn_voltage = vsense_state.cells_count  * 3500;
                 if (vsense_mv < warn_voltage) 
                     diag_println("Warning: low battery");
-                uint16_t critical_voltage = vsense_state.cells_count * 3350;
+                uint16_t critical_voltage = vsense_state.cells_count * CRITICAL_VOLTAGE_PER_CELL;
                 if (vsense_mv < critical_voltage) {
                     vsense_state.critical_count += 1;
                     diag_println("Warning: VERY LOW BATTERY");
-                    if (vsense_state.critical_count > 4) {
+                    if (vsense_state.critical_count > CRITICAL_COUNT) {
                         shutdown_system();
                     }
                 } else {
+                    // Battery seems to have recovered, zero the count.
                     vsense_state.critical_count = 0;
                 }
             }
