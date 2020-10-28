@@ -101,6 +101,12 @@ static void uninit_everything()
     PORTA.DIR = 0 ;
     PORTB.DIR = 0 ;
     PORTC.DIR = 0 ;
+    // Disable all the timers, so that nothing can keep
+    // going automatically.
+    TCA0.SPLIT.CTRLA = 0;
+    TCB0.CTRLA = 0;
+    TCB1.CTRLA = 0;
+    TCD0.CTRLA = 0;
 }
 
 void epic_fail(const char * reason)

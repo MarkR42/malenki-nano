@@ -596,7 +596,7 @@ void radio_shutdown()
     // Shut down the radio and sleep.
     // after this, we need a full reset
     // Turn off our interrupts.
-    sei();// Make sure no more interrupts arrive.
+    cli();// Make sure no more interrupts arrive.
     TCB0.INTCTRL = 0; // Turn off irq
     PORTA.PIN2CTRL = 0; // Turn off irq from there.
     TCB0.CTRLA = 0; // Shut down timer
@@ -608,7 +608,6 @@ void radio_shutdown()
     // pending, but it should be harmless?    
     // If the radio is in sleep mode, we will read rubbish from
     // its rx buffer.
-    cli();
 }
 
 
