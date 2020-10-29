@@ -94,7 +94,7 @@ static uint32_t last_vsense_tickcount = 0;
  */
 
 // Voltage, in mv, per cell, where we shut down.
-#define CRITICAL_VOLTAGE_PER_CELL 3100
+#define CRITICAL_VOLTAGE_PER_CELL 3150
 // Number of readings below CRITICAL_VOLTAGE_PER_CELL to take before
 // shutdown.
 #define CRITICAL_COUNT 12
