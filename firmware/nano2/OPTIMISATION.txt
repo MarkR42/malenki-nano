@@ -1,0 +1,21 @@
+HOW TO OPTIMISE FOR Attiny817
+
+The 817 has 8kb of flash and only one TCB.
+
+Everything else is the same.
+
+* Remove all debug prints - with a #define maybe
+* Remove unused code in spi handling assembly (does not get optimised out at link)
+* Remove unused motor test mode
+* Enable link-time-optimisation
+
+---
+Rework main.c to avoid use of the TCB1 peripheral
+Can we use the TCD0 interrupts to increment the counter tickcount?
+	- It overflows every 20ms instead of every 10ms.
+	- We can just add 2 to the tickcount.
+	- Configured in weapons.c
+
+
+
+
