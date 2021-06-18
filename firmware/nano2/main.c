@@ -55,25 +55,19 @@ static void init_serial()
 
 static void init_timer()
 {
-    // This uses TCB1 for timer interrupts.
-    // We need to count 100k clock cycles, so count to 50k
-    // and enable divide by 2
-    const unsigned short compare_value = 50000; 
-    TCB1.CCMP = compare_value;
-    TCB1.INTCTRL = TCB_CAPT_bm;
-    // CTRLB bits 0-2 are the mode, which by default
-    // 000 is "periodic interrupt" -which is correct
-    TCB1.CTRLB = 0;
-    TCB1.CNT = 0;
-    // CTRLA- select CLK_PER/2 and enable.
-    TCB1.CTRLA = TCB_ENABLE_bm | TCB_CLKSEL_CLKDIV2_gc;
+    // This uses TCD0 for timer interrupts.
+    // weapons.c sets TCD0 to overflow every 20ms,
+    
+    TCD0.INTCTRL = TCD_OVF_bm;
+
     master_state.tickcount = 0;
 }
 
-ISR(TCB1_INT_vect)
+ISR(TCD0_OVF_vect)
 {
-    master_state.tickcount++;
-    TCB1.INTFLAGS |= TCB_CAPT_bm; //clear the interrupt flag
+    // TCD0 will overflow every 20 ms
+    master_state.tickcount += 2;
+    TCD0.INTFLAGS |= TCD_OVF_bm; //clear the interrupt flag
 }
 
 void trigger_reset()
@@ -105,7 +99,6 @@ static void uninit_everything()
     // going automatically.
     TCA0.SPLIT.CTRLA = 0;
     TCB0.CTRLA = 0;
-    TCB1.CTRLA = 0;
     TCD0.CTRLA = 0;
 }
 

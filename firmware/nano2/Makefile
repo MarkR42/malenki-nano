@@ -9,12 +9,13 @@ OBJECTS=$(addprefix $(OBJDIR)/,$(OBJ_FILES))
 HEADERS=radio.h nvconfig.h state.h motors.h diag.h a7105_spi.h mixing.h weapons.h vsense.h\
 	sticks.h motor_test.h
 
-MCU=attiny1617
+MCU=attiny817
 
 ELF=$(OBJDIR)/main.elf
 HEX=$(OBJDIR)/main.hex
 
-LINKFLAGS=-Os
+# -flto is link-time optimisation and must be used for compile and link.
+LINKFLAGS=-Os -flto
 
 link: $(OBJECTS) $(HEADERS)
 	avr-gcc -mmcu=$(MCU) -o $(ELF) $(OBJECTS) $(LINKFLAGS)
@@ -27,7 +28,7 @@ link: $(OBJECTS) $(HEADERS)
 	avr-objcopy -j .text -j .data -j .rodata -O ihex $(ELF) $(HEX)
 	avr-objcopy -j .text -j .data -j .rodata -O binary $(ELF) obj/main.bin
 
-CFLAGS=-mmcu=$(MCU) -Os -Wall
+CFLAGS=-mmcu=$(MCU) -Os -Wall  -flto
 $(OBJDIR)/%.o: %.c Makefile
 	@mkdir -p $(OBJDIR)
 	avr-gcc -c $(CFLAGS) -o $@ $<
