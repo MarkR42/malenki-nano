@@ -17,5 +17,10 @@ Can we use the TCD0 interrupts to increment the counter tickcount?
 	- Configured in weapons.c
 
 
+HARDWARE: There is only one ADC on the tiny817.
 
+So we need to connect a DIFFERENT pin to VSENSE - cannot use PC2 because it does
+not lead to a ADC internally.
+
+CAn use PB4 
 
