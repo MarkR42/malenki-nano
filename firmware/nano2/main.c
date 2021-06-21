@@ -19,7 +19,6 @@
 #include "weapons.h"
 #include "vsense.h"
 #include "sticks.h"
-#include "motor_test.h"
 
 volatile master_state_t master_state;
 extern const char * const end_marker;
@@ -173,10 +172,6 @@ int main(void)
     spi_init();
     motors_init();
     mixing_init(); // reset default config
-    // Possible test mode -
-    // If entering test mode, this never returns. 
-    motor_test_init();
-    // If we reach this point, we're going to normal run mode.
     nvconfig_load(); // load config from eeprom, if it is setup.
     vsense_init();
     sticks_init();
