@@ -45,13 +45,13 @@ install3217: link
 	pyupdi.py -d tiny3217 -c /dev/ttyUSB0 -f $(HEX)
 	
 installpymcu: link
-	pymcuprog -d attiny1617 -t uart -u /dev/ttyUSB0 -v info -f $(HEX) write
+	pymcuprog -d attiny1617 -t uart -u /dev/ttyUSB0 -c 19200 -v info -f $(HEX) write
 
 unbind:
 	# Overwrite the magic number in eeprom so the receiver unbinds
 	# and restores its settings to factory state.
 	echo -n 'empty' > $(OBJDIR)/blank.bin
-	pymcuprog -d attiny817 -t uart -u /dev/ttyUSB0 write -m eeprom -f $(OBJDIR)/blank.bin
+	pymcuprog -d attiny1617 -t uart -u /dev/ttyUSB0 write -m eeprom -f $(OBJDIR)/blank.bin
 
 
 motor_test:
