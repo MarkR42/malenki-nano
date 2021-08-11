@@ -163,7 +163,7 @@ int main(void)
     init_clock();
     init_serial();
     // Write the greeting message as soon as possible.
-    diag_puts("\r\nMalenki-nano2 817\r\n");
+    diag_puts("\r\nMalenki-nano2 CG2021\r\n");
     init_timer();
     sei(); // interrupts on
     weapons_init();

@@ -1,0 +1,7 @@
+
+# We require the avr-gcc toolchain
+#
+MCU=attiny817
+MCU_PYMCUPROG=attiny817
+
+include common.mk
