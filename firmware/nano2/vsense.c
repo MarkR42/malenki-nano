@@ -34,20 +34,9 @@ static void vsense_hw_init()
     ADC0.COMMAND = ADC_STCONV_bm;    
 }
 
-static void tempsense_hw_init()
-{
-    // TODO 
-}
-
-static uint16_t temp_calc()
-{
-    return 200;
-}
-
 void vsense_init()
 {
     vsense_hw_init();
-    tempsense_hw_init();
 }
 
 static const uint32_t vsense_period = 100; // Centiseconds
@@ -125,7 +114,6 @@ void vsense_loop()
                 }
             }
         }
-        vsense_state.temperature_c10 = temp_calc();
         last_vsense_tickcount = now;
     }
 }

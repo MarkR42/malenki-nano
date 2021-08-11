@@ -41,14 +41,17 @@ $(OBJDIR)/%.o: %.S $(MAKEFILES) $(HEADERS)
 
 install: instalpymcu
 	
+PYMCUPROG_OPTS=-d $(MCU_PYMCUPROG) -t uart -u /dev/ttyUSB0 -v info  
+	
 installpymcu: link
-	pymcuprog -d $(MCU_PYMCUPROG) -t uart -u /dev/ttyUSB0 -v info -f $(HEX) write
-
+	pymcuprog $(PYMCUPROG_OPTS) erase
+	pymcuprog $(PYMCUPROG_OPTS) -f $(HEX) write 
+	pymcuprog $(PYMCUPROG_OPTS) -f $(HEX) verify
+	
 unbind:
 	# Overwrite the magic number in eeprom so the receiver unbinds
 	# and restores its settings to factory state.
-	echo -n 'empty' > $(OBJDIR)/blank.bin
-	pymcuprog -d $(MCU_PYMCUPROG) -t uart -u /dev/ttyUSB0 write -m eeprom -f $(OBJDIR)/blank.bin
+	pymcuprog $(PYMCUPROG_OPTS) -m eeprom erase
 
 clean:
 	rm -rf $(OBJDIR)

@@ -350,12 +350,8 @@ static void prepare_telemetry()
     memcpy(p+1, radio_state.tx_id, 4);
     memcpy(p+5, radio_state.rx_id, 4);
     uint8_t n=9;
-    
-    p[n++] = 1; // Type (1=temp.)
-    p[n++] = 1; // id
-    uint16_t temp_10 = vsense_state.temperature_c10 + 400; // (Temperature+40), * 10,
-    p[n++] = temp_10 & 0xff; // temperature
-    p[n++] = temp_10 >> 8; // temperature
+
+    // Temperature telemetry is removed.
 
     if (vsense_state.voltage_mv > 100) {
         // Only send voltage telemetry if it is sensible.
