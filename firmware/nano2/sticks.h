@@ -21,5 +21,12 @@
 void sticks_init();
 void sticks_loop();
 
-bool sticks_receive_positions(uint16_t *sticks); // at least NUM_CONTROL_CHANNELS
+typedef struct {
+    bool config_mode;
+    bool led_state;
+    uint8_t rpm_value; // For telemetry
+} sticks_result_t;
+
+sticks_result_t sticks_receive_positions(uint16_t *sticks); // at least NUM_CONTROL_CHANNELS
 void sticks_no_signal();
+

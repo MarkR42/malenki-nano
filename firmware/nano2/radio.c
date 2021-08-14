@@ -343,7 +343,7 @@ __attribute__ ((unused)) static void radio_test1()
 #define PACKET_TYPE_BIND2 0xbc
 #define PACKET_TYPE_TELEMETRY 0xaa
 
-static void prepare_telemetry()
+static void prepare_telemetry(bool is_config_mode, uint8_t rpm_value)
 {
     uint8_t *p = radio_state.telemetry_packet;
     p[0] = PACKET_TYPE_TELEMETRY;
@@ -377,12 +377,14 @@ static void prepare_telemetry()
         p[n++] = (volts_100 >> 8);// high
     }
     
-    // Special sensor for our info
-    //uint8_t special_value = mixing_state.invert_left;
-    //p[n++] = 0x2; // "RPM"
-    //p[n++] = 1;
-    //p[n++] = special_value;
-    //p[n++] = 0;
+    // Special sensor for "rpm" we use to send data back to the tx.
+    if (is_config_mode) // Only send in config mode.
+    {
+        p[n++] = 0x2; // "RPM"
+        p[n++] = 1; // channel number, instance number?
+        p[n++] = rpm_value;
+        p[n++] = 0;
+    }
     
     p[n++] = 0xff; // end
     radio_state.telemetry_packet_is_valid = 1;
@@ -404,12 +406,12 @@ static void handle_packet_sticks()
         uint16_t *stick = (uint16_t *) (radio_state.packet + sticks_offset + (2*n));
         sticks[n] = *stick;
     }
-    bool is_config_mode = sticks_receive_positions(sticks);
+    sticks_result_t sticks_result = sticks_receive_positions(sticks);
     // Turn on the LED so the driver can see it's connected.
     // Flicker the LED if we are in config mode, solid if driving mode.
-    if (is_config_mode) {
+    if (sticks_result.config_mode) {
         // Flicker a mostly on duty cycle.
-        radio_state.led_on = (( (radio_state.sticks_packet_count / 8) % 8) != 0);
+        radio_state.led_on = sticks_result.led_state;
     } else {
         // Driving mode.
         radio_state.led_on = true;
@@ -418,7 +420,7 @@ static void handle_packet_sticks()
     radio_state.got_signal = true;
     // Send telemetry from time to time.
     if (radio_state.telemetry_countdown == 0) {
-        prepare_telemetry();
+        prepare_telemetry(sticks_result.config_mode, sticks_result.rpm_value);
         // Send telemetry an undivisible number of packets,
         // So that the telemetry does not always appear on one hopping
         // channel, it moves around them all.

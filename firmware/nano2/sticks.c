@@ -19,6 +19,9 @@ static uint16_t throttle_max;
 static bool config_switch_last;
 static uint32_t last_switch_time;
 static uint8_t config_switch_count;
+static uint8_t config_rpm_value; // For display
+static uint8_t config_flash_count; // Counter - number of flashes
+static uint32_t config_flash_start_time;
 
 void sticks_init()
 {
@@ -37,6 +40,7 @@ void sticks_loop()
                 throttle_max = 0;
                 config_switch_last = false;
                 config_switch_count = 0;
+                config_rpm_value = 0;
             }
         }
     }
@@ -47,7 +51,12 @@ static bool is_centred(uint16_t stick)
     return ((stick > 1400) && (stick < 1600));
 }
 
-static void handle_switches()
+static void show_rpm_value(uint8_t count, uint8_t value)
+{
+    config_rpm_value = (count * 10) + value;
+}
+
+static void handle_switches(uint32_t now)
 {
     diag_println("config_switch_count: %d", config_switch_count);
     bool need_save = false;
@@ -56,23 +65,28 @@ static void handle_switches()
             break; 
         case 2: // Invert left
             mixing_state.invert_left = ! mixing_state.invert_left;
+            show_rpm_value(config_switch_count, mixing_state.invert_left);
             need_save = true;
             break;
         case 3: // Invert right
             mixing_state.invert_right = ! mixing_state.invert_right;
+            show_rpm_value(config_switch_count, mixing_state.invert_right);
             need_save = true;
             break;
         case 4: // Invert weapon
             mixing_state.invert_weapon = ! mixing_state.invert_weapon;
+            show_rpm_value(config_switch_count, mixing_state.invert_weapon);
             need_save = true;
             break;
         case 5: // Reset defaults.
             mixing_init();
             need_save = true;
+            show_rpm_value(config_switch_count, 0);
             break;
         case 6: // Mixing on/off (on by default)
             mixing_state.enable_mixing = ! mixing_state.enable_mixing;
             need_save = true;
+            show_rpm_value(config_switch_count, mixing_state.enable_mixing);
             break;
         case 7: // Factory reset / unbind
             nvconfig_reset();
@@ -81,20 +95,27 @@ static void handle_switches()
         case 8: // Option to swap the weapon channels.
             mixing_state.swap_weapon_channels = ! mixing_state.swap_weapon_channels;
             need_save = true;
+            show_rpm_value(config_switch_count, mixing_state.swap_weapon_channels);
             break;
         case 9: // Option to disable braking.
             mixing_state.enable_braking = ! mixing_state.enable_braking;
             need_save = true;
+            show_rpm_value(config_switch_count, mixing_state.enable_braking);
             break;
     }
     if (need_save) {
         nvconfig_save();
+        // Flash the led N times
+        config_flash_count = config_switch_count;
+        config_flash_start_time = now;
     }
     config_switch_count = 0;
 }
 
-static void handle_configuration_mode(uint16_t *sticks)
+static bool handle_configuration_mode(uint16_t *sticks)
 {
+    // Return led state.
+    
     // Decide if we need to quit config mode
     uint16_t throttle = sticks[CHANNEL_INDEX_THROTTLE];
     uint16_t weapon  = sticks[CHANNEL_INDEX_WEAPON];
@@ -106,7 +127,7 @@ static void handle_configuration_mode(uint16_t *sticks)
         // Leaving config mode.
         diag_puts("Leaving configuration mode");
         configuration_mode = false;
-        return;
+        return 1;
     }
     bool config_switch = (sticks[CHANNEL_INDEX_CONFIG] > 1600);
     uint32_t now = get_tickcount();
@@ -119,13 +140,31 @@ static void handle_configuration_mode(uint16_t *sticks)
     if (config_switch_count > 0) {
         // Delay with no switches?
         // Handle it.
-        if ((now - last_switch_time) > 250) {
-            handle_switches();
+        if ((now - last_switch_time) > 200) {
+            handle_switches(now);
         }
+    }
+    
+    // Flash the LED after a successful configuration command
+    // So that the operator knows.
+    if (config_flash_count != 0) {
+        uint32_t t = now - config_flash_start_time;
+        // Create config_flash_count flashes:
+        uint8_t ticks = (t / 25);
+        if (ticks > (config_flash_count*2)) {
+            config_flash_count = 0; // Stop flashing.
+        }
+        return ! (ticks & 1); 
+    } else {
+        // No recent config command:
+        // Configuration mode LED status:
+        // Create a high-duty-cycle blinking
+        uint8_t blinky_counter = (now & 0x1f);
+        return (blinky_counter >= 0x2);
     }
 }
 
-bool sticks_receive_positions(uint16_t *sticks)
+sticks_result_t sticks_receive_positions(uint16_t *sticks)
 {
     // Swap the weapon & weapon2 channels, if enabled.
     if (mixing_state.swap_weapon_channels) {
@@ -134,10 +173,16 @@ bool sticks_receive_positions(uint16_t *sticks)
         sticks[CHANNEL_INDEX_WEAPON] = sticks[CHANNEL_INDEX_WEAPON2];
         sticks[CHANNEL_INDEX_WEAPON2] = temp;
     }
-    // Returns the value of configuration_mode.
+    // Returns this structure;
+    sticks_result_t result;
+    result.led_state = 1;
+    result.rpm_value = 0;
+    result.config_mode = configuration_mode;
+
     if (configuration_mode)
     {
-        handle_configuration_mode(sticks);
+        result.led_state = handle_configuration_mode(sticks);
+        result.rpm_value = config_rpm_value;
     } else {
         // Centre is *always* 1500.
         // Convert to signed.
@@ -150,9 +195,10 @@ bool sticks_receive_positions(uint16_t *sticks)
         // Activate extra weapon channels
         weapons_set(sticks[CHANNEL_INDEX_WEAPON2], sticks[CHANNEL_INDEX_WEAPON3]);
     }
+
     has_signal = true;
     last_signal_time = get_tickcount();
-    return configuration_mode;
+    return result;
 }
 
 // Called when there is no signal, signal is lost or
