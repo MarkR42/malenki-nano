@@ -41,11 +41,11 @@ $(OBJDIR)/%.o: %.S $(MAKEFILES) $(HEADERS)
 
 install: instalpymcu
 	
-PYMCUPROG_OPTS=-d $(MCU_PYMCUPROG) -t uart -u /dev/ttyUSB0 -v info  
+PYMCUPROG_OPTS=-d $(MCU_PYMCUPROG) -t uart -u /dev/ttyUSB0  
 	
 installpymcu: link
 	pymcuprog $(PYMCUPROG_OPTS) erase
-	pymcuprog $(PYMCUPROG_OPTS) -f $(HEX) write 
+	pymcuprog $(PYMCUPROG_OPTS) -f $(HEX) -v info write 
 	pymcuprog $(PYMCUPROG_OPTS) -f $(HEX) verify
 	
 unbind:
