@@ -8,16 +8,41 @@
 
 vsense_state_t vsense_state;
 
+#ifdef __AVR_ATtiny1617__
+#define ADC_VSENSE ADC1
+#else
+#define ADC_VSENSE ADC0
+#endif
+
+
 static void vsense_hw_init()
 {
     // NB: input voltage to mcu should be 3.3
     // Set voltage reference to 2.5v (highest which is guaranteed lower than input)
     VREF.CTRLA = VREF_ADC0REFSEL_2V5_gc;
-    // We use pin PC2 as analogue input.
-    // Disable the digital input on PA7.
+    // We use pin PC2 as analogue input (on attiny1617).
+    // Disable the digital input.
     PORTC.PIN2CTRL &= ~PORT_ISC_gm;
     PORTC.PIN2CTRL |= PORT_ISC_INPUT_DISABLE_gc;
-
+    // We use pin PB5 as analogue input on attiny817
+    // disable its digital input.
+    PORTB.PIN5CTRL &= ~PORT_ISC_gm;
+    PORTB.PIN5CTRL |= PORT_ISC_INPUT_DISABLE_gc;
+    // Note that PB5 and PC2 are electrically connected so we can
+    // possibly reduce noise by disabling them both
+#ifdef __AVR_ATtiny1617__
+    // Attiny1617 - use ADC1 mux channel 8.
+    VREF.CTRLC |= VREF_ADC1REFSEL_2V5_gc;
+    
+    ADC1.CTRLC = ADC_PRESC_DIV16_gc      /* CLK_PER divider */
+               | ADC_REFSEL_INTREF_gc;  /* Internal reference */
+    
+    ADC1.CTRLA = ADC_ENABLE_bm          /* ADC Enable: enabled */
+               | ADC_RESSEL_10BIT_gc;   /* 10-bit mode */
+    
+    ADC1.MUXPOS  = ADC_MUXPOS_AIN8_gc; // ADC1 muxpos 8 = PC2
+#else
+    // Attiny817
     ADC0.CTRLC = ADC_PRESC_DIV16_gc      /* CLK_PER divider */
                | ADC_REFSEL_INTREF_gc;  /* Internal reference */
     
@@ -27,11 +52,13 @@ static void vsense_hw_init()
     /* Select ADC channel */
     ADC0.MUXPOS  = ADC_MUXPOS_AIN8_gc; // ADC0.AIN8 == Pin PB5
     
+#endif
+
     /* Enable FreeRun mode */
-    ADC0.CTRLA |= ADC_FREERUN_bm;
+    ADC_VSENSE.CTRLA |= ADC_FREERUN_bm;
 
     // Start the first conversion.
-    ADC0.COMMAND = ADC_STCONV_bm;    
+    ADC_VSENSE.COMMAND = ADC_STCONV_bm;    
 }
 
 void vsense_init()
@@ -65,9 +92,9 @@ void vsense_loop()
     if (age >= vsense_period) 
     {
         // Check if ready.
-        if (ADC0.INTFLAGS & ADC_RESRDY_bm)
+        if (ADC_VSENSE.INTFLAGS & ADC_RESRDY_bm)
         {
-            uint16_t val = ADC0.RES; // 0..1023
+            uint16_t val = ADC_VSENSE.RES; // 0..1023
             // Scale to give voltage in millivolts
             uint32_t vsense_mv = (((uint32_t) val) * 2500) / 1023;
             // This is the voltage of the pin, we need to scale it up because we have

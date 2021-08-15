@@ -39,7 +39,7 @@ $(OBJDIR)/%.o: %.S $(MAKEFILES) $(HEADERS)
 	@mkdir -p $(OBJDIR)
 	avr-gcc -c $(CFLAGS) -Xassembler -a=$(OBJDIR)/$(<).lst -o $@ $<
 
-install: instalpymcu
+install: installpymcu
 	
 PYMCUPROG_OPTS=-d $(MCU_PYMCUPROG) -t uart -u /dev/ttyUSB0  
 	
