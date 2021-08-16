@@ -102,6 +102,11 @@ static void handle_switches(uint32_t now)
             need_save = true;
             show_rpm_value(config_switch_count, mixing_state.enable_braking);
             break;
+        case 10: // Servo doubling.
+            mixing_state.enable_servo_double = ! mixing_state.enable_servo_double;
+            need_save = true;
+            show_rpm_value(config_switch_count, mixing_state.enable_servo_double);
+            break;
     }
     if (need_save) {
         nvconfig_save();

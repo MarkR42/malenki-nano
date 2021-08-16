@@ -12,6 +12,9 @@ typedef struct {
     bool enable_mixing;
     bool swap_weapon_channels; 
     bool enable_braking;
+// Flag: enable "servo double" logic which expands the range of
+// some servos by sending longer and shorter pulses.
+    bool enable_servo_double;
 } mixing_state_t;
 
 extern mixing_state_t mixing_state;

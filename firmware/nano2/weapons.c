@@ -2,6 +2,7 @@
 
 #include "weapons.h"
 #include "diag.h"
+#include "mixing.h"
 
 #define F_CPU 10000000 /* 10MHz / prescale=2 */
 #include <util/delay.h>
@@ -112,6 +113,13 @@ void weapons_init()
 
 static uint16_t scale_pulse(uint16_t pulse)
 {
+    if (mixing_state.enable_servo_double) {
+        // Effectively double the range of pulse widths
+        pulse -= 1500;
+        pulse *= 2;
+        pulse += 1500;
+    }
+    
     // Scale pulse into TCD counts.
     // pulse should be 1000-2000 (us)
     // essentially divide by 6.4
