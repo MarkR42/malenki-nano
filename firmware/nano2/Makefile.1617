@@ -1,0 +1,8 @@
+
+# We require the avr-gcc toolchain
+#
+MCU=attiny1617
+MCU_PYMCUPROG=attiny1617
+CFLAGS=-DENABLE_DIAG=1
+
+include common.mk

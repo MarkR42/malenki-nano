@@ -9,7 +9,7 @@ the time between packets; otherwise we miss the next one.
 -----------
 
 Pin and peripheral hardware assignments / usage
-Peripherals of the attiny3217 MCU
+Peripherals of the attiny1617 MCU
 
 PA0 - RESET / UPDI - default - not used by code. Used for programming
 	firmware
@@ -32,6 +32,10 @@ PB1 - Motor2R (Left) - WO1
 PB2 - Motor2F (Left) - WO2
 
 PB3 - SPI_SCS - chip select - connected to A7105
+
+PB5 - VSENSE - analogue input on the tiny817
+    
+
 PC0 - WEAPON3 (optional) - this is an output, it should send pulses
     1000-2000us
     Hardware PWM is generated using TCD outputs WOC and WOD
@@ -58,9 +62,9 @@ HCMP1 - WO4 - Motor3R
 HCMP2 - WO5 - Motor3F
 
 TCB0 - Radio timeout. Controlled by radio.c
-TCB1 - 16-bit timer running at max clock speed, interrupts cpu every 10ms.
 
 TCD0 - use to generate PWM for WEAPON2 / WEAPON3.
+    - Also use for a timer interrupt for incrementing the global timer tickcount variable.
 
 Note that the SPI peripheral is not used for spi communication;
     it's not necessary for our usage. SPI can be bit-banged efficiently.

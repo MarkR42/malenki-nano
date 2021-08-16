@@ -135,17 +135,6 @@ spi_strobe: ; command in r24
     scs_high
     ret
 
-.global spi_strobe2
-spi_strobe2: ; command in r24, r22
-    scs_low
-    dir_out
-    send_byte ; r24
-    mov r24, r22
-    send_byte ; r24
-    dir_in
-    scs_high
-    ret
-
 ; These two functions are actually identical, they just write
 ; three bytes to the SPI.
 .global spi_strobe3

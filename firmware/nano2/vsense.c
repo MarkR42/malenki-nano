@@ -8,78 +8,62 @@
 
 vsense_state_t vsense_state;
 
+#ifdef __AVR_ATtiny1617__
+#define ADC_VSENSE ADC1
+#else
+#define ADC_VSENSE ADC0
+#endif
+
+
 static void vsense_hw_init()
 {
     // NB: input voltage to mcu should be 3.3
     // Set voltage reference to 2.5v (highest which is guaranteed lower than input)
-    VREF.CTRLC = VREF_ADC1REFSEL_2V5_gc;
-    // We use pin PC2 as analogue input.
-    // Disable the digital input on PA7.
+    VREF.CTRLA = VREF_ADC0REFSEL_2V5_gc;
+    // We use pin PC2 as analogue input (on attiny1617).
+    // Disable the digital input.
     PORTC.PIN2CTRL &= ~PORT_ISC_gm;
     PORTC.PIN2CTRL |= PORT_ISC_INPUT_DISABLE_gc;
-
+    // We use pin PB5 as analogue input on attiny817
+    // disable its digital input.
+    PORTB.PIN5CTRL &= ~PORT_ISC_gm;
+    PORTB.PIN5CTRL |= PORT_ISC_INPUT_DISABLE_gc;
+    // Note that PB5 and PC2 are electrically connected so we can
+    // possibly reduce noise by disabling them both
+#ifdef __AVR_ATtiny1617__
+    // Attiny1617 - use ADC1 mux channel 8.
+    VREF.CTRLC |= VREF_ADC1REFSEL_2V5_gc;
+    
     ADC1.CTRLC = ADC_PRESC_DIV16_gc      /* CLK_PER divider */
                | ADC_REFSEL_INTREF_gc;  /* Internal reference */
     
     ADC1.CTRLA = ADC_ENABLE_bm          /* ADC Enable: enabled */
                | ADC_RESSEL_10BIT_gc;   /* 10-bit mode */
     
-    /* Select ADC channel */
-    ADC1.MUXPOS  = ADC_MUXPOS_AIN8_gc;
-    
-    /* Enable FreeRun mode */
-    ADC1.CTRLA |= ADC_FREERUN_bm;
-
-    // Start the first conversion.
-    ADC1.COMMAND = ADC_STCONV_bm;    
-}
-
-static void tempsense_hw_init()
-{
-    // Use ADC0 to sense temperature.
-    VREF.CTRLA = VREF_ADC0REFSEL_1V1_gc;
+    ADC1.MUXPOS  = ADC_MUXPOS_AIN8_gc; // ADC1 muxpos 8 = PC2
+#else
+    // Attiny817
     ADC0.CTRLC = ADC_PRESC_DIV16_gc      /* CLK_PER divider */
-               | ADC_REFSEL_INTREF_gc  /* Internal reference */
-               | ADC_SAMPCAP_bm; // capacitance for temp sensor
-    ADC0.CTRLD = ADC_INITDLY_DLY64_gc;
-    // ADCn.SAMPCTRL select SAMPLEN≥32μs
-    // (each clock cycle is 1.6 us so we need at least 20 of them)
-    ADC0.SAMPCTRL = 0x18; // only 5 bits
-    ADC0.MUXPOS = ADC_MUXPOS_TEMPSENSE_gc;
-    ADC0.CTRLA = ADC_ENABLE_bm |
-        ADC_RESSEL_10BIT_gc;
-    ADC0.CTRLA |= ADC_FREERUN_bm;
-    // Start the first conversion.
-    ADC0.COMMAND = ADC_STCONV_bm; 
-}
+               | ADC_REFSEL_INTREF_gc;  /* Internal reference */
+    
+    ADC0.CTRLA = ADC_ENABLE_bm          /* ADC Enable: enabled */
+               | ADC_RESSEL_10BIT_gc;   /* 10-bit mode */
+    
+    /* Select ADC channel */
+    ADC0.MUXPOS  = ADC_MUXPOS_AIN8_gc; // ADC0.AIN8 == Pin PB5
+    
+#endif
 
-static uint16_t temp_calc()
-{
-    // returns temperature in Celsius * 10
-    
-    // Code from datasheet
-    int8_t sigrow_offset = SIGROW.TEMPSENSE1;  // Read signed value from signature
-    uint8_t sigrow_gain = SIGROW.TEMPSENSE0;    // Read unsigned value from signature row
-    uint16_t adc_reading = ADC0.RES;   // ADC conversion result with 1.1 V internal reference 
-    uint32_t temp = adc_reading - sigrow_offset;
-    temp *= sigrow_gain;  // Result might overflow 16 bit variable (10bit+8bit)
-    // We now have temperature in K * 256
-    // temp += 0x80;               // Add 1/2 to get correct rounding on division below
-    // temp >>= 8;                 // Divide result to get Kelvin 
-    // uint16_t temperature_in_K = temp;
-    // Let's assume at this point that the temp is above freezing...
-    temp -= ((uint32_t) (273.1 * 256.0));
-    // Now we can fit in a 16 bit
-    uint16_t tempc_256 = temp;
-    
-    // This jiggery-pokery should convert to C * 10
-    return (((tempc_256 / 8) * 10) /32);
+    /* Enable FreeRun mode */
+    ADC_VSENSE.CTRLA |= ADC_FREERUN_bm;
+
+    // Start the first conversion.
+    ADC_VSENSE.COMMAND = ADC_STCONV_bm;    
 }
 
 void vsense_init()
 {
     vsense_hw_init();
-    tempsense_hw_init();
 }
 
 static const uint32_t vsense_period = 100; // Centiseconds
@@ -108,9 +92,9 @@ void vsense_loop()
     if (age >= vsense_period) 
     {
         // Check if ready.
-        if (ADC1.INTFLAGS & ADC_RESRDY_bm)
+        if (ADC_VSENSE.INTFLAGS & ADC_RESRDY_bm)
         {
-            uint16_t val = ADC1.RES; // 0..1023
+            uint16_t val = ADC_VSENSE.RES; // 0..1023
             // Scale to give voltage in millivolts
             uint32_t vsense_mv = (((uint32_t) val) * 2500) / 1023;
             // This is the voltage of the pin, we need to scale it up because we have
@@ -156,10 +140,6 @@ void vsense_loop()
                     vsense_state.critical_count = 0;
                 }
             }
-        }
-        if (ADC0.INTFLAGS & ADC_RESRDY_bm) {
-            vsense_state.temperature_c10 = temp_calc();
-            // diag_println("Temperature: %03d degrees C*10", vsense_state.temperature_c10);
         }
         last_vsense_tickcount = now;
     }
