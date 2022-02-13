@@ -43,7 +43,7 @@ install: installpymcu
 	
 PYMCUPROG_OPTS=-d $(MCU_PYMCUPROG) -t uart -u /dev/ttyUSB0  
 	
-installpymcu: link
+installpymcu:
 	pymcuprog $(PYMCUPROG_OPTS) erase
 	pymcuprog $(PYMCUPROG_OPTS) -f $(HEX) -v info write 
 	pymcuprog $(PYMCUPROG_OPTS) -f $(HEX) verify
@@ -52,6 +52,9 @@ unbind:
 	# Overwrite the magic number in eeprom so the receiver unbinds
 	# and restores its settings to factory state.
 	pymcuprog $(PYMCUPROG_OPTS) -m eeprom erase
+
+reset:
+	pymcuprog $(PYMCUPROG_OPTS) reset
 
 clean:
 	rm -rf $(OBJDIR)

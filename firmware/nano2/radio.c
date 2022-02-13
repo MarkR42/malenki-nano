@@ -343,6 +343,11 @@ __attribute__ ((unused)) static void radio_test1()
 #define PACKET_TYPE_BIND2 0xbc
 #define PACKET_TYPE_TELEMETRY 0xaa
 
+// Send telemetry an undivisible number of packets,
+// So that the telemetry does not always appear on one hopping
+// channel, it moves around them all.
+#define TELEMETRY_INTERVAL_PACKETS 41
+
 static void prepare_telemetry(bool is_config_mode, uint8_t rpm_value)
 {
     uint8_t *p = radio_state.telemetry_packet;
@@ -421,10 +426,7 @@ static void handle_packet_sticks()
     // Send telemetry from time to time.
     if (radio_state.telemetry_countdown == 0) {
         prepare_telemetry(sticks_result.config_mode, sticks_result.rpm_value);
-        // Send telemetry an undivisible number of packets,
-        // So that the telemetry does not always appear on one hopping
-        // channel, it moves around them all.
-        radio_state.telemetry_countdown = 13;
+        radio_state.telemetry_countdown = TELEMETRY_INTERVAL_PACKETS;
     } else {
         radio_state.telemetry_countdown --;
     }
@@ -624,8 +626,13 @@ static void maybe_diag_putc(char c)
 
 static void enable_rx()
 {
+    /*
+     * If for some reason, we were transmitting telemetry,
+     * it will stop (and generate a bad packet)
+     */
     uint8_t chanminus1 = radio_state.current_channel - 1 ;
     spi_write_byte_then_strobe(0x0f, chanminus1, STROBE_RX);
+    radio_state.tx_active = false; // Ensure this flag is not left set
 }
 
 static void do_tx(uint8_t channel)
@@ -647,7 +654,6 @@ static void do_tx_complete()
 {
     maybe_diag_putc('T');
     // reactivate the receiver 
-    radio_state.tx_active = false;
     enable_rx();
 }
 
@@ -698,12 +704,7 @@ ISR(TCB0_INT_vect)
             // it to come around again.
             hop_to_next_channel(0);
         }
-        if (! radio_state.tx_active)
-        {
-            // Only enable the rx if we are not currently transmitting.
-            // Because it will stop the rx.
-            enable_rx();    
-        }
+        enable_rx();    
         maybe_diag_putc('.');
         update_led();
     }
