@@ -1,5 +1,6 @@
 #include <avr/io.h>
 #include <avr/interrupt.h>
+#include <avr/wdt.h>
 
 #define F_CPU 10000000 /* 10MHz / prescale=2 */
 #include <util/delay.h>
@@ -157,13 +158,52 @@ void shutdown_system()
     for (;;) { }
 }
 
+/*
+ * Watchdog - this will reset the MCU if either
+ * a) The main loop stops spinning or
+ * b) Radio interrupts stop for some reason
+ * 
+ * We do this by using a global flag which is set in the radio interrupt,
+ * and checked in the main loop.
+ * 
+ * If we kicked the dog directly in the radio interrupt, then it might
+ * not reset if the main loop hangs.
+ */
+
+static void watchdog_early_init()
+{
+    // Tell the developers that the dog was triggered.
+    if (RSTCTRL.RSTFR & RSTCTRL_WDRF_bm) {
+        diag_puts("watchdog triggered\r\n");
+    }
+    // reset the flag or it stays across other types of reset.
+    RSTCTRL.RSTFR = RSTCTRL_WDRF_bm; 
+}
+
+static void watchdog_init()
+{
+    // WDT_PERIOD_128CLK_gc = (0x05<<0),  /* 128 cycles (0.128s) */
+    uint8_t wdt_ctrla = WDT_PERIOD_128CLK_gc; 
+    _PROTECTED_WRITE(WDT.CTRLA, wdt_ctrla);    
+}
+
+static void watchdog_loop()
+{
+    // Kick the dog to stop it from resetting, if the radio
+    // interrupts are working ok.
+    if (master_state.radio_interrupt_ok) {
+        wdt_reset();
+        master_state.radio_interrupt_ok = 0;
+    }
+}
  
 int main(void)
 {
     init_clock();
     init_serial();
     // Write the greeting message as soon as possible.
-    diag_puts("\r\nMalenki-nano2 CG2021\r\n");
+    diag_puts("\r\nMalenki-Nano 2022\r\n");
+    watchdog_early_init();
     init_timer();
     sei(); // interrupts on
     weapons_init();
@@ -177,11 +217,13 @@ int main(void)
     sticks_init();
     // Initialise the radio last.
     radio_init();
+    watchdog_init();
     
     while(1) {
         // Main loop
         radio_loop();
         vsense_loop();
         sticks_loop();
+        watchdog_loop();
     }
 }

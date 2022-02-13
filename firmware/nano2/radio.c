@@ -707,6 +707,7 @@ ISR(TCB0_INT_vect)
         enable_rx();    
         maybe_diag_putc('.');
         update_led();
+        master_state.radio_interrupt_ok = 1; // for watchdog
     }
 }
 
@@ -839,6 +840,7 @@ static void do_rx()
         maybe_diag_putc('1');
     }
     update_led();
+    master_state.radio_interrupt_ok = 1; // for watchdog
 }
 
 ISR(PORTA_PORT_vect)
