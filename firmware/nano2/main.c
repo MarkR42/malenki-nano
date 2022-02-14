@@ -141,6 +141,11 @@ static void show_device_info()
     diag_println("serial number (ascii) is:%s", buf);
 }
 
+static void watchdog_stop()
+{
+    // Deactivates watchdog
+    _PROTECTED_WRITE(WDT.CTRLA, 0);    
+}
 
 void shutdown_system()
 {
@@ -148,6 +153,7 @@ void shutdown_system()
     diag_println("### Shutting down ###");
     diag_puts("\r\n");
     radio_shutdown();
+    watchdog_stop();
     diag_println("Radio is shut down. Goodnight.");
     // Set all ports to inputs.
     // This saves a little current powering the leds etc.

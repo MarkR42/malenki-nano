@@ -16,20 +16,20 @@ HEX=$(OBJDIR)/main.hex
 
 LTOFLAGS=-flto
 # -flto is link-time optimisation and must be used for compile and link.
-LINKFLAGS=-Os $(LTOFLAGS)
+LINKFLAGS=-g -Os $(LTOFLAGS)
 
 link: $(OBJECTS) $(HEADERS)
 	avr-gcc -mmcu=$(MCU) -o $(ELF) $(OBJECTS) $(LINKFLAGS)
 	# see how big it is
 	avr-size $(ELF)
 	# disassemble, so can see what the compiler did
-	avr-objdump -S $(ELF) > $(OBJDIR)/main.asm
+	avr-objdump --source --source-comment -S $(ELF) > $(OBJDIR)/main.asm
 	avr-objdump -t $(ELF) > $(OBJDIR)/main.sym
 	avr-objdump -j .bss -j .data -t $(ELF) | grep 00 |sort > $(OBJDIR)/ram.txt # show ram usage
 	avr-objcopy -j .text -j .data -j .rodata -O ihex $(ELF) $(HEX)
 	avr-objcopy -j .text -j .data -j .rodata -O binary $(ELF) $(OBJDIR)/main.bin
 
-CFLAGS += -mmcu=$(MCU) -Os -Wall  $(LTOFLAGS)
+CFLAGS += -mmcu=$(MCU) -Os -Wall -g  $(LTOFLAGS)
 $(OBJDIR)/%.o: %.c $(MAKEFILES)
 	@mkdir -p $(OBJDIR)
 	avr-gcc -c $(CFLAGS) -o $@ $<
