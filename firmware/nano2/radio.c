@@ -20,7 +20,8 @@
 
 // Auto bind time in centiseconds.
 #define AUTO_BIND_TIME (60 * 100)
-
+// How often we reinitialise the radio after losing signal
+#define REINIT_TIME (100)
 // GIO port is on this pin
 PORT_t * const GIO1_PORT = &PORTA;
 const uint8_t GIO1_PIN = 2;
@@ -51,6 +52,7 @@ const uint8_t BLINKY_bm = 5 << 4;
 
 static void register_dump()
 {
+#ifdef ENABLE_DIAG
     // Dump regs
     for (uint8_t n=0; n<0x30; n++) {
         uint8_t b = spi_read_byte(n);
@@ -60,6 +62,7 @@ static void register_dump()
         }
     }
     diag_puts("\r\n");
+#endif // ENABLE_DIAG
 }
 
 //A7105 registers values -> ROM
@@ -83,19 +86,17 @@ static void program_config()
 }
 static void wait_auto_clear(uint8_t reg, uint8_t bit)
 {
-    uint32_t t0 = get_tickcount();
-    while (1) {
+    uint16_t counter = 100;
+    while (counter > 0) {
         uint8_t v = spi_read_byte(reg);
         if (! (v & bit)) {
             // Cleared.
-            break;
+            return;
         }
-        uint8_t t1 = get_tickcount();
-        if ((t1 - t0) > 25) {
-            // Timeout (centiseconds)
-            epic_fail("TIMEOUT initialising radio. Faulty crystal?");
-        }
+        -- counter;
+        _delay_ms(1);
     }
+    epic_fail("TIMEOUT initialising radio. Faulty crystal?");
 }
 
 static void init_interrupts()
@@ -298,6 +299,32 @@ void radio_init()
      * we just wait for the radio timeout, which will restart the
      * rx anyway.
      */
+}
+
+/*
+ * Called to reinitialise the radio hardware, but not
+ * clear all state etc.
+ */
+static void radio_reinit()
+{
+    // Interrupts will be enabled at this point, and might arrive,
+    // so we should disable them during the reinitialisation.
+    // Note also that disabling interrupts breaks the wait_auto_clear function,
+    // But that's ok, because the watchdog will reset if the reinit
+    // takes too long.
+    cli(); 
+    
+    // If this fails because the radio is broken, it will call
+    // epic_fail which will either reset or the watchdog will reset.
+    init_a7105_hardware();
+    init_interrupts();
+    /*
+     * This will also reinitialise the timer, so a timeout
+     * interrupt will arrive very soon and cause the receiver to
+     * start on an appropriate channel- we don't need to
+     * explicitly start the receiver. 
+     */
+    sei();
 }
 
 static void enable_rx();
@@ -558,11 +585,9 @@ void radio_loop()
             // radio_state.state != RADIO_STATE_BIND
             uint32_t age = now - radio_state.last_sticks_packet;
             if (age > 25) { // centiseconds
-                // Lost signal.
-                diag_println("No signal");
+                // No signal.
                 sticks_no_signal();
                 radio_state.led_on = false;
-                radio_state.last_sticks_packet = now; // avoid spamming debug port
                 radio_state.got_signal = false;
                 // Auto-rebind:
                 // if we have got no signal since power on, then
@@ -570,6 +595,17 @@ void radio_loop()
                 if ((! radio_state.got_signal_ever) && (now > AUTO_BIND_TIME)) {
                     diag_println("Auto-bind mode");
                     init_bind_mode();
+                }
+                if (radio_state.got_signal_ever) {
+                    // If we lost signal, periodically reinitialise the radio.
+                    if (radio_state.last_reinit_time == 0) {
+                        radio_state.last_reinit_time = radio_state.last_sticks_packet;
+                    }
+                    uint32_t reinit_age = now - radio_state.last_reinit_time;
+                    if (reinit_age > REINIT_TIME) {
+                        radio_reinit();
+                        radio_state.last_reinit_time = now;
+                    }
                 }
             }
         }

@@ -125,6 +125,7 @@ void epic_fail(const char * reason)
  
 static void show_device_info()
 {
+#ifdef ENABLE_DIAG
     diag_println("device id=%02x %02x %02x",
         (int) SIGROW.DEVICEID0,
         (int) SIGROW.DEVICEID1,
@@ -139,6 +140,7 @@ static void show_device_info()
     strncpy(buf, (char *) serialnum, 10);
     buf[10] = '\0';
     diag_println("serial number (ascii) is:%s", buf);
+#endif // ENABLE_DIAG
 }
 
 static void watchdog_stop()
@@ -188,8 +190,8 @@ static void watchdog_early_init()
 
 static void watchdog_init()
 {
-    // WDT_PERIOD_128CLK_gc = (0x05<<0),  /* 128 cycles (0.128s) */
-    uint8_t wdt_ctrla = WDT_PERIOD_128CLK_gc; 
+    // WDT_PERIOD_256CLK_gc = (0x06<<0), approx 0.25s
+    uint8_t wdt_ctrla = WDT_PERIOD_256CLK_gc; 
     _PROTECTED_WRITE(WDT.CTRLA, wdt_ctrla);    
 }
 

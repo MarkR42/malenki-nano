@@ -37,6 +37,7 @@ typedef struct {
     uint8_t packet[RADIO_PACKET_LEN];
     bool packet_is_valid; // set to true if the packet is waiting to be processed, set false after.
     uint32_t last_sticks_packet; // time of last sticks packet
+    uint32_t last_reinit_time; // When did we last reinit the radio?
     uint8_t got_signal_ever; // Set this to 1 after we got anything, to suppress autobind.
     bool led_on; // Set in the main loop, interrupt code enables it via a7105 and spi
     bool got_signal;
