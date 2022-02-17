@@ -231,6 +231,15 @@ static void init_a7105_hardware()
             b);
         epic_fail("Fail to read channel back");
     }
+    // Init send buffer with all 0xff
+    // For sending telemetry - make sure the unused parts of the
+    // telemetry packet are 0xff so they do not confuse the tx
+    spi_strobe(STROBE_WRITE_PTR_RESET);
+    for (uint8_t j=0; j<RADIO_PACKET_LEN; j++) {
+        spi_write_byte(0x5, 0xff);
+        // Also init telemetry packet in state
+        radio_state.telemetry_packet[j] = 0xff;
+    }    
 }
 
 static bool is_all_zeros(const uint8_t *buf, uint8_t len)
@@ -281,14 +290,6 @@ void radio_init()
         dump_buf(radio_state.hop_channels, NR_HOP_CHANNELS);
     }
 
-    // Init send buffer with all ff
-    spi_strobe(STROBE_WRITE_PTR_RESET);
-    for (uint8_t j=0; j<RADIO_PACKET_LEN; j++) {
-        spi_write_byte(0x5, 0xff);
-        // Also init telemetry packet in state
-        radio_state.telemetry_packet[j] = 0xff;
-    }
-    
     // Init led BLINKY gpio - set it as output.
     LED_VPORT->DIR |= LED_PIN_bm;
     
