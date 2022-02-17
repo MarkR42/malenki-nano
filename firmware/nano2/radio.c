@@ -383,6 +383,7 @@ static void prepare_telemetry(bool is_config_mode, uint8_t rpm_value)
     memcpy(p+1, radio_state.tx_id, 4);
     memcpy(p+5, radio_state.rx_id, 4);
     uint8_t n=9;
+    bool sense_ok = true;
 
     // Temperature telemetry is removed.
 
@@ -393,21 +394,27 @@ static void prepare_telemetry(bool is_config_mode, uint8_t rpm_value)
         // is always a 2S lipo (6.4-8.4 volts) 
         // Because the official receivers for FS do not support 1S
         // packs. 
-        // So we will set the voltage as "external" if there are NOT
-        // 2 cells in the pack.
+        // So we will set the voltage as "external" if we have a
+        // 1-cell pack.
         // Otherwise the fs i6 will be constantly beeping low battery if we run off 1S.
         // It appears that the voltage alarm is not configurable
         // for the internal sensor, and also cannot be disabled
         // (which is annoying!)
-        uint8_t voltage_id = 2; // "External sensor"
-        if (vsense_state.cells_count == 2) {
-            // 2 cell pack, use "internal sensor"
-            voltage_id = 0;
+        uint8_t voltage_id = 0; // "Internal sensor"
+        if (vsense_state.cells_count == 1) {
+            // 1 cell pack, use "external sensor"
+            voltage_id = 2;
         }
         p[n++] = voltage_id; // telemetry id (0=internal 1 or more=external)
         uint16_t volts_100 = vsense_state.voltage_mv / 10;
         p[n++] = (volts_100 & 0xff); // low
         p[n++] = (volts_100 >> 8);// high
+        if (vsense_state.voltage_mv < 1000) {
+            // Voltage sensor is broken, or not initialised yet
+            // Do not send telemetry with an invalid value, it
+            // causes the tx to make all sorts of beeps and flash leds.
+            sense_ok = false;
+        }
     }
     
     // Special sensor for "rpm" we use to send data back to the tx.
@@ -420,7 +427,7 @@ static void prepare_telemetry(bool is_config_mode, uint8_t rpm_value)
     }
     
     p[n++] = 0xff; // end
-    radio_state.telemetry_packet_is_valid = 1;
+    radio_state.telemetry_packet_is_valid = sense_ok;
 }
 
 static void handle_packet_sticks()
