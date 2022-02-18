@@ -46,6 +46,10 @@ typedef struct {
     uint8_t telemetry_countdown; // Number of packets until next telem tx.
     uint8_t sticks_packet_count; // A general packet count that overflows all the time.
     bool tx_active; // flag so that interrupt knows tx is happening.
+    // For telemetry error rate:
+    uint8_t e_packet_count; // Count of packets including missed and error (up to 100)
+    uint8_t e_good_count; // Count of good packets
+    uint8_t e_error_rate; // Error rate per 100 packets
 } radio_state_t;
 
 extern radio_state_t radio_state;

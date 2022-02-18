@@ -30,7 +30,7 @@ link: $(OBJECTS) $(HEADERS)
 	avr-objcopy -j .text -j .data -j .rodata -O binary $(ELF) $(OBJDIR)/main.bin
 
 CFLAGS += -mmcu=$(MCU) -Os -Wall -g  $(LTOFLAGS)
-$(OBJDIR)/%.o: %.c $(MAKEFILES)
+$(OBJDIR)/%.o: %.c $(MAKEFILES) $(HEADERS)
 	@mkdir -p $(OBJDIR)
 	avr-gcc -c $(CFLAGS) -o $@ $<
 

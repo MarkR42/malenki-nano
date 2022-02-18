@@ -261,8 +261,10 @@ static void radio_init_rx_id()
     for (uint8_t i=0; i<10; i++) {
         radio_state.rx_id[i % 4] ^= serialnum[i];
     }
+#ifdef ENABLE_DIAG
     diag_puts("rx_id=");
     dump_buf(radio_state.rx_id, 4);
+#endif
 }
 
 void radio_init()
@@ -376,6 +378,10 @@ __attribute__ ((unused)) static void radio_test1()
 // channel, it moves around them all.
 #define TELEMETRY_INTERVAL_PACKETS 41
 
+#define AFHDS2A_SENSOR_RX_VOLTAGE 0x00
+#define AFHDS2A_SENSOR_RX_ERR_RATE 0xfe
+#define AFHDS2A_SENSOR_RX_RSSI 0xfc
+
 static void prepare_telemetry(bool is_config_mode, uint8_t rpm_value)
 {
     uint8_t *p = radio_state.telemetry_packet;
@@ -416,6 +422,14 @@ static void prepare_telemetry(bool is_config_mode, uint8_t rpm_value)
             sense_ok = false;
         }
     }
+    // Sensors to keep opentx happy.
+    p[n++] = AFHDS2A_SENSOR_RX_ERR_RATE;
+    p[n++] = 0; // Instance ID
+    p[n++] = radio_state.e_error_rate; p[n++] = 0;
+    
+    p[n++] = AFHDS2A_SENSOR_RX_RSSI;
+    p[n++] = 0; // Instance ID
+    p[n++] = 0; p[n++] = 0;
     
     // Special sensor for "rpm" we use to send data back to the tx.
     if (is_config_mode) // Only send in config mode.
@@ -455,6 +469,13 @@ static void handle_packet_sticks()
     } else {
         // Driving mode.
         radio_state.led_on = true;
+    }
+    
+    if (!radio_state.got_signal) {
+        // Re-established signal
+        radio_state.e_packet_count = 0;
+        radio_state.e_good_count   = 0;
+        radio_state.e_error_rate   = 0;
     }
     
     radio_state.got_signal = true;
@@ -629,10 +650,12 @@ static void init_bind_mode()
     for (uint8_t i=0; i< NR_HOP_CHANNELS; i++) {
         radio_state.hop_channels[i] = (i & 2) ? 0x0d : 0x8c;
     }
+#ifdef ENABLE_DIAG
     diag_puts("Bind mode hopping pattern: ");
     dump_buf(radio_state.hop_channels, NR_HOP_CHANNELS);
     diag_println("tx_id_saved: ");
     dump_buf(radio_state.tx_id_saved, 4);
+#endif
 }
 
 void radio_shutdown()
@@ -752,6 +775,7 @@ ISR(TCB0_INT_vect)
         maybe_diag_putc('.');
         update_led();
         master_state.radio_interrupt_ok = 1; // for watchdog
+        ++ radio_state.e_packet_count; // count mised packets as errors.
     }
 }
 
@@ -882,9 +906,20 @@ static void do_rx()
         }
         radio_state.missed_packet_count = 0; // successive missed packets.
         maybe_diag_putc('1');
+        ++ radio_state.e_good_count;
     }
+    
     update_led();
     master_state.radio_interrupt_ok = 1; // for watchdog
+    // Measure error rate for telemetry
+    ++ radio_state.e_packet_count;
+    if (radio_state.e_packet_count >= 100) {
+        // Store error rate.
+        radio_state.e_error_rate = 100 - radio_state.e_good_count;
+        // Restart counters.
+        radio_state.e_packet_count = 0;
+        radio_state.e_good_count = 0;
+    }
 }
 
 ISR(PORTA_PORT_vect)

@@ -182,7 +182,7 @@ static void watchdog_early_init()
 {
     // Tell the developers that the dog was triggered.
     if (RSTCTRL.RSTFR & RSTCTRL_WDRF_bm) {
-        diag_puts("watchdog triggered\r\n");
+        diag_puts("wdog fired\r\n");
     }
     // reset the flag or it stays across other types of reset.
     RSTCTRL.RSTFR = RSTCTRL_WDRF_bm; 
