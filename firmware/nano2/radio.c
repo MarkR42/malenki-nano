@@ -376,7 +376,7 @@ __attribute__ ((unused)) static void radio_test1()
 // Send telemetry an undivisible number of packets,
 // So that the telemetry does not always appear on one hopping
 // channel, it moves around them all.
-#define TELEMETRY_INTERVAL_PACKETS 41
+#define TELEMETRY_INTERVAL_PACKETS 23
 
 #define AFHDS2A_SENSOR_RX_VOLTAGE 0x00
 #define AFHDS2A_SENSOR_RX_ERR_RATE 0xfe
@@ -426,11 +426,7 @@ static void prepare_telemetry(bool is_config_mode, uint8_t rpm_value)
     p[n++] = AFHDS2A_SENSOR_RX_ERR_RATE;
     p[n++] = 0; // Instance ID
     p[n++] = radio_state.e_error_rate; p[n++] = 0;
-    
-    p[n++] = AFHDS2A_SENSOR_RX_RSSI;
-    p[n++] = 0; // Instance ID
-    p[n++] = 0; p[n++] = 0;
-    
+  
     // Special sensor for "rpm" we use to send data back to the tx.
     if (is_config_mode) // Only send in config mode.
     {
