@@ -78,9 +78,12 @@ static uint32_t last_vsense_tickcount = 0;
  */
 
 // Voltage, in mv, per cell, where we shut down.
-#define CRITICAL_VOLTAGE_PER_CELL 3150
+#define CRITICAL_VOLTAGE_PER_CELL 2800
+// NB: On a single cell pack at 2.8 volts the radio won't work and the MCU might brownout
+// if that happens, we will shut down anyway.
+
 // Number of readings below CRITICAL_VOLTAGE_PER_CELL to take before
-// shutdown.
+// shutdown (seconds)
 #define CRITICAL_COUNT 12
 
 void vsense_loop()
@@ -124,10 +127,6 @@ void vsense_loop()
             vsense_state.voltage_mv = vsense_mv;
             if (vsense_state.cells_count > 0) 
             {
-                // Only do battery diagnostics if we have a known size pack.
-                uint16_t warn_voltage = vsense_state.cells_count  * 3500;
-                if (vsense_mv < warn_voltage) 
-                    diag_println("Warning: low battery");
                 uint16_t critical_voltage = vsense_state.cells_count * CRITICAL_VOLTAGE_PER_CELL;
                 if (vsense_mv < critical_voltage) {
                     vsense_state.critical_count += 1;
