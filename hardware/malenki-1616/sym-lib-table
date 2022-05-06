@@ -1,0 +1,4 @@
+(sym_lib_table
+  (lib (name "mal_nano")(type "KiCad")(uri "${KIPRJMOD}/mal_nano.kicad_sym")(options "")(descr ""))
+  (lib (name "malenki-nano-rescue")(type "Legacy")(uri "${KIPRJMOD}/malenki-nano-rescue.lib")(options "")(descr ""))
+)
