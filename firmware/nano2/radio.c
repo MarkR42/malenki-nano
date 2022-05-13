@@ -28,8 +28,17 @@ const uint8_t GIO1_PIN = 2;
 const uint8_t GIO1_bm = 1 << GIO1_PIN;
 
 // Where is the LED?
+#ifdef __AVR_ATtiny1616__
+// 1616 only has 20 pins, so it has no PC5
+// The LED is on PB4
+VPORT_t * const LED_VPORT = &VPORTB;
+const uint8_t LED_PIN = 4;
+#else
+// PC5
 VPORT_t * const LED_VPORT = &VPORTC;
 const uint8_t LED_PIN = 5;
+#endif
+
 const uint8_t LED_PIN_bm = 1 << LED_PIN;
 
 radio_state_t radio_state;

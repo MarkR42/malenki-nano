@@ -142,3 +142,11 @@ Example from attiny1614:
 device id=1e 94 22
 serial number: 51 4e 4a 4e 4c 20 4b 79 26 41
 serial number (ascii) is:QNJNL Ky&A
+
+---
+Attiny1616 - differences from above:
+
+BLINKY is on PB4
+VSENSE is on PB5 
+PC2, PC3 are NC
+PC4 and PC5 don't exist

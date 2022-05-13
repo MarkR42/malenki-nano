@@ -8,6 +8,9 @@
 
 vsense_state_t vsense_state;
 
+/*
+ * The old version of the Malenki 1617 used ADC1
+ */
 #ifdef __AVR_ATtiny1617__
 #define ADC_VSENSE ADC1
 #else
@@ -31,7 +34,7 @@ static void vsense_hw_init()
     // Note that PB5 and PC2 are electrically connected so we can
     // possibly reduce noise by disabling them both
 #ifdef __AVR_ATtiny1617__
-    // Attiny1617 - use ADC1 mux channel 8.
+    // Attiny1617 - old version which used PC2 - use ADC1 mux channel 8.
     VREF.CTRLC |= VREF_ADC1REFSEL_2V5_gc;
     
     ADC1.CTRLC = ADC_PRESC_DIV16_gc      /* CLK_PER divider */
@@ -42,7 +45,7 @@ static void vsense_hw_init()
     
     ADC1.MUXPOS  = ADC_MUXPOS_AIN8_gc; // ADC1 muxpos 8 = PC2
 #else
-    // Attiny817
+    // Attiny817, 1616 and maybe others that use PB5
     ADC0.CTRLC = ADC_PRESC_DIV16_gc      /* CLK_PER divider */
                | ADC_REFSEL_INTREF_gc;  /* Internal reference */
     
@@ -51,7 +54,6 @@ static void vsense_hw_init()
     
     /* Select ADC channel */
     ADC0.MUXPOS  = ADC_MUXPOS_AIN8_gc; // ADC0.AIN8 == Pin PB5
-    
 #endif
 
     /* Enable FreeRun mode */
