@@ -1,5 +1,9 @@
-#!/bin/bash
-
-set -x
-java -jar /home/mark/unpack/kicad-util/target/kicadutil-1.0-SNAPSHOT.jar \
-    pcb -f panel12-1616.kicad_pcb panel --inset=-0.1 --width=2.0 --pitch 1.2
+kikit panelize \
+    --framing 'frame; width: 4mm; space: 3mm; cuts:h' \
+    --layout 'grid; rows: 3; cols: 4; vspace: 10mm; hbackbone: 4mm; hspace:3mm' \
+    --tabs 'fixed; width: 3mm' \
+    --cuts 'mousebites; drill: 0.5mm; spacing: 1mm; offset: -0.2mm' \
+    --post 'millradius: 1.5mm' \
+    --source 'tolerance: 8mm' \
+    ../malenki-1616/malenki-1616.kicad_pcb panel12-1616.kicad_pcb
+    
