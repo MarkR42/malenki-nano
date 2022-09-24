@@ -88,6 +88,14 @@ static uint32_t last_vsense_tickcount = 0;
 // shutdown (seconds)
 #define CRITICAL_COUNT 12
 
+#define VSENSE_BOTTOMRESISTOR 10
+
+#ifdef PRODUCT_IS_PLUS
+#define VSENSE_TOPRESISTOR 100
+#else
+#define VSENSE_TOPRESISTOR 33
+#endif
+
 void vsense_loop()
 {
     // called every loop.
@@ -104,7 +112,7 @@ void vsense_loop()
             uint32_t vsense_mv = (((uint32_t) val) * 2500) / 1023;
             // This is the voltage of the pin, we need to scale it up because we have
             // A potential divider in circuit with 10k and 33k resistors to gnd and +v
-            vsense_mv = (vsense_mv * (10+33)) / 10;
+            vsense_mv = (vsense_mv * (VSENSE_BOTTOMRESISTOR+VSENSE_TOPRESISTOR)) / VSENSE_BOTTOMRESISTOR;
             // Print some debug info
             // Calculate the number of cells
             // Do this only during startup.
@@ -116,6 +124,11 @@ void vsense_loop()
                 } else if ((vsense_mv > 3000) && (vsense_mv < 4250)) {
                     // 1s lipo
                     vsense_state.cells_count = 1;
+#ifdef PRODUCT_IS_PLUS
+				} else if ((vsense_mv > 9000) && (vsense_mv < 18000)) {
+                    // 3s or 4s lipo
+                    vsense_state.cells_count = 3;
+#endif
                 } else {
                     // This means we have neither 1s nor 2s pack.
                     vsense_state.cells_count = 0;

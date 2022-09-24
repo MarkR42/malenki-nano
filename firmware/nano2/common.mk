@@ -1,7 +1,7 @@
 
 # We require the avr-gcc toolchain
 #
-OBJDIR=obj_$(MCU)
+OBJDIR=obj_$(MCU)$(PRODUCT_MODEL)
 
 OBJ_FILES=main.o diag.o a7105_spi.o spi_asm.o radio.o motors.o nvconfig.o mixing.o weapons.o \
 	vsense.o sticks.o
