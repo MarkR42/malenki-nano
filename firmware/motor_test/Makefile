@@ -8,7 +8,7 @@ OBJ_FILES=main.o motors.o diag.o
 OBJECTS=$(addprefix $(OBJDIR)/,$(OBJ_FILES))
 HEADERS=motors.h diag.h state.h
 
-MCU=attiny3217
+MCU=attiny1616
 
 ELF=$(OBJDIR)/main.elf
 HEX=$(OBJDIR)/main.hex
@@ -35,9 +35,12 @@ $(OBJDIR)/%.o: %.S Makefile $(HEADERS)
 	@mkdir -p $(OBJDIR)
 	avr-gcc -c $(CFLAGS) -Xassembler -a=$(OBJDIR)/$(<).lst -o $@ $<
 
-install: install1617
-install1617: link
-	pyupdi.py -d tiny1617 -c /dev/ttyUSB0 -f $(HEX)
+PYMCUPROG_OPTS=-d attiny1616 -t uart -u /dev/ttyUSB0  
+
+install: link
+	pymcuprog $(PYMCUPROG_OPTS) erase
+	pymcuprog $(PYMCUPROG_OPTS) -f $(HEX) -v info write 
+	pymcuprog $(PYMCUPROG_OPTS) -f $(HEX) verify
 
 clean:
 	rm -r obj/

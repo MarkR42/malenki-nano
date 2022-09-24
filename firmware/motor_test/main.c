@@ -179,8 +179,8 @@ int main(void)
     electrical_test();
     
     // Set port output for blue led
-    // PC5 = blue led
-    PORTC.DIRSET = 1 << 5;
+    // PB4 = blue led
+    PORTB.DIRSET = 1 << 4;
     motors_init();
 
     uint8_t motor_id=0;
@@ -188,16 +188,16 @@ int main(void)
         // Flash leds and run motors
         diag_println("Running motor %d", (int) motor_id);
         _delay_ms(250);
-        PORTC.OUTSET = 1 << 5;
+        PORTB.OUTSET = 1 << 4;
         set_motor_direction_duty(motor_id, 100);
         _delay_ms(250);
-        PORTC.OUTCLR = 1 << 5;
+        PORTB.OUTCLR = 1 << 4;
         set_motor_direction_duty(motor_id, 0);
         _delay_ms(250);
-        PORTC.OUTSET = 1 << 5;
+        PORTB.OUTSET = 1 << 4;
         set_motor_direction_duty(motor_id, -100);
         _delay_ms(250);
-        PORTC.OUTCLR = 1 << 5;
+        PORTB.OUTCLR = 1 << 4;
         motors_all_off();
         motor_id = (motor_id + 1) % 3;
     }
