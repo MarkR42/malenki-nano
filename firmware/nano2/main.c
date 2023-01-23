@@ -210,7 +210,7 @@ int main(void)
     init_clock();
     init_serial();
     // Write the greeting message as soon as possible.
-    diag_puts("\r\nMalenki-Nano 2022\r\n");
+    diag_puts("\r\nMalenki-Nano 2023\r\n");
     watchdog_early_init();
     init_timer();
     sei(); // interrupts on

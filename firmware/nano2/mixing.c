@@ -17,6 +17,10 @@ void mixing_init()
     mixing_state.enable_mixing = true;
     mixing_state.enable_braking = true;
     mixing_state.swap_weapon_channels = true;
+    // Invert left channel by default so it runs the opposite way to
+    // right - this is what people expect - so they can wire them the
+    // "same" way, and have the robot drive normally.
+    mixing_state.invert_left = true;
 }
 
 static int signedclamp(int n, int maxval)
