@@ -1,6 +1,6 @@
 Hardware
 ====
 
-Production hardware is in malenki-nanox/
+Production hardware is in malenki-nanox/ and malenki-1616/
 
-All others are earlier versions or experimental.
+Panels are in panel*/

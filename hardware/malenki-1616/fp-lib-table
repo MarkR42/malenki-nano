@@ -1,3 +1,4 @@
 (fp_lib_table
   (lib (name "malenki-nano")(type "KiCad")(uri "${KIPRJMOD}/malenki-nano.pretty")(options "")(descr ""))
+  (lib (name "kikit")(type "KiCad")(uri "${KIPRJMOD}/kikit.pretty")(options "")(descr ""))
 )
