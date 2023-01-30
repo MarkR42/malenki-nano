@@ -1,7 +1,7 @@
 #!/bin/bash
 
-MCU=attiny817
-PYMCUPROG_OPTS="-d $MCU -t uart -u /dev/ttyUSB0"  
+MCU=attiny1616
+PYMCUPROG_OPTS="-d $MCU -t uart -u /dev/ttyUSB*"  
 file=817.bin
 
 set -e
