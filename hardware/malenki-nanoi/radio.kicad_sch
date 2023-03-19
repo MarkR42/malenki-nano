@@ -1048,6 +1048,11 @@
     (effects (font (size 1.27 1.27)) (justify right bottom))
     (uuid 795d4d40-3119-4030-a1d9-82269e9fbcb5)
   )
+  (text "Alternative Crystal:\nJGHC S2216000121080\nLCSC number C426965"
+    (at 162.56 162.56 0)
+    (effects (font (size 1.27 1.27)) (justify left bottom))
+    (uuid 8cbb8c95-ac3a-47d1-8873-32a562b7c5ff)
+  )
   (text "Crystal requirements (from A7105 datasheet)\n- ESR <= 80ohm\nFirmware FC on - accuracy 20ppm\nFirmware FC off - accuracy 10ppm"
     (at 242.57 139.7 0)
     (effects (font (size 1.27 1.27)) (justify left bottom))
