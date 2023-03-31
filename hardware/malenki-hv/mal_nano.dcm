@@ -1,0 +1,8 @@
+EESchema-DOCLIB  Version 2.0
+#
+$CMP HT7233
+D Holtek HT7233 Voltage Regulator
+F https://datasheet.lcsc.com/szlcsc/1809191917_Holtek-Semicon-HT7233_C47970.pdf
+$ENDCMP
+#
+#End Doc Library
