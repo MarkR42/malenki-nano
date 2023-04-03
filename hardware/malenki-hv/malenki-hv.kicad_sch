@@ -1700,7 +1700,7 @@
     (in_bom yes) (on_board yes)
     (uuid d3e2ff1e-c2a5-4ec5-82d1-74bc0058ad00)
     (property "Reference" "U3" (id 0) (at 127 90.7858 0))
-    (property "Value" "ATtiny1616-M" (id 1) (at 125.73 88.0045 0))
+    (property "Value" "ATTiny1616-MNR" (id 1) (at 125.73 88.0045 0))
     (property "Footprint" "Package_DFN_QFN:VQFN-20-1EP_3x3mm_P0.4mm_EP1.7x1.7mm" (id 2) (at 127 101.6 0)
       (effects (font (size 1.27 1.27) italic) hide)
     )
@@ -2129,7 +2129,7 @@
       (reference "U2") (unit 1) (value "HT7533-1") (footprint "Package_TO_SOT_SMD:SOT-89-3")
     )
     (path "/d3e2ff1e-c2a5-4ec5-82d1-74bc0058ad00"
-      (reference "U3") (unit 1) (value "ATtiny1616-M") (footprint "Package_DFN_QFN:VQFN-20-1EP_3x3mm_P0.4mm_EP1.7x1.7mm")
+      (reference "U3") (unit 1) (value "ATTiny1616-MNR") (footprint "Package_DFN_QFN:VQFN-20-1EP_3x3mm_P0.4mm_EP1.7x1.7mm")
     )
     (path "/b339fba4-a8e4-4c66-ad9c-610bd968ae93/cf8346b2-b230-497f-943a-b0f6a963d217"
       (reference "U4") (unit 1) (value "DRV8231DSGR") (footprint "Package_SON:WSON-8-1EP_2x2mm_P0.5mm_EP0.9x1.6mm")
