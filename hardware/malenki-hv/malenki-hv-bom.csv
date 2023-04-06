@@ -8,7 +8,7 @@
 7;"D2";"LED_0603_1608Metric";1;"LED Red";;;
 8;"C4,C17,C16,C22,C13,C12,C23";"C_0402_1005Metric_Pad0.74x0.62mm_HandSolder";7;"100nF";;;
 9;"R6,R5,R1";"R_0402_1005Metric";3;"470R";;;
-10;"L1";"L_0402_1005Metric_Pad0.77x0.64mm_HandSolder";1;"2.7nH";;;
+10;"L1";"L_0402_1005Metric_Pad0.77x0.64mm_HandSolder";1;"2.7nH";TDK MLK1005S2N7ST000;;
 11;"U4,U5,U6";"WSON-8-1EP_2x2mm_P0.5mm_EP0.9x1.6mm";3;"DRV8231DSGR";TI;;
 12;"C20,C21";"C_0603_1608Metric";2;"2.2uF";;;
 13;"R25";"R_0402_1005Metric";1;"200R";;;
