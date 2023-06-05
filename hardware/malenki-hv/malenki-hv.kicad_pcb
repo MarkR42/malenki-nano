@@ -2525,7 +2525,7 @@
     (at 100.8 67.75 180)
     (descr "Resistor SMD 0402 (1005 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: IPC-SM-782 page 72, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf), generated with kicad-footprint-generator")
     (tags "resistor")
-    (property "LCSC" "")
+    (property "LCSC" "C25741")
     (property "Manufacturer" "")
     (property "Partnum" "")
     (property "Sheetfile" "malenki-hv.kicad_sch")

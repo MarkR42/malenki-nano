@@ -1639,7 +1639,7 @@
     (property "Partnum" "" (at 106.68 152.4 0)
       (effects (font (size 1.27 1.27)) hide)
     )
-    (property "LCSC" "" (at 106.68 152.4 0)
+    (property "LCSC" "C25741" (at 106.68 152.4 0)
       (effects (font (size 1.27 1.27)) hide)
     )
     (property "Manufacturer" "" (at 106.68 152.4 0)
