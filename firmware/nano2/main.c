@@ -210,7 +210,7 @@ int main(void)
     init_clock();
     init_serial();
     // Write the greeting message as soon as possible.
-    diag_puts("\r\nMalenki-Nano 2023"
+    diag_puts("\r\nMalenki-Nano 2023B"
 #ifdef PRODUCT_IS_PLUS
         " HV (High Voltage)"
 #endif    

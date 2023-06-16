@@ -103,9 +103,10 @@ void mixing_drive_motors(int16_t throttle, int16_t steering, int16_t weapon, boo
         // Apply "squaring"
         squaring(&throttle,100);
         squaring(&steering,100);
-        // Scale steering further, to stop steering too fast.
-        steering = steering / 2;
-        
+        if (! mixing_state.enable_max_steering) {
+            // Scale steering further, to stop steering too fast.
+            steering = steering / 2;
+        }
         left = throttle + steering;   
         right = throttle - steering;
     } else {

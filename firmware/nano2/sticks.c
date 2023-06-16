@@ -107,6 +107,11 @@ static void handle_switches(uint32_t now)
             need_save = true;
             show_rpm_value(config_switch_count, mixing_state.enable_servo_double);
             break;
+        case 11: // Max steering (100% mix)
+            mixing_state.enable_max_steering = ! mixing_state.enable_max_steering;
+            need_save = true;
+            show_rpm_value(config_switch_count, mixing_state.enable_max_steering);
+            break;
     }
     if (need_save) {
         nvconfig_save();

@@ -15,6 +15,8 @@ typedef struct {
 // Flag: enable "servo double" logic which expands the range of
 // some servos by sending longer and shorter pulses.
     bool enable_servo_double;
+// Flag: enable 100% steering mix. Useful for some robots / transmitters.
+    bool enable_max_steering;
 } mixing_state_t;
 
 extern mixing_state_t mixing_state;
