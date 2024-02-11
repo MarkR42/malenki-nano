@@ -486,7 +486,7 @@
       "idf": "",
       "netlist": "",
       "specctra_dsn": "",
-      "step": "",
+      "step": "notmalenki.step",
       "vmrl": "",
       "vrml": ""
     },

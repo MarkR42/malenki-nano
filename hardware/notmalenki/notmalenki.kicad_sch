@@ -1528,7 +1528,7 @@
     (property "Value" "Conn_01x02_Male-Connector" (at 35.7632 45.974 0)
       (effects (font (size 1.27 1.27)))
     )
-    (property "Footprint" "malenki-nano:beetlemotor" (at 33.02 48.26 0)
+    (property "Footprint" "malenki-nano:beetlepower" (at 33.02 48.26 0)
       (effects (font (size 1.27 1.27)) hide)
     )
     (property "Datasheet" "~" (at 33.02 48.26 0)
