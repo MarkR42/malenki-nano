@@ -733,6 +733,10 @@
   (no_connect (at 111.76 111.76) (uuid f59e5234-659d-409c-9fa2-e75066a2e2dc))
   (no_connect (at 127 45.085) (uuid f8952b79-d8fa-46ee-a2a1-db7739568434))
 
+  (wire (pts (xy 92.71 42.545) (xy 92.71 48.26))
+    (stroke (width 0) (type default))
+    (uuid 01bf9a53-cd35-4502-8817-822770324711)
+  )
   (wire (pts (xy 158.75 52.07) (xy 162.56 52.07))
     (stroke (width 0) (type solid))
     (uuid 02ca0141-4e14-4eff-8542-aac1d81b1416)
@@ -1322,6 +1326,31 @@
       (project "notmalenki"
         (path "/f41619e3-8cf2-4511-8a51-762d4de43197"
           (reference "D2") (unit 1)
+        )
+      )
+    )
+  )
+
+  (symbol (lib_id "Connector:TestPoint") (at 92.71 42.545 0) (unit 1)
+    (in_bom yes) (on_board yes) (dnp no) (fields_autoplaced)
+    (uuid 121b0fdf-e9d0-486d-a708-af054222eed0)
+    (property "Reference" "TP3" (at 95.25 37.973 0)
+      (effects (font (size 1.27 1.27)) (justify left))
+    )
+    (property "Value" "3V3" (at 95.25 40.513 0)
+      (effects (font (size 1.27 1.27)) (justify left))
+    )
+    (property "Footprint" "TestPoint:TestPoint_Pad_D1.0mm" (at 97.79 42.545 0)
+      (effects (font (size 1.27 1.27)) hide)
+    )
+    (property "Datasheet" "~" (at 97.79 42.545 0)
+      (effects (font (size 1.27 1.27)) hide)
+    )
+    (pin "1" (uuid 8a13ad97-a990-4f75-b903-301c31c6d554))
+    (instances
+      (project "notmalenki"
+        (path "/f41619e3-8cf2-4511-8a51-762d4de43197"
+          (reference "TP3") (unit 1)
         )
       )
     )
