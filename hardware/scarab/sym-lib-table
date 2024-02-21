@@ -1,0 +1,6 @@
+(sym_lib_table
+  (version 7)
+  (lib (name "malenki-nanoi")(type "Legacy")(uri "${KIPRJMOD}/malenki-nanoi.lib")(options "")(descr ""))
+  (lib (name "nanoiplus")(type "KiCad")(uri "${KIPRJMOD}/nanoiplus.kicad_sym")(options "")(descr ""))
+  (lib (name "scarab")(type "KiCad")(uri "${KIPRJMOD}/scarab.kicad_sym")(options "")(descr ""))
+)
