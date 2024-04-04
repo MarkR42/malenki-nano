@@ -1006,11 +1006,11 @@
     (effects (font (size 1.27 1.27)) (justify left bottom))
     (uuid 3935cb86-fd84-42ef-be4e-b2855502b365)
   )
-  (text "Scarab ESC+RX" (at 122.555 23.495 0)
+  (text "${TITLE}" (at 122.555 23.495 0)
     (effects (font (size 2.5 2.5) (thickness 0.5) bold) (justify left bottom))
     (uuid 4a1b369b-57bf-4ee1-a8e3-5cc78a8bfd50)
   )
-  (text "OK regulator: Diodes AP2204RA-3.3TRG1 (end of life)\nIncompatible, but better: Diodes AP2205-33Y-13\n\nDo not use Holtek regulators"
+  (text "OK regulator: Diodes AP2205-33Y-13\n\nDo not use Holtek regulators"
     (at 49.53 29.21 0)
     (effects (font (size 1.27 1.27)) (justify left bottom))
     (uuid bfecd0de-691c-4ae7-b55e-182fabb871db)
@@ -1100,7 +1100,7 @@
       (effects (font (size 1.27 1.27)) (justify right) hide)
     )
   )
-  (global_label "nSLEEP" (shape input) (at 171.45 93.98 0) (fields_autoplaced)
+  (global_label "nSLEEP" (shape output) (at 171.45 93.98 0) (fields_autoplaced)
     (effects (font (size 1.27 1.27)) (justify left))
     (uuid 51151e77-802c-49e4-b337-f117b54b0a77)
     (property "Intersheetrefs" "${INTERSHEET_REFS}" (at 181.4849 93.98 0)
