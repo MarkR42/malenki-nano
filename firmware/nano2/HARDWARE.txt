@@ -150,3 +150,25 @@ BLINKY is on PB4
 VSENSE is on PB5 
 PC2, PC3 are NC
 PC4 and PC5 don't exist
+
+----
+
+Differences between models April 2024
+
+All models in April 2024 use the attiny1616 MCU.
+
+Malenki-Nano
+    - VSENSE has a 33k / 10k divider
+        drv8837dsgr *3
+    - Power 1-2S lipo pack (assumed in firmware)
+Malenki-HV
+    - VSENSE has a 100k / 10k divider    
+        drv8231 *3
+    - Power 2-4S lipo (assumed in firmware)
+Scarab
+    - VSENSE has a 100k / 10k divider
+    - Motor drivers drv8243-Q1 *2
+    - Additional signal pins for NSLEEP (output) and NFAULT (input)
+        (see motors_scarab.c or schematic)
+    - Power 2-4S lipo (assumed in firmware)
+        
