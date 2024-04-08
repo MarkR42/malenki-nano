@@ -21,6 +21,12 @@ void mixing_init()
     // right - this is what people expect - so they can wire them the
     // "same" way, and have the robot drive normally.
     mixing_state.invert_left = true;
+    
+#ifdef PRODUCT_IS_SCARAB
+    // The Scarab can have max steering enabled by default, as 
+    // bigger robots are less twitchy.
+    mixing_state.enable_max_steering = true;
+#endif
 }
 
 static int signedclamp(int n, int maxval)

@@ -81,7 +81,7 @@ void motors_init()
     // Divide by 64, 3.333mhz / 64 =~ 52khz
     // 52khz / period_val =~ 260hz = PWM frequency.
 	TCA0.SPLIT.CTRLA = 
-		TCA_SPLIT_CLKSEL_DIV64_gc | // divide sys. clock by 64 
+		TCA_SPLIT_CLKSEL_DIV16_gc | // divide sys. clock by 16 
 		TCA_SPLIT_ENABLE_bm;
 	// To set the PWM duty, we can now write to
 	// TCA0.HCMP0, .HCMP1, .HCMP2, .LCMP0, .LCMP1, .LCMP2
@@ -167,6 +167,7 @@ void set_motor_direction_duty(uint8_t motor_id, int16_t direction_and_duty)
     if (direction_and_duty < 0) { direction=-1; }
     uint8_t duty = (uint8_t) abs(direction_and_duty);
 
+    // Set the other side fully high
     uint8_t fwd=0;
     uint8_t rev=0;
     switch(motor_id) {
@@ -177,15 +178,17 @@ void set_motor_direction_duty(uint8_t motor_id, int16_t direction_and_duty)
     }
     // fwd and rev both zero - unknown motor id.
     if (fwd || rev) {
-        uint8_t fwd_duty = duty;
-        uint8_t rev_duty = duty;
+        // Set the pin low for the duty cycle we want:
+        uint8_t fwd_duty = DUTY_MAX - duty;
+        uint8_t rev_duty = DUTY_MAX - duty;
+        // Set the opposite site fully high.
         if (direction <= 0) {
             // Not going forward
-            fwd_duty=0; 
+            fwd_duty=DUTY_MAX; 
         }
         if (direction >= 0) {
             // Not going back
-            rev_duty=0; 
+            rev_duty=DUTY_MAX; 
         }
         set_pin_duty(fwd, fwd_duty);
         set_pin_duty(rev, rev_duty);
@@ -195,7 +198,17 @@ void set_motor_direction_duty(uint8_t motor_id, int16_t direction_and_duty)
 void enable_motor_brake(uint8_t motor_id)
 {
     // drv8243 brakes when IN1 / IN2 are low.
-   set_motor_direction_duty(motor_id, 0);
+    // Set the other side fully high
+    uint8_t fwd=0;
+    uint8_t rev=0;
+    switch(motor_id) {
+        case MOTOR_RIGHT:
+            fwd=MOTOR_1F; rev=MOTOR_1R; break; 
+        case MOTOR_LEFT:
+            fwd=MOTOR_2F; rev=MOTOR_2R; break; 
+    }
+    set_pin_duty(fwd, 0);
+    set_pin_duty(rev, 0);
 }
 
 void motors_loop()
@@ -207,5 +220,4 @@ void motors_all_off()
 {
     set_motor_direction_duty(MOTOR_LEFT,0);
     set_motor_direction_duty(MOTOR_RIGHT,0);
-    // Possible todo: enable sleep?
 }
