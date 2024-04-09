@@ -52,7 +52,7 @@ install: installpymcu
 	
 PYMCUPROG_OPTS=-d $(MCU_PYMCUPROG) -t uart -u /dev/ttyUSB0  
 	
-installpymcu:
+installpymcu: link
 	pymcuprog $(PYMCUPROG_OPTS) erase
 	pymcuprog $(PYMCUPROG_OPTS) -f $(HEX) -v info write 
 	pymcuprog $(PYMCUPROG_OPTS) -f $(HEX) verify
