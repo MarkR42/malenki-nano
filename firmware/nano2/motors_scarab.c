@@ -160,6 +160,17 @@ static void set_pin_duty(uint8_t signal_id, uint8_t duty)
     *compare_register = duty;
 }
 
+/*
+ * DRV8243 PWM table (page 34 of datasheet)
+ * 
+ * IN1 IN2  OUT1 OUT2
+ * 0   0    H    H  <-- Braking / recirculation
+ * 0   1    L    H
+ * 1   0    H    L 
+ * 1   1    Hi-Z Hi-Z  (fell on to page 35)
+ * 
+ * When pulsing we should use braking / recirculation.
+ */
 void set_motor_direction_duty(uint8_t motor_id, int16_t direction_and_duty)
 {
     int8_t direction=0;
@@ -179,16 +190,20 @@ void set_motor_direction_duty(uint8_t motor_id, int16_t direction_and_duty)
     // fwd and rev both zero - unknown motor id.
     if (fwd || rev) {
         // Set the pin low for the duty cycle we want:
-        uint8_t fwd_duty = DUTY_MAX - duty;
-        uint8_t rev_duty = DUTY_MAX - duty;
+        uint8_t fwd_duty = duty;
+        uint8_t rev_duty = duty;
         // Set the opposite site fully high.
         if (direction <= 0) {
             // Not going forward
-            fwd_duty=DUTY_MAX; 
+            fwd_duty=0; 
         }
         if (direction >= 0) {
             // Not going back
-            rev_duty=DUTY_MAX; 
+            rev_duty=0; 
+        }
+        if (direction == 0) {
+            // Stop - set both high to allow free run
+            fwd_duty = rev_duty = DUTY_MAX;
         }
         set_pin_duty(fwd, fwd_duty);
         set_pin_duty(rev, rev_duty);
