@@ -466,15 +466,29 @@
     (uuid fdba0844-907e-4f35-8a1a-b4eebe900cf0)
   )
 
-  (text_box "ITRIP level 3 (22k)\n\n1.98V / 560R = 3.53 mA\n3.53 mA * 3070 = 10.85A"
-    (at 111.76 154.94 0) (size 35.56 17.78)
+  (text_box "ITRIP level 2 (8.2k)\n\n1.18V / 560R = 2.1mA\n2.1 mA * 3070 = 6.46A\n\n1.18V / 470R * 3070 = 7.70A"
+    (at 139.7 175.895 0) (size 35.56 17.78)
+    (stroke (width 0) (type default))
+    (fill (type none))
+    (effects (font (size 1.27 1.27)) (justify left top))
+    (uuid 0600e956-9fcb-4a4f-ac52-3b944849b7e1)
+  )
+  (text_box "ITRIP level 6 (open)\n\n(2.97V / 1000) *3070 =~ 9.12A\n(2.97V / 1200) *3070 =~ 7.6A\n(2.97V / 1500) *3070 =~ 5.94A"
+    (at 139.065 154.305 0) (size 35.56 17.78)
+    (stroke (width 0) (type default))
+    (fill (type none))
+    (effects (font (size 1.27 1.27)) (justify left top))
+    (uuid 0a241c34-9018-4b8f-a3d5-5e08ede40b71)
+  )
+  (text_box "ITRIP level 3 (22k)\n\n1.98V / 560R = 3.53 mA\n3.53 mA * 3070 = 10.85A\n\n\n1.98V / 680R * 3070 = 8.94A\n1.98V / 820R * 3070 = 7.41A\n\n\n"
+    (at 101.6 154.305 0) (size 35.56 17.78)
     (stroke (width 0) (type default))
     (fill (type none))
     (effects (font (size 1.27 1.27)) (justify left top))
     (uuid 5aae6e3f-676a-4429-bc28-7f28d664e8a0)
   )
-  (text_box "ITRIP level 4 (47k)\n\n(2.31V / 560R) * 3070 = 12.66A"
-    (at 111.76 175.26 0) (size 35.56 17.78)
+  (text_box "ITRIP level 4 (47k)\n\n(2.31V / 560R) * 3070 = 12.66A\n(2.31V / 680) * 3070 = 10.43A\n(2.31V / 1k) * 3070 = 7.09A\n\n"
+    (at 101.6 174.625 0) (size 35.56 17.78)
     (stroke (width 0) (type default))
     (fill (type none))
     (effects (font (size 1.27 1.27)) (justify left top))
