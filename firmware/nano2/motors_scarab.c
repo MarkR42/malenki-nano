@@ -36,6 +36,8 @@
 static void reset_drivers();
 static void maybe_reset_drivers();
 
+static uint32_t last_reset_ticks;
+
 void motors_init()
 {
 	// Set all the ports which need to be outputs, to be outputs.
@@ -108,6 +110,8 @@ void motors_init()
     // microseconds.
     maybe_reset_drivers();
     maybe_reset_drivers();
+    
+    last_reset_ticks = get_tickcount();
 }
 
 static void reset_drivers()
@@ -120,6 +124,11 @@ static void reset_drivers()
     NSLEEP_PORT.OUTSET = (1 << NSLEEP_PIN);
 }
 
+static uint8_t test_for_fault()
+{
+    return (NFAULT_PORT.IN & (1 << NFAULT_PIN));
+}
+
 static void maybe_reset_drivers()
 {
     // Wait a little in case we already just called reset_drivers
@@ -127,7 +136,7 @@ static void maybe_reset_drivers()
     // and the chip has time to get itself ready.
     _delay_us(300);
     // Check NFAULT
-    uint8_t nfault_state = (NFAULT_PORT.IN & (1 << NFAULT_PIN));
+    uint8_t nfault_state = test_for_fault();
     if (nfault_state == 0) {
         diag_println("motors_scarab: nfault is active, resetting drivers");
         reset_drivers();
@@ -226,9 +235,29 @@ void enable_motor_brake(uint8_t motor_id)
     set_pin_duty(rev, 0);
 }
 
+static void motors_check_for_fault()
+{
+    if (test_for_fault() == 0) {
+        // nFault active low
+        maybe_reset_drivers();
+    }
+}
+
 void motors_loop()
 {
-
+    // Every so often, check the status of nFault,
+    // If there is a fault detected, reset the drivers.
+    // We don't want to do this too often as it might interfere
+    // (glitch) the non-fault side if we have a fault on one side 
+    // only.
+    uint32_t t= get_tickcount();
+    if (t != last_reset_ticks) {
+        uint32_t delta = t - last_reset_ticks;
+        if (delta > 10) {
+            motors_check_for_fault();
+            last_reset_ticks = t;
+        }
+    }
 }
 
 void motors_all_off()

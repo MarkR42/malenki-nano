@@ -243,5 +243,6 @@ int main(void)
         vsense_loop();
         sticks_loop();
         watchdog_loop();
+        motors_loop();
     }
 }
