@@ -1856,7 +1856,7 @@
   )
 
   (symbol (lib_id "Device:C") (at 99.695 160.02 0) (mirror y) (unit 1)
-    (in_bom yes) (on_board yes) (dnp no)
+    (in_bom no) (on_board yes) (dnp yes)
     (uuid 874841dd-31a2-4907-ae06-68c772e07905)
     (property "Reference" "C8" (at 96.774 158.8516 0)
       (effects (font (size 1.27 1.27)) (justify left))
