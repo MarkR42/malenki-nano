@@ -3,8 +3,17 @@
 #
 OBJDIR=obj_$(MCU)$(PRODUCT_MODEL)
 
-OBJ_FILES=main.o diag.o a7105_spi.o spi_asm.o radio.o motors.o nvconfig.o mixing.o weapons.o \
+OBJ_FILES=main.o diag.o a7105_spi.o spi_asm.o radio.o nvconfig.o mixing.o weapons.o \
 	vsense.o sticks.o
+
+# Use a different motors source for different products which need
+# different logic.
+ifeq ($(PRODUCT_MODEL),scarab)
+ OBJ_FILES += motors_scarab.o
+else
+ OBJ_FILES += motors.o
+endif
+
 OBJECTS=$(addprefix $(OBJDIR)/,$(OBJ_FILES))
 HEADERS=radio.h nvconfig.h state.h motors.h diag.h a7105_spi.h mixing.h weapons.h vsense.h\
 	sticks.h
@@ -43,7 +52,7 @@ install: installpymcu
 	
 PYMCUPROG_OPTS=-d $(MCU_PYMCUPROG) -t uart -u /dev/ttyUSB0  
 	
-installpymcu:
+installpymcu: link
 	pymcuprog $(PYMCUPROG_OPTS) erase
 	pymcuprog $(PYMCUPROG_OPTS) -f $(HEX) -v info write 
 	pymcuprog $(PYMCUPROG_OPTS) -f $(HEX) verify

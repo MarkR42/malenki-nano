@@ -15,3 +15,5 @@ void motors_all_off();
 
 void enable_motor_brake(uint8_t motor_id);
 
+void motors_loop();
+

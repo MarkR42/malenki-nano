@@ -21,6 +21,12 @@ void mixing_init()
     // right - this is what people expect - so they can wire them the
     // "same" way, and have the robot drive normally.
     mixing_state.invert_left = true;
+    
+#ifdef PRODUCT_IS_SCARAB
+    // The Scarab can have max steering enabled by default, as 
+    // bigger robots are less twitchy.
+    mixing_state.enable_max_steering = true;
+#endif
 }
 
 static int signedclamp(int n, int maxval)
@@ -100,9 +106,13 @@ void mixing_drive_motors(int16_t throttle, int16_t steering, int16_t weapon, boo
     
     int left, right;
     if (mixing_state.enable_mixing) {
+#ifdef PRODUCT_IS_SCARAB
+        // No squaring.
+#else
         // Apply "squaring"
         squaring(&throttle,100);
         squaring(&steering,100);
+#endif
         if (! mixing_state.enable_max_steering) {
             // Scale steering further, to stop steering too fast.
             steering = steering / 2;
@@ -122,10 +132,6 @@ void mixing_drive_motors(int16_t throttle, int16_t steering, int16_t weapon, boo
     // Now scale back to += 200 which is correct for pwm
     left = left *2;
     right = right * 2;
-   
-    // Apply "squaring"
-    // squaring(&left,200);
-    // squaring(&right,200);
   
     weapon = apply_weapon_rules(throttle, steering, weapon);
     
