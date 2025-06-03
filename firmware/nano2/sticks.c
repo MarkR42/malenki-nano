@@ -9,6 +9,7 @@
 #include "state.h"
 #include "diag.h"
 #include "nvconfig.h"
+#include "brushless.h"
 
 // NB: implicitly initialised to zero.
 static uint32_t last_signal_time;
@@ -204,6 +205,9 @@ sticks_result_t sticks_receive_positions(uint16_t *sticks)
         mixing_drive_motors(rel_throttle, rel_steering, rel_weapon, invert);
         // Activate extra weapon channels
         weapons_set(sticks[CHANNEL_INDEX_WEAPON2], sticks[CHANNEL_INDEX_WEAPON3]);
+#ifdef PRODUCT_IS_SPIN
+        brushless_set(sticks[CHANNEL_INDEX_WEAPON]);
+#endif
     }
 
     has_signal = true;
@@ -218,4 +222,7 @@ void sticks_no_signal()
     motors_all_off();
     weapons_all_off();
     has_signal = false;
+#ifdef PRODUCT_IS_SPIN
+    brushless_off();
+#endif
 }

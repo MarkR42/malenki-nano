@@ -10,6 +10,13 @@
 #define F_CPU 10000000 /* 10MHz */
 #include <util/delay.h>
 
+/*
+ *  Malenki-Spin has only motors LEFT and RIGHT
+ *  Motor WEAPON is handled by brushless driver.
+ */
+ 
+// Malenki-Spin: Do not activate PB0 or PA3 signals.
+ 
 static bool pin_check(char portname, PORT_t *port, uint8_t pin)
 {
     uint8_t bm = 1<<pin;
@@ -61,10 +68,14 @@ void motors_init()
 	PORTA.OUTCLR = 1 << 4;
 	PORTA.OUTCLR = 1 << 5;
 	// set directions to out
-	PORTB.DIRSET = 1 << 0;
+#ifndef PRODUCT_IS_SPIN
+	PORTB.DIRSET = 1 << 0; // Not for Spin
+#endif
 	PORTB.DIRSET = 1 << 1;
 	PORTB.DIRSET = 1 << 2;
-	PORTA.DIRSET = 1 << 3;
+#ifndef PRODUCT_IS_SPIN
+	PORTA.DIRSET = 1 << 3; // Not for Spin
+#endif 
 	PORTA.DIRSET = 1 << 4;
 	PORTA.DIRSET = 1 << 5;
 	//
@@ -80,13 +91,22 @@ void motors_init()
 	// Enable split mode
 	TCA0.SPLIT.CTRLD = TCA_SPLIT_SPLITM_bm;
 	// Enable all comparators in split mode
-	TCA0.SPLIT.CTRLB = 
-		TCA_SPLIT_LCMP0EN_bm |
+    // For Malenki-Spin, only enable comparators for the brushed drivers
+    // which exist on this model.
+    // On Malenki-Spin we must not enable PA3 to send duty cycle pulses
+    // Because PA3 will be used to send signals to the brushless ESC.
+    uint8_t comparator_flags = 
 		TCA_SPLIT_LCMP1EN_bm |
 		TCA_SPLIT_LCMP2EN_bm |
-		TCA_SPLIT_HCMP0EN_bm |
 		TCA_SPLIT_HCMP1EN_bm |
 		TCA_SPLIT_HCMP2EN_bm;
+#ifndef PRODUCT_IS_SPIN
+    // Not spin - all motors.
+    comparator_flags |= TCA_SPLIT_LCMP0EN_bm |
+    TCA_SPLIT_HCMP0EN_bm;
+#endif
+    
+	TCA0.SPLIT.CTRLB = comparator_flags;
 	// Set the period - use the same period for both halves.
 	TCA0.SPLIT.HPER = period_val;
 	TCA0.SPLIT.LPER = period_val;
@@ -111,7 +131,7 @@ void motors_init()
 }
 
 // Pin IDs
-// Motor 1 = weapon
+// Motor 1 = weapon (disabled on Spin)
 #define MOTOR_1F 0
 #define MOTOR_1R 1
 // Left drive
@@ -123,6 +143,8 @@ void motors_init()
 
 // Table mapping the motor ID to the compare register
 // which controls its duty.
+// NB: If the comparator is not enabled, setting its comparison
+// register is harmless.
 static uint8_t volatile * motor_map[] = {
     & (TCA0.SPLIT.HCMP0), // 1F, PA3
     & (TCA0.SPLIT.LCMP0), // 1R, PB0

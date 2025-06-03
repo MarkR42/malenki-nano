@@ -20,6 +20,7 @@
 #include "weapons.h"
 #include "vsense.h"
 #include "sticks.h"
+#include "brushless.h"
 
 volatile master_state_t master_state;
 extern const char * const end_marker;
@@ -211,7 +212,9 @@ int main(void)
     init_serial();
     // Write the greeting message as soon as possible.
     diag_puts(
-#ifdef PRODUCT_IS_SCARAB
+#ifdef PRODUCT_IS_SPIN
+    "\r\nMalenki-Spin ESC+RX 2025"
+#elif PRODUCT_IS_SCARAB
     "\r\nScarab ESC+RX 2024"
 #else
     "\r\nMalenki-Nano 2023B"
@@ -233,6 +236,9 @@ int main(void)
     nvconfig_load(); // load config from eeprom, if it is setup.
     vsense_init();
     sticks_init();
+#ifdef PRODUCT_IS_SPIN
+    brushless_init();
+#endif
     // Initialise the radio last.
     radio_init();
     watchdog_init();

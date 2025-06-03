@@ -13,10 +13,14 @@ ifeq ($(PRODUCT_MODEL),scarab)
 else
  OBJ_FILES += motors.o
 endif
+ifeq ($(PRODUCT_MODEL),spin)
+ OBJ_FILES += brushless.o
+ OBJ_FILES += dshot_asm.o
+endif
 
 OBJECTS=$(addprefix $(OBJDIR)/,$(OBJ_FILES))
 HEADERS=radio.h nvconfig.h state.h motors.h diag.h a7105_spi.h mixing.h weapons.h vsense.h\
-	sticks.h
+	sticks.h brushless.h dshot.h
 
 MAKEFILES=Makefile.817 common.mk
 
