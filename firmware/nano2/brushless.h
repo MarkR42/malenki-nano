@@ -16,4 +16,5 @@ void brushless_off();
 void brushless_set(uint16_t pulse);
 
 /* For sending dshot commands */
-void brushless_send_command(uint16_t command);
+void brushless_send_command(uint16_t command, uint8_t telemetry);
+
