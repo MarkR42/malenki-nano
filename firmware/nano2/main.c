@@ -217,7 +217,7 @@ int main(void)
 #elif PRODUCT_IS_SCARAB
     "\r\nScarab ESC+RX 2024"
 #else
-    "\r\nMalenki-Nano 2023B"
+    "\r\nMalenki-Nano 2026-weaponbrake"
     #ifdef PRODUCT_IS_PLUS
             " HV (High Voltage)"
     #endif    

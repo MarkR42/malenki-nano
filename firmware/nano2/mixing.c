@@ -150,7 +150,11 @@ void mixing_drive_motors(int16_t throttle, int16_t steering, int16_t weapon, boo
     if (mixing_state.invert_weapon)
         weapon = -weapon;
 
-    set_motor_direction_duty(MOTOR_WEAPON, weapon);
+    if (weapon == 0) {
+        enable_motor_brake(MOTOR_WEAPON);
+    } else {
+        set_motor_direction_duty(MOTOR_WEAPON, weapon);
+    }
     if ((left == 0) && mixing_state.enable_braking) {
         enable_motor_brake(MOTOR_LEFT);
     } else {
